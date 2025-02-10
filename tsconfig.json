@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "sourceMap": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "module": "ES6"
+  },
+  "include": [
+    "src/**/*"
+  ],
+}
