@@ -1,4 +1,5 @@
 import { Vector2 } from "../math/vector2.js";
+import { Constants } from "./constants.js";
 
 export class Projectile {
     public velocity: Vector2 = new Vector2(10, 0);
@@ -17,7 +18,7 @@ export class Projectile {
 
     public update(deltaTime: number): void {
         this.forces.length = 0;
-        this.forces.push(new Vector2(0, -10));
+        this.forces.push(new Vector2(0, Constants.ACCELERATION_DUE_TO_GRAVITY));
 
         let netForce = Vector2.zero;
 
