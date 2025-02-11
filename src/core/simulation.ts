@@ -29,7 +29,7 @@ export class Simulation extends Loop {
 
         this.projectiles.push(new Projectile(1, 1, 0.5, Vector2.zero));
 
-        this.staticObstacles.push(new StaticObstacle([[10, 10], [10, 20], [20, 20], [20, 10]], 0.5));
+        // this.staticObstacles.push(new StaticObstacle([[10, 10], [10, 20], [20, 20], [20, 10]], 0.5));
     }
 
     public update(deltaTime: number): void {
