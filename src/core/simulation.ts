@@ -2,11 +2,14 @@ import { Vector2 } from "../math/vector2.js";
 import { Projectile } from "../physics/projectile.js";
 import { Canvas } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
+import { FixedObject } from "../physics/object.js";
 
 export class Simulation extends Loop {
     private canvas: Canvas;
     
     public readonly projectiles: Projectile[] = [];
+
+    public readonly fixedObjects: FixedObject[] = [];
 
     private static _instance: Simulation;
 

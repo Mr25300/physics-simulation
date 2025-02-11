@@ -1,6 +1,7 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { Projectile } from "../physics/projectile.js";
+import { FixedObject } from "../physics/object.js";
 
 export class Canvas {
     private SCREEN_UNIT_SCALE: number = 50;
@@ -65,6 +66,24 @@ export class Canvas {
         this.context.fill();
     }
 
+    private drawFixedObject(object: FixedObject, style: string): void {
+
+        this.context.fillStyle = style;
+        this.context.strokeStyle = style;
+        this.context.lineWidth = 2;
+
+        this.context.beginPath();
+        this.context.moveTo(object.verticies[0][0], object.verticies[0][1]);
+
+        for (const point of object.verticies) {
+            if (point === object.verticies[0]) continue;
+
+            this.context.lineTo(point[0], point[1]);
+        }
+        this.context.closePath();
+        this.context.fill();
+    }
+
     public render(): void {
         this.context.clearRect(0, 0, this.width, this.height);
 
@@ -83,6 +102,10 @@ export class Canvas {
             }
 
             this.drawArrow(projectile.position, projectile.velocity, "green");
+        }
+
+        for (const fixedObject of Simulation.instance.fixedObjects) {
+            this.drawFixedObject(fixedObject, "gray");
         }
     }
 }
