@@ -12,8 +12,15 @@
  * 
  **/
 export class Graph {
-  private points: { x: number; y: number }[] = [];
+  private _points: { x: number; y: number }[] = [];
   private ctx: CanvasRenderingContext2D;
+
+  
+  public get points() : { x: number; y: number }[] {
+    return this._points;
+  }
+  
+
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -34,9 +41,9 @@ export class Graph {
 
   addPoint(x: number, y: number) {
     // Remove existing point with same x and add new point
-    this.points = this.points.filter((point) => point.x !== x);
-    this.points.push({ x, y });
-    this.points.sort((a, b) => a.x - b.x);
+    this._points = this._points.filter((point) => point.x !== x);
+    this._points.push({ x, y });
+    this._points.sort((a, b) => a.x - b.x);
     this.draw();
   }
 
@@ -100,14 +107,14 @@ export class Graph {
     ctx.fillText(this.yLabel, 0, 0);
     ctx.restore();
 
-    if (this.points.length === 0) {
+    if (this._points.length === 0) {
       ctx.restore();
       return;
     }
 
     // Calculate data bounds
-    const xs = this.points.map((p) => p.x);
-    const ys = this.points.map((p) => p.y);
+    const xs = this._points.map((p) => p.x);
+    const ys = this._points.map((p) => p.y);
     const minX = Math.min(...xs);
     const maxX = Math.max(...xs);
     const minY = Math.min(...ys);
@@ -181,7 +188,7 @@ export class Graph {
 
     // Draw connecting line
     ctx.beginPath();
-    this.points.forEach((point, index) => {
+    this._points.forEach((point, index) => {
       const x = this.mapX(point.x, effectiveMinX, effectiveMaxX, padding, cssWidth);
       const y = this.mapY(point.y, effectiveMinY, effectiveMaxY, padding, cssHeight);
       index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
@@ -192,7 +199,7 @@ export class Graph {
 
     // Draw individual points
     ctx.fillStyle = "red";
-    this.points.forEach((point) => {
+    this._points.forEach((point) => {
       const x = this.mapX(point.x, effectiveMinX, effectiveMaxX, padding, cssWidth);
       const y = this.mapY(point.y, effectiveMinY, effectiveMaxY, padding, cssHeight);
       ctx.beginPath();
