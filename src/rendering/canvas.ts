@@ -69,7 +69,7 @@ export class Canvas {
     private coordsToPixels(coords: NumberPairs): NumberPairs {
         let newCoords: NumberPairs = [];
 
-        for (const coord of coords) newCoords.push([coord[0] * this.SCREEN_UNIT_SCALE, -coord[1] * this.SCREEN_UNIT_SCALE]);
+        for (const coord of coords) newCoords.push([coord[0] * this.SCREEN_UNIT_SCALE, coord[1] * this.SCREEN_UNIT_SCALE]);
 
         return newCoords; 
     }
@@ -115,7 +115,7 @@ export class Canvas {
         }
 
         for (const staticObstacle of Simulation.instance.staticObstacles) {
-            this.drawFixedObject(staticObstacle, "black");
+            this.drawFixedObject(staticObstacle, "gray");
         }
     }
 }
