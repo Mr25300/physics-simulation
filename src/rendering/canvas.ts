@@ -24,26 +24,30 @@ export class Canvas {
         }).observe(canvas);
     }
 
-    private posToPixel(position: Vector2): Vector2 {
-        return new Vector2(this.width / 2, this.height / 2).add(this.vecToPixel(position));
+    private pointToPixel(point: Vector2): Vector2 {
+        return new Vector2(this.width / 2, this.height / 2).add(this.vecToPixel(point));
     }
 
     private vecToPixel(vector: Vector2): Vector2 {
         return new Vector2(vector.x * this.SCREEN_UNIT_SCALE, -vector.y * this.SCREEN_UNIT_SCALE);
     }
 
-    private drawArrow(origin: Vector2, vector: Vector2): void {
-        const pixelOrigin: Vector2 = this.posToPixel(origin);
-        const pixelEnd: Vector2 = this.posToPixel(origin.add(vector));
+    private drawArrow(origin: Vector2, vector: Vector2, style: string): void {
+        const pixelOrigin: Vector2 = this.pointToPixel(origin);
+        const pixelEnd: Vector2 = this.pointToPixel(origin.add(vector));
         const pixelDir: Vector2 = this.vecToPixel(vector).unit();
+
+        const corner1: Vector2 = pixelEnd.subtract(pixelDir.rotate(-30 * Math.PI / 180).multiply(Math.cos(30 * Math.PI / 180) * 20));
+        const corner2: Vector2 = pixelEnd.subtract(pixelDir.rotate(30 * Math.PI / 180).multiply(Math.cos(30 * Math.PI / 180) * 20));
+
+        this.context.fillStyle = style;
+        this.context.strokeStyle = style;
+        this.context.lineWidth = 3;
 
         this.context.beginPath();
         this.context.moveTo(pixelOrigin.x, pixelOrigin.y);
         this.context.lineTo(pixelEnd.x, pixelEnd.y);
         this.context.stroke();
-
-        const corner1: Vector2 = pixelEnd.subtract(pixelDir.rotate(-30 * Math.PI / 180).multiply(10));
-        const corner2: Vector2 = pixelEnd.subtract(pixelDir.rotate(30 * Math.PI / 180).multiply(10));
 
         this.context.beginPath();
         this.context.moveTo(pixelEnd.x, pixelEnd.y);
@@ -58,18 +62,15 @@ export class Canvas {
         this.context.clearRect(0, 0, this.width, this.height);
 
         for (const projectile of Simulation.instance.projectiles) {
-            const screenX: number = this.width / 2 + projectile.position.x / this.SCREEN_UNIT_SCALE;
-            const screenY: number = this.height / 2 - projectile.position.y / this.SCREEN_UNIT_SCALE;
-            const screenRad: number = projectile.radius / this.SCREEN_UNIT_SCALE;
+            const screenPos = this.pointToPixel(projectile.position);
 
             this.context.fillStyle = "black";
             this.context.beginPath();
-            this.context.arc(screenX, screenY, screenRad, 0, 2 * Math.PI);
+            this.context.arc(screenPos.x, screenPos.y, projectile.radius / this.SCREEN_UNIT_SCALE, 0, 2 * Math.PI);
             this.context.fill();
         }
 
-        const vector: Vector2 = Vector2.fromAngle(30 * Math.PI / 180).multiply(2);
-
-        this.drawArrow(Vector2.zero, vector);
+        this.drawArrow(Vector2.zero, Vector2.fromAngle(30 * Math.PI / 180).multiply(2), "red");
+        this.drawArrow(Vector2.zero, Vector2.fromAngle(-45 * Math.PI / 180).multiply(3), "green");
     }
 }
