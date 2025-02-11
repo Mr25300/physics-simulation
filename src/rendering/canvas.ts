@@ -33,20 +33,24 @@ export class Canvas {
     }
 
     private drawArrow(origin: Vector2, vector: Vector2, style: string): void {
+        let arrowHeight: number = 20;
+        let arrowAngle: number = 30 * Math.PI / 180;
+
         const pixelOrigin: Vector2 = this.pointToPixel(origin);
         const pixelEnd: Vector2 = this.pointToPixel(origin.add(vector));
         const pixelDir: Vector2 = this.vecToPixel(vector).unit();
+        const lineEnd: Vector2 = pixelEnd.subtract(pixelDir.multiply(arrowHeight));
 
-        const corner1: Vector2 = pixelEnd.subtract(pixelDir.rotate(-30 * Math.PI / 180).multiply(Math.cos(30 * Math.PI / 180) * 20));
-        const corner2: Vector2 = pixelEnd.subtract(pixelDir.rotate(30 * Math.PI / 180).multiply(Math.cos(30 * Math.PI / 180) * 20));
+        const corner1: Vector2 = pixelEnd.subtract(pixelDir.rotate(-arrowAngle).multiply(arrowHeight / Math.cos(arrowAngle)));
+        const corner2: Vector2 = pixelEnd.subtract(pixelDir.rotate(arrowAngle).multiply(arrowHeight / Math.cos(arrowAngle)));
 
         this.context.fillStyle = style;
         this.context.strokeStyle = style;
-        this.context.lineWidth = 3;
+        this.context.lineWidth = 2;
 
         this.context.beginPath();
         this.context.moveTo(pixelOrigin.x, pixelOrigin.y);
-        this.context.lineTo(pixelEnd.x, pixelEnd.y);
+        this.context.lineTo(lineEnd.x, lineEnd.y);
         this.context.stroke();
 
         this.context.beginPath();
