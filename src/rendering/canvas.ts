@@ -3,7 +3,10 @@ import { Vector2 } from "../math/vector2.js";
 import { Projectile } from "../physics/projectile.js";
 
 export class Canvas {
-    private SCREEN_UNIT_SCALE: number = 100;
+    private SCREEN_UNIT_SCALE: number = 50;
+
+    private ARROW_HEIGHT: number = 20;
+    private ARROW_ANGLE: number = 30 * Math.PI / 180;
 
     private context: CanvasRenderingContext2D;
     private width: number;
@@ -33,16 +36,16 @@ export class Canvas {
     }
 
     private drawArrow(origin: Vector2, vector: Vector2, style: string): void {
-        let arrowHeight: number = 20;
-        let arrowAngle: number = 30 * Math.PI / 180;
+        vector = vector.divide(5);
 
         const pixelOrigin: Vector2 = this.pointToPixel(origin);
         const pixelEnd: Vector2 = this.pointToPixel(origin.add(vector));
         const pixelDir: Vector2 = this.vecToPixel(vector).unit();
-        const lineEnd: Vector2 = pixelEnd.subtract(pixelDir.multiply(arrowHeight));
+        const lineEnd: Vector2 = pixelEnd.subtract(pixelDir.multiply(this.ARROW_HEIGHT));
 
-        const corner1: Vector2 = pixelEnd.subtract(pixelDir.rotate(-arrowAngle).multiply(arrowHeight / Math.cos(arrowAngle)));
-        const corner2: Vector2 = pixelEnd.subtract(pixelDir.rotate(arrowAngle).multiply(arrowHeight / Math.cos(arrowAngle)));
+        const cornerDist: number = this.ARROW_HEIGHT / Math.cos(this.ARROW_ANGLE);
+        const corner1: Vector2 = pixelEnd.subtract(pixelDir.rotate(-this.ARROW_ANGLE).multiply(cornerDist));
+        const corner2: Vector2 = pixelEnd.subtract(pixelDir.rotate(this.ARROW_ANGLE).multiply(cornerDist));
 
         this.context.fillStyle = style;
         this.context.strokeStyle = style;
@@ -70,11 +73,16 @@ export class Canvas {
 
             this.context.fillStyle = "black";
             this.context.beginPath();
-            this.context.arc(screenPos.x, screenPos.y, projectile.radius / this.SCREEN_UNIT_SCALE, 0, 2 * Math.PI);
+            this.context.arc(screenPos.x, screenPos.y, projectile.radius * this.SCREEN_UNIT_SCALE, 0, 2 * Math.PI);
             this.context.fill();
         }
 
-        this.drawArrow(Vector2.zero, Vector2.fromAngle(30 * Math.PI / 180).multiply(2), "red");
-        this.drawArrow(Vector2.zero, Vector2.fromAngle(-45 * Math.PI / 180).multiply(3), "green");
+        for (const projectile of Simulation.instance.projectiles) {
+            for (const force of projectile.forces) {
+                this.drawArrow(projectile.position, force, "red");
+            }
+
+            this.drawArrow(projectile.position, projectile.velocity, "green");
+        }
     }
 }

@@ -1,8 +1,8 @@
 import { Vector2 } from "../math/vector2.js";
 
 export class Projectile {
-    private velocity: Vector2 = Vector2.zero;
-    private force: Vector2 = Vector2.zero;
+    public velocity: Vector2 = new Vector2(10, 0);
+    public forces: Vector2[] = [];
 
     constructor(
         private mass: number,
@@ -16,7 +16,16 @@ export class Projectile {
     }
 
     public update(deltaTime: number): void {
-        const accel: Vector2 = this.force.divide(this.mass);
+        this.forces.length = 0;
+        this.forces.push(new Vector2(0, -10));
+
+        let netForce = Vector2.zero;
+
+        for (const force of this.forces) {
+            netForce = netForce.add(force);
+        }
+
+        const accel: Vector2 = netForce.divide(this.mass);
 
         this.position = this.position.add(this.velocity.multiply(deltaTime)).add(accel.multiply(deltaTime ** 2 / 2));
         this.velocity = this.velocity.add(accel.multiply(deltaTime));
