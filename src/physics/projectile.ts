@@ -2,14 +2,14 @@ import { Vector2 } from "../math/vector2.js";
 import { Constants } from "./constants.js";
 
 export class Projectile {
-    public velocity: Vector2 = new Vector2(10, 0);
     public forces: Vector2[] = [];
 
     constructor(
         private mass: number,
         private elasticity: number,
         public radius: number,
-        public position: Vector2
+        public position: Vector2,
+        public velocity: Vector2
     ) {}
 
     public applyImpulse(force: Vector2): void {
