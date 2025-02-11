@@ -3,10 +3,12 @@ import { Projectile } from "../physics/projectile.js";
 import { Canvas } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { StaticObstacle } from "../physics/obstacle.js";
+import { Graph } from "../graphing/graph.js";
 
 export class Simulation extends Loop {
     private canvas: Canvas;
-    
+    private timeElapsed: number = 0;
+
     public readonly projectiles: Projectile[] = [];
 
     public readonly staticObstacles: StaticObstacle[] = [];
@@ -18,7 +20,8 @@ export class Simulation extends Loop {
 
         return this._instance;
     }
-
+    private posGraph: Graph;
+    private magGraph: Graph;
     public init(): void {
         const canvas: HTMLCanvasElement | null = document.querySelector("canvas");
         if (!canvas) throw new Error("Failed to get canvas.");
@@ -27,18 +30,39 @@ export class Simulation extends Loop {
 
         this.start();
 
-        this.projectiles.push(new Projectile(1, 1, 0.5, Vector2.zero, Vector2.zero));
+        this.projectiles.push(new Projectile(1, 1, 0.5, Vector2.zero, new Vector2(1,10)));
+       
+        const graphCanvas = document.getElementById("posGraph") as HTMLCanvasElement;
+        this.posGraph = new Graph(graphCanvas, "dx", "dy");
 
+        const magCanvas = document.getElementById("magGraph") as HTMLCanvasElement;
+        this.magGraph = new Graph(magCanvas, "t", "v");
         // this.staticObstacles.push(new StaticObstacle([[10, 10], [10, 20], [20, 20], [20, 10]], 0.5));
     }
+    private prevPosition = Vector2.zero;
+public update(deltaTime: number): void {
+    for (const projectile of this.projectiles) {
 
-    public update(deltaTime: number): void {
-        for (const projectile of this.projectiles) {
-            projectile.update(deltaTime);
-        }
+      projectile.update(deltaTime);
+        // Compute velocity
+        const velocityX = (projectile.position.x - this.prevPosition.x) / deltaTime;
+        const velocityY = (projectile.position.y - this.prevPosition.y) / deltaTime;
+        const velocity = Math.sqrt(velocityX ** 2 + velocityY ** 2); // Magnitude
 
-        this.canvas.render();
+        // Store velocity data
+        this.magGraph.addPoint(this.timeElapsed, velocity);
+        this.posGraph.addPoint(projectile.position.x, projectile.position.y);
+
+        // Update projectile
+
+        // Store current position as prevPosition for next update
+        this.prevPosition = projectile.position; 
+
     }
+
+    this.timeElapsed += deltaTime;
+    this.canvas.render();
+}
 }
 
 const sim: Simulation = Simulation.instance;

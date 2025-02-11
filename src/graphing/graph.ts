@@ -91,7 +91,7 @@ export class Graph {
     // Y-axis label
     ctx.save();
     ctx.translate(
-      padding.left - 30,
+      padding.left - 45,
       padding.top + (cssHeight - padding.top - padding.bottom) / 2
     );
     ctx.rotate(-Math.PI / 2);
