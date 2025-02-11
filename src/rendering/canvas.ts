@@ -1,7 +1,7 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { Projectile } from "../physics/projectile.js";
-import { FixedObject } from "../physics/object.js";
+import { StaticObstacle, NumberPairs } from "../physics/obstacle.js";
 
 export class Canvas {
     private SCREEN_UNIT_SCALE: number = 50;
@@ -66,17 +66,27 @@ export class Canvas {
         this.context.fill();
     }
 
-    private drawFixedObject(object: FixedObject, style: string): void {
+    private coordsToPixels(coords: NumberPairs): NumberPairs {
+        let newCoords: NumberPairs = [];
+
+        for (const coord of coords) newCoords.push([coord[0] * this.SCREEN_UNIT_SCALE, -coord[1] * this.SCREEN_UNIT_SCALE]);
+
+        return newCoords; 
+    }
+
+    private drawFixedObject(object: StaticObstacle, style: string): void {
+
+        const coords: NumberPairs = this.coordsToPixels(object.verticies);
 
         this.context.fillStyle = style;
         this.context.strokeStyle = style;
         this.context.lineWidth = 2;
 
         this.context.beginPath();
-        this.context.moveTo(object.verticies[0][0], object.verticies[0][1]);
+        this.context.moveTo(coords[0][0], coords[0][1]);
 
-        for (const point of object.verticies) {
-            if (point === object.verticies[0]) continue;
+        for (const point of coords) {
+            if (point === coords[0]) continue;
 
             this.context.lineTo(point[0], point[1]);
         }
@@ -104,8 +114,8 @@ export class Canvas {
             this.drawArrow(projectile.position, projectile.velocity, "green");
         }
 
-        for (const fixedObject of Simulation.instance.fixedObjects) {
-            this.drawFixedObject(fixedObject, "gray");
+        for (const staticObstacle of Simulation.instance.staticObstacles) {
+            this.drawFixedObject(staticObstacle, "black");
         }
     }
 }
