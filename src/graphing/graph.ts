@@ -20,23 +20,27 @@ export class Graph {
     return this._points;
   }
   
+  public get canvas(): HTMLCanvasElement {
+    return this._canvas;
+  }
 
 
   constructor(
-    private canvas: HTMLCanvasElement,
+    private _canvas: HTMLCanvasElement,
     private xLabel: string,
     private yLabel: string
   ) {
-    const ctx = canvas.getContext("2d");
+    const ctx = _canvas.getContext("2d");
     if (!ctx) throw new Error("Could not get canvas context");
     this.ctx = ctx;
 
     // Handle high DPI scaling
     const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    const rect = _canvas.getBoundingClientRect();
+    _canvas.width = rect.width * dpr;
+    _canvas.height = rect.height * dpr;
     this.ctx.scale(dpr, dpr);
+    this.reset();
   }
 
   reset() {
@@ -54,7 +58,7 @@ export class Graph {
 
   private draw() {
     const ctx = this.ctx;
-    const canvas = this.canvas;
+    const canvas = this._canvas;
     const dpr = window.devicePixelRatio || 1;
 
     // Get dimensions in CSS pixels
@@ -246,7 +250,7 @@ export class Graph {
 
   private generateTicks(min: number, max: number): number[] {
     const range = max - min;
-    const tickCount = 5;
+    const tickCount = 8;
     const roughStep = range / (tickCount - 1);
     const step = this.niceNumber(roughStep);
     const firstTick = Math.ceil(min / step) * step;

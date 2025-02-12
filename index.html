@@ -1,16 +1,19 @@
 <html>
   <head>
     <link rel="stylesheet" href="style.css">
+    <style>
+    #graphingDiv canvas {
+    width: 600px;
+    height: 400px;
+    }
+    </style>
   </head>
 
   <body>
     <canvas style="width: 1200px; height: 800px; outline: black 3px solid;"></canvas>
-    <canvas id="posGraph" style="width: 600px; height: 400px;"></canvas>
-    <canvas id="magGraph" style="width: 600px; height: 400px;"></canvas>
-    <canvas id="accGraph" style="width: 600px; height: 400px;"></canvas>
+    <div id="graphingDiv">
 
-    <script>
-    </script>
+    </div>
 
     <script type="module" src="dist/core/simulation.js"></script>
     <script type="module" src="dist/graphing/graph.js"></script>
