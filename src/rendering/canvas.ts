@@ -1,7 +1,6 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
-import { Projectile } from "../physics/projectile.js";
-import { StaticObstacle, NumberPairs } from "../physics/obstacle.js";
+import { Projectile } from "../objects/projectile.js";
 
 export class Canvas {
     private SCREEN_UNIT_SCALE: number = 50;
@@ -28,20 +27,20 @@ export class Canvas {
         }).observe(canvas);
     }
 
-    private pointToPixel(point: Vector2): Vector2 {
-        return new Vector2(this.width / 2, this.height / 2).add(this.vecToPixel(point));
+    private pointToPixels(point: Vector2): Vector2 {
+        return new Vector2(this.width / 2, this.height / 2).add(this.vecToPixels(point));
     }
 
-    private vecToPixel(vector: Vector2): Vector2 {
+    private vecToPixels(vector: Vector2): Vector2 {
         return new Vector2(vector.x * this.SCREEN_UNIT_SCALE, -vector.y * this.SCREEN_UNIT_SCALE);
     }
 
     private drawArrow(origin: Vector2, vector: Vector2, style: string): void {
         vector = vector.divide(5);
 
-        const pixelOrigin: Vector2 = this.pointToPixel(origin);
-        const pixelEnd: Vector2 = this.pointToPixel(origin.add(vector));
-        const pixelDir: Vector2 = this.vecToPixel(vector).unit();
+        const pixelOrigin: Vector2 = this.pointToPixels(origin);
+        const pixelEnd: Vector2 = this.pointToPixels(origin.add(vector));
+        const pixelDir: Vector2 = this.vecToPixels(vector).unit;
         const lineEnd: Vector2 = pixelEnd.subtract(pixelDir.multiply(this.ARROW_HEIGHT));
 
         const cornerDist: number = this.ARROW_HEIGHT / Math.cos(this.ARROW_ANGLE);
@@ -66,39 +65,33 @@ export class Canvas {
         this.context.fill();
     }
 
-    private coordsToPixels(coords: NumberPairs): NumberPairs {
-        let newCoords: NumberPairs = [];
-
-        for (const coord of coords) newCoords.push([coord[0] * this.SCREEN_UNIT_SCALE, coord[1] * this.SCREEN_UNIT_SCALE]);
-
-        return newCoords; 
-    }
-
-    private drawFixedObject(object: StaticObstacle, style: string): void {
-
-        const coords: NumberPairs = this.coordsToPixels(object.verticies);
-
-        this.context.fillStyle = style;
-        this.context.strokeStyle = style;
-        this.context.lineWidth = 2;
-
-        this.context.beginPath();
-        this.context.moveTo(coords[0][0], coords[0][1]);
-
-        for (const point of coords) {
-            if (point === coords[0]) continue;
-
-            this.context.lineTo(point[0], point[1]);
-        }
-        this.context.closePath();
-        this.context.fill();
-    }
-
     public render(): void {
         this.context.clearRect(0, 0, this.width, this.height);
 
+        for (const obstacle of Simulation.instance.obstacles) {
+            const screenVertices: Vector2[] = [];
+
+            for (const vertex of obstacle.vertices) {
+                screenVertices.push(this.pointToPixels(vertex));
+            }
+            
+            this.context.fillStyle = "black";
+            this.context.beginPath();
+            this.context.moveTo(screenVertices[0].x, screenVertices[0].y);
+
+            for (let i = 0; i < screenVertices.length; i++) {
+                const vertex: Vector2 = screenVertices[(i + 1) % screenVertices.length];
+
+                this.context.lineTo(vertex.x, vertex.y);
+            }
+
+            this.context.closePath();
+            this.context.stroke();
+            this.context.fill();
+        }
+
         for (const projectile of Simulation.instance.projectiles) {
-            const screenPos = this.pointToPixel(projectile.position);
+            const screenPos = this.pointToPixels(projectile.position);
 
             this.context.fillStyle = "black";
             this.context.beginPath();
@@ -111,11 +104,7 @@ export class Canvas {
                 this.drawArrow(projectile.position, force, "red");
             }
 
-            this.drawArrow(projectile.position, projectile.velocity, "green");
-        }
-
-        for (const staticObstacle of Simulation.instance.staticObstacles) {
-            this.drawFixedObject(staticObstacle, "gray");
+            this.drawArrow(projectile.position, projectile._velocity, "green");
         }
     }
 }

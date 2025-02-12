@@ -4,7 +4,8 @@ export abstract class Loop {
     private _elapsedTime: number = 0;
     private _fps: number;
 
-    protected start(): void {
+    public start(): void {
+        if (this._running) return;
         this._running = true;
 
         requestAnimationFrame((timestamp: number) => {
@@ -40,7 +41,8 @@ export abstract class Loop {
         return this._fps;
     }
 
-    protected stop(): void {
+    public stop(): void {
+        if (!this._running) return;
         this._running = false;
 
         delete this.lastTime;

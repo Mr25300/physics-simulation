@@ -1,10 +1,11 @@
 export class Vector2 {
     private _magnitude?: number;
     private _unit?: Vector2;
+    private _angle?: number;
 
     constructor(
-        public x: number = 0,
-        public y: number = 0
+        public readonly x: number = 0,
+        public readonly y: number = 0
     ) {}
 
     public static readonly zero: Vector2 = new Vector2();
@@ -38,20 +39,18 @@ export class Vector2 {
         return this._magnitude;
     }
 
-    public distance(vector: Vector2): number {
-        return this.subtract(vector).magnitude;
-    }
-
-    public unit(): Vector2 {
+    public get unit(): Vector2 {
         if (!this._unit) {
-            this._unit = this.magnitude == 0 ? new Vector2() : this.divide(this.magnitude);
+            this._unit = this.magnitude == 0 ? Vector2.zero : this.divide(this.magnitude);
         }
 
         return this._unit;
     }
 
-    public angle(): number {
-        return Math.atan2(this.y, this.x);
+    public get angle(): number {
+        if (!this._angle) this._angle = Math.atan2(this.y, this.x);
+
+        return this._angle;
     }
 
     public dot(vector: Vector2): number {

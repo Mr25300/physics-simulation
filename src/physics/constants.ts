@@ -6,7 +6,7 @@
 export class Constants {
   static readonly SPEED_OF_LIGHT: number = 3.00e8; // m/s
   static readonly GRAVITATIONAL_CONSTANT: number = 6.674e-11; // N·m²/kg²
-  static readonly ACCELERATION_DUE_TO_GRAVITY: number = -9.81; // m/s²
+  static readonly ACCELERATION_DUE_TO_GRAVITY: number = 9.81; // m/s²
   static readonly PLANCK_CONSTANT: number = 6.626e-34; // J·s
   static readonly ELEMENTARY_CHARGE: number = 1.602e-19; // C
   static readonly PERMITTIVITY_OF_FREE_SPACE: number = 8.85e-12; // C²/N·m²
