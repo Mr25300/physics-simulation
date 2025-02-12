@@ -17,7 +17,9 @@ export class GraphHandler {
    * Initializes the graphs and projectile in preperation for graphing
   **/
   public activateProjectile(projectile: Projectile): void {
+    // Add the projectile
     this._activeProjectiles.push({Projectile: projectile, graph: []});
+    // Create the divs  
     const graphDiv: HTMLDivElement = document.getElementById("graphingDiv") as HTMLDivElement;
     const vtCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
     const atCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
@@ -25,6 +27,7 @@ export class GraphHandler {
     graphDiv.appendChild(vtCanvas);
     graphDiv.appendChild(atCanvas);
     graphDiv.appendChild(dtCanvas);
+    // Create the graphs from the elements
     let graph: Graph = new Graph(vtCanvas, "t", "v");
     this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
     graph = new Graph(atCanvas, "t", "a");
@@ -53,6 +56,10 @@ export class GraphHandler {
    * @requires `projectileIndex`: The nth projectile
   **/
   public deactivateProjectile(projectileIndex: number): void {
-    delete this._activeProjectiles[projectileIndex];
+    // Go through each graph in the projectile and remove it from the dom, then delete the entry
+    for(let i = 0; i < this.GRAPH_COUNT; i++) {
+      this._activeProjectiles[projectileIndex].graph[i].canvas.remove();
+    }
+    this._activeProjectiles.splice(projectileIndex, 1);
   }
 }
