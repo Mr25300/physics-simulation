@@ -48,9 +48,7 @@ public update(deltaTime: number): void {
         for (const projectile of this.projectiles) {
             // Check if we need to rewind
             if (this.timeElapsed >= 3) {
-        projectile.applyForce(new Vector2(0, Constants.ACCELERATION_DUE_TO_GRAVITY));
-        projectile.update(-3);  // Rewind the simulation state
-                this.timeElapsed = 0;
+                deltaTime = -3;
                 
                 this.prevPosition = projectile.position; 
                 // Clear graphs if needed to avoid mixing old and new data
@@ -61,6 +59,7 @@ public update(deltaTime: number): void {
                 this.justRewound = true;
             }
 
+            projectile.clearForces();
             projectile.applyForce(new Vector2(0, Constants.ACCELERATION_DUE_TO_GRAVITY));
             
             // Update the projectile (forward update)

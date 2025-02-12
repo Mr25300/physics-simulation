@@ -1,5 +1,4 @@
 import { Vector2 } from "../math/vector2.js";
-import { Constants } from "./constants.js";
 
 export class Projectile {
     public acceleration: Vector2 = Vector2.zero;
@@ -12,6 +11,10 @@ export class Projectile {
         public position: Vector2,
         public velocity: Vector2
     ) {}
+
+    public clearForces(): void {
+        this.forces.length = 0;
+    }
 
     public applyForce(force: Vector2): void {
         this.forces.push(force);
@@ -27,8 +30,6 @@ export class Projectile {
         for (const force of this.forces) {
             netForce = netForce.add(force);
         }
-
-        this.forces.length = 0;
 
         this.acceleration = netForce.divide(this.mass);
         this.position = this.position.add(this.velocity.multiply(deltaTime)).add(this.acceleration.multiply(deltaTime ** 2 / 2));
