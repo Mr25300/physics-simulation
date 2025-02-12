@@ -60,14 +60,14 @@ export class Util {
         const q: number = e - (b * c) / 2 + (b * b * b) / 8;
         const r: number = e - (b * d) / 4 + (b * b * c) / 16 - (3 * b ** 4) / 256;
 
-        const cubicRoots = this.solveCubic(1, 2 * p, p * p - 4 * r, -q * q);
+        const cubicRoots: number[] = this.solveCubic(1, -p / 2, -r, (p * r - q * q / 4) / 2);
         if (cubicRoots.length === 0) return [];
 
-        const y: number = cubicRoots[0];
-        const w: number = Math.sqrt(2 * y + p);
+        const y: number = cubicRoots.find(root => root >= 0) ?? cubicRoots[0];
+        const w: number = Math.sqrt(y);
 
-        const quad1: number[] = this.solveQuadratic(1, w, y + q / w);
-        const quad2: number[] = this.solveQuadratic(1, -w, y - q / w);
+        const quad1: number[] = this.solveQuadratic(1, w, y - q / (2 * w));
+        const quad2: number[] = this.solveQuadratic(1, -w, y + q / (2 * w));
 
         return [...quad1, ...quad2].map(t => t - b / 4);
     }
