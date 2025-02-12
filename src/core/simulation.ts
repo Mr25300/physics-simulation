@@ -13,6 +13,9 @@ export class Simulation extends Loop {
 
     public readonly staticObstacles: StaticObstacle[] = [];
 
+    // Track if we have just rewound
+    private justRewound: boolean = false;
+
     private static _instance: Simulation;
 
     public static get instance(): Simulation {
@@ -41,28 +44,56 @@ export class Simulation extends Loop {
     }
     private prevPosition = Vector2.zero;
 public update(deltaTime: number): void {
-    for (const projectile of this.projectiles) {
+        for (const projectile of this.projectiles) {
+            // Check if we need to rewind
+            if (this.timeElapsed >= 3) {
+                projectile.update(-3);  // Rewind the simulation state
+                this.timeElapsed = 0;
+                
+                this.prevPosition = projectile.position; 
+                // Clear graphs if needed to avoid mixing old and new data
+                this.magGraph.reset();
+                this.posGraph.reset();
+                
+                // Set the flag to indicate that we've just rewound
+                this.justRewound = true;
+            }
+            
+            // Update the projectile (forward update)
+            projectile.update(deltaTime);
 
-      projectile.update(deltaTime);
-        // Compute velocity
-        const velocityX = (projectile.position.x - this.prevPosition.x) / deltaTime;
-        const velocityY = (projectile.position.y - this.prevPosition.y) / deltaTime;
-        const velocity = Math.sqrt(velocityX ** 2 + velocityY ** 2); // Magnitude
+            // If we just rewound, skip computing the derivative this frame.
+            if (this.justRewound) {
+                // Update the graphs with the current position,
+                // but don't compute a derivative from a stale previous value.
+                this.posGraph.addPoint(projectile.position.x, projectile.position.y);
+                
+                // Optionally, you could add a zero derivative point or skip it entirely.
+                // For example:
+                // this.magGraph.addPoint(this.timeElapsed, 0);
+                
+                // Clear the flag so that derivative calculations resume on the next frame.
+                this.justRewound = false;
+            } else {
+                        console.log(this.magGraph.points);
 
-        // Store velocity data
-        this.magGraph.addPoint(this.timeElapsed, velocity);
-        this.posGraph.addPoint(projectile.position.x, projectile.position.y);
+                // Compute the derivative (instantaneous velocity)
+                const velocityX = (projectile.position.x - this.prevPosition.x) / deltaTime;
+                const velocityY = (projectile.position.y - this.prevPosition.y) / deltaTime;
+                const velocity = Math.sqrt(velocityX ** 2 + velocityY ** 2);
 
-        // Update projectile
+                // Store the computed values in the graphs
+                this.magGraph.addPoint(this.timeElapsed, velocity);
+                this.posGraph.addPoint(projectile.position.x, projectile.position.y);
 
-        // Store current position as prevPosition for next update
-        this.prevPosition = projectile.position; 
+                // Update the derivative baseline for the next frame
+                this.prevPosition = projectile.position;
+            }
+        }
 
+        this.timeElapsed += deltaTime;
+        this.canvas.render();
     }
-
-    this.timeElapsed += deltaTime;
-    this.canvas.render();
-}
 }
 
 const sim: Simulation = Simulation.instance;

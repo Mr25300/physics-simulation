@@ -39,6 +39,11 @@ export class Graph {
     this.ctx.scale(dpr, dpr);
   }
 
+  reset() {
+    this._points = [];
+    this.draw();
+  }
+  
   addPoint(x: number, y: number) {
     // Remove existing point with same x and add new point
     this._points = this._points.filter((point) => point.x !== x);
