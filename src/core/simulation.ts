@@ -4,6 +4,7 @@ import { Canvas } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { StaticObstacle } from "../physics/obstacle.js";
 import { Graph } from "../graphing/graph.js";
+import { Constants } from "../physics/constants.js";
 
 export class Simulation extends Loop {
     private canvas: Canvas;
@@ -58,6 +59,8 @@ public update(deltaTime: number): void {
                 // Set the flag to indicate that we've just rewound
                 this.justRewound = true;
             }
+
+            projectile.applyForce(new Vector2(0, Constants.ACCELERATION_DUE_TO_GRAVITY));
             
             // Update the projectile (forward update)
             projectile.update(deltaTime);
