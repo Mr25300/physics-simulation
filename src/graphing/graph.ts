@@ -37,6 +37,7 @@ export class Graph {
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     this.ctx.scale(dpr, dpr);
+    this.reset();
   }
 
   reset() {

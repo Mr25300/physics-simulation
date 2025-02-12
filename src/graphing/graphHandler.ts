@@ -3,13 +3,13 @@ import { Projectile } from "../objects/projectile.js";
 
 export class GraphHandler {
   private readonly GRAPH_COUNT: number = 3;
-  private _activeProjectiles: [{Projectile: Projectile, graph: Graph[]}];
+  private _activeProjectiles: {Projectile: Projectile, graph: Graph[]}[] = [];
 
   /** 
    * @returns Every projectile and it's graph
    * We can uuse this to display the active pronectiles in the gui
   **/
-  public get activeProjectiles(): [{Projectile: Projectile, graph: Graph[]}] {
+  public get activeProjectiles(): {Projectile: Projectile, graph: Graph[]}[] {
     return this._activeProjectiles;
   }
 
@@ -17,9 +17,20 @@ export class GraphHandler {
    * Initializes the graphs and projectile in preperation for graphing
   **/
   public activateProjectile(projectile: Projectile): void {
-    // Create the html canvas elemments
-    // Use those to create their graphs
-    // Add all of it to the array
+    this._activeProjectiles.push({Projectile: projectile, graph: []});
+    const graphDiv: HTMLDivElement = document.getElementById("graphingDiv") as HTMLDivElement;
+    const vtCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    const atCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    const dtCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    graphDiv.appendChild(vtCanvas);
+    graphDiv.appendChild(atCanvas);
+    graphDiv.appendChild(dtCanvas);
+    let graph: Graph = new Graph(vtCanvas, "t", "v");
+    this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
+    graph = new Graph(atCanvas, "t", "a");
+    this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
+    graph = new Graph(dtCanvas, "t", "dy");
+    this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
   }
 
   /** 
@@ -30,12 +41,9 @@ export class GraphHandler {
   public updateAllGraphs(time: number): void {
     for (let i = 0; i < this._activeProjectiles.length; i++) {
       // Update all the graphs with new points
-      for (let j = 0; j < this.GRAPH_COUNT; j++) {
-        // Right now we have v t, a t, dy t; It is trivial to add more if the properties are exposed in projectiles. We could add G force or something
-        this._activeProjectiles[i].graph[j].addPoint(time, this._activeProjectiles[i].Projectile.position.y);
-        this._activeProjectiles[i].graph[j].addPoint(time, this._activeProjectiles[i].Projectile.velocity.magnitude);
-        this._activeProjectiles[i].graph[j].addPoint(time, this._activeProjectiles[i].Projectile.acceleration.magnitude);
-      }
+        this._activeProjectiles[i].graph[0].addPoint(time, this._activeProjectiles[i].Projectile.velocity.magnitude);
+        this._activeProjectiles[i].graph[1].addPoint(time, this._activeProjectiles[i].Projectile.acceleration.magnitude);
+        this._activeProjectiles[i].graph[2].addPoint(time, this._activeProjectiles[i].Projectile.position.y);
     }
   }
 
