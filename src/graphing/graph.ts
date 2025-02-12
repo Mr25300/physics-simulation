@@ -246,7 +246,7 @@ export class Graph {
 
   private generateTicks(min: number, max: number): number[] {
     const range = max - min;
-    const tickCount = 5;
+    const tickCount = 8;
     const roughStep = range / (tickCount - 1);
     const step = this.niceNumber(roughStep);
     const firstTick = Math.ceil(min / step) * step;
