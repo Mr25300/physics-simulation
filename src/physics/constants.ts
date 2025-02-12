@@ -22,4 +22,6 @@ export class Constants {
   static readonly STEFAN_BOLTZMANN_CONSTANT: number = 5.67e-8; // W/m²·K⁴
   static readonly WIEN_DISPLACEMENT_CONSTANT: number = 2.898e-3; // m·K
   static readonly FINE_STRUCTURE_CONSTANT: number = 1 / 137;
+  static readonly DRAG_COEFFICIENT = 0.47;  // Approximate for a sphere
+  static readonly AIR_DENSITY = 1.225;      // kg/m³ 
 }

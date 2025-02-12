@@ -3,8 +3,8 @@ export class Vector2 {
     private _unit?: Vector2;
 
     constructor(
-        public readonly x: number = 0,
-        public readonly y: number = 0
+        public x: number = 0,
+        public y: number = 0
     ) {}
 
     public static readonly zero: Vector2 = new Vector2();
