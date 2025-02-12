@@ -50,25 +50,62 @@ export class Util {
 
     public static solveQuartic(a: number, b: number, c: number, d: number, e: number): number[] {
         if (a === 0) return this.solveCubic(b, c, d, e);
+        if (c === 0) return [0, ...this.solveCubic(a, b, c, d)]; // Factor out t making one of the solutions to t zero
+
+        if (b === 0 && d === 0) { // Takes the form of a quadratic ax^2 + bx + c where x = t^2
+            const roots: number[] = [];
+
+            for (const root of this.solveQuadratic(a, c, e)) {
+                const sqrt: number = Math.sqrt(root);
+
+                roots.push(sqrt, -sqrt);
+            }
+
+            return roots;
+        }
 
         b /= a;
         c /= a;
         d /= a;
         e /= a;
 
-        const p: number = c - (3 * b * b) / 8;
-        const q: number = e - (b * c) / 2 + (b * b * b) / 8;
-        const r: number = e - (b * d) / 4 + (b * b * c) / 16 - (3 * b ** 4) / 256;
+        const disc: number = 256*a**3*e**3 - 192*a**2*b*d*e**2 - 128*a**2*c**2*e**2 +
+        144*a**2*c*d**2*e - 27*a**2*d**4 + 144*a*b**2*c*e**2 - 6*a*b**2*d**2*e - 80*a*b*c**2*d*e +
+        18*a*b*c*d**3 + 16*a*c**4*e - 4*a*c**3*d**2 - 27*b**4*e**2 + 18*b**3*c*d*e - 4*b**3*d**3 -
+        4*b**2*c**3*e + b**2*c**2*d**2;
 
-        const cubicRoots: number[] = this.solveCubic(1, -p / 2, -r, (p * r - q * q / 4) / 2);
-        if (cubicRoots.length === 0) return [];
+        const disc0: number = c ** 2 - 3 * b * d + 12 * a * e;
+        const disc1: number = 2 * c ** 3 - 9 * b * c * d + 27 * b ** 2 * e + 27 * a * d ** 2 - 72 * a * c * e;
+        
+        const p: number = (8 * a * c - 3 * b ** 2) / (8 * a ** 2);
+        const q: number = (b ** 3 - 4 * a * b * c + 8 * a ** 2 * d) / (8 * a ** 3);
 
-        const y: number = cubicRoots.find(root => root >= 0) ?? cubicRoots[0];
-        const w: number = Math.sqrt(y);
+        const Q: number = Math.cbrt((disc1 + Math.sqrt(-27 * disc)) / 2);
+        let S: number;
 
-        const quad1: number[] = this.solveQuadratic(1, w, y - q / (2 * w));
-        const quad2: number[] = this.solveQuadratic(1, -w, y + q / (2 * w));
+        if (disc > 0) {
+            const disc21: number = disc1 ** 2;
+            const disc30: number = (27 * disc + disc21) / 4;
 
-        return [...quad1, ...quad2].map(t => t - b / 4);
+            const P: number = Math.acos(disc1 / (2 * Math.sqrt(disc30)));
+
+            S = Math.sqrt(-2 / 3 * p + 2 / (3 * a) * Math.sqrt(disc0) * Math.cos(P / 3));
+
+        } else {
+            S = Math.sqrt(-2 / 3 * p + 1 / (3 * a) * (Q + disc0 / Q));
+        }
+
+        const sqrtDisc: number = Math.sqrt(-4 * S ** 2 - 2 * p + q / S) / 2;
+
+        console.log(disc, disc0, disc1, p, q, Q, S, sqrtDisc);
+
+        const roots: number[] = [
+            -b / (4 * a) - S + sqrtDisc,
+            -b / (4 * a) - S - sqrtDisc,
+            -b / (4 * a) + S + sqrtDisc,
+            -b / (4 * a) + S - sqrtDisc,
+        ];
+
+        return roots;//.filter(root => !isNaN(root));
     }
 }

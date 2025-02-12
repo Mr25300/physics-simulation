@@ -1,4 +1,3 @@
-import { Simulation } from "../core/simulation.js";
 import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
 import { Projectile } from "./projectile.js";
@@ -69,9 +68,7 @@ export class Obstacle {
             let t: number | undefined;
             if (times.length > 0) t = times.length === 1 ? times[0] : Math.max(times[0], times[1]);
 
-            console.log(t);
-
-            console.log(Util.solveQuartic(1, -4, -1, 16, -12));
+            // console.log(t);
 
             if (t && t <= 0) {
                 const collisionX: number = relativePos.x + relativeVel.x * t + relativeAccel.x * (t ** 2) / 2;
