@@ -16,10 +16,10 @@ export class Obstacle {
 
     private determineBestTime(times: number[]): number | undefined {
         let foundTime: boolean = false;
-        let bestTime: number = Infinity;
+        let bestTime: number = -Infinity;
 
         for (const time of times) {
-            if (time >= 0 && time < bestTime) {
+            if (time <= 1e-8 && time > bestTime) {
                 foundTime = true;
                 bestTime = time;
             }
@@ -28,7 +28,7 @@ export class Obstacle {
         if (foundTime) return bestTime;
     }
 
-    public getVertexCollisionTime(projectile: Projectile, vertex: Vector2): number | undefined {
+    public getVertexCollisionTime(projectile: Projectile, vertex: Vector2, timeThreshold: number): number | undefined {
         const relativePos: Vector2 = projectile.position.subtract(vertex);
         const vel: Vector2 = projectile.velocity;
         const accel: Vector2 = projectile.acceleration;
@@ -40,17 +40,17 @@ export class Obstacle {
         // d: 2(pxvx + pyvy)
         // e: px^2 + py^2 - r^2
         const times: number[] = Util.solveQuartic(
-            (accel.x ** 2 + accel.y ** 2) / 4,
-            vel.x * accel.x + vel.y * accel.y,
-            relativePos.x * accel.x + vel.x ** 2 + relativePos.y * accel.y + vel.y ** 2,
-            2 * (relativePos.x * vel.x + relativePos.y * vel.y),
-            relativePos.x ** 2 + relativePos.y ** 2 - projectile.radius ** 2
+            (accel.x ** 2 + accel.y ** 2) / 4, // A
+            vel.x * accel.x + vel.y * accel.y, // B
+            relativePos.x * accel.x + vel.x ** 2 + relativePos.y * accel.y + vel.y ** 2, // C
+            2 * (relativePos.x * vel.x + relativePos.y * vel.y), // D
+            relativePos.x ** 2 + relativePos.y ** 2 - projectile.radius ** 2 // E
         );
 
         return this.determineBestTime(times);
     }
 
-    public getCollisionTime(projectile: Projectile): number | undefined { // Get normal too
+    public getCollisionTime(projectile: Projectile, timeThreshold: number): number | undefined { // Get normal too
         let collision: boolean = false;
         let time: number = -Infinity;
 
@@ -76,20 +76,20 @@ export class Obstacle {
 
             let t: number | undefined = this.determineBestTime(times);
 
-            if (t !== undefined && t >= 0) {
+            if (t !== undefined) {
                 const collisionX: number = relativePos.x + relativeVel.x * t + relativeAccel.x * (t ** 2) / 2;
 
                 if (collisionX < 0) {
-                    t = this.getVertexCollisionTime(projectile, v1);
+                    t = this.getVertexCollisionTime(projectile, v1, timeThreshold);
 
                 } else if (collisionX > lineDir.magnitude) {
-                    t = this.getVertexCollisionTime(projectile, v2);
+                    t = this.getVertexCollisionTime(projectile, v2, timeThreshold);
                 }
+            }
 
-                if (t !== undefined && t > time) {
-                    collision = true;
-                    time = t;
-                }
+            if (t !== undefined && t > time && t + timeThreshold >= 1e-8) {
+                collision = true;
+                time = t;
             }
         }
 

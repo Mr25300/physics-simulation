@@ -22,7 +22,7 @@ export abstract class Loop {
         this._elapsedTime += deltaTime;
         this._fps = 1 / deltaTime;
 
-        this.update(deltaTime);
+        this.update(2 * deltaTime);
 
         requestAnimationFrame((timestamp: number) => {
             this.loop(timestamp);

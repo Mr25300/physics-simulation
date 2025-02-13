@@ -5,7 +5,6 @@ import { Loop } from "./loop.js";
 import { Graph } from "../graphing/graph.js";
 import { Constants } from "../physics/constants.js";
 import { Obstacle } from "../objects/obstacle.js";
-import { Util } from "../math/util.js";
 
 export class Simulation extends Loop {
     private canvas: Canvas;
@@ -32,7 +31,7 @@ export class Simulation extends Loop {
         this.canvas = new Canvas(canvas);
 
         this.projectiles.push(new Projectile(1, 1, 0.5, Vector2.zero));
-        this.obstacles.push(new Obstacle(Vector2.zero, [new Vector2(-2, -2), new Vector2(-0.3, -2)], 1));
+        this.obstacles.push(new Obstacle(Vector2.zero, [new Vector2(-2, -2), new Vector2(2, -2)], 1));
 
         this.start();
 
