@@ -101,7 +101,7 @@ export class Canvas {
 
         for (const projectile of Simulation.instance.projectiles) {
             for (const force of projectile.forces) {
-                this.drawArrow(projectile.position, force, "red");
+                this.drawArrow(projectile.position, force.force, Projectile.VECTOR_COLORS[force.colorIndex]);
             }
 
             this.drawArrow(projectile.position, projectile._velocity, "green");

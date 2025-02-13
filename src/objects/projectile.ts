@@ -2,8 +2,26 @@ import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { Constants } from "../physics/constants.js";
 
+export type ForceApplication = {
+    force: Vector2;
+    colorIndex: number;
+};
+
 export class Projectile {
-    public forces: Vector2[] = [];
+  public static readonly VECTOR_COLORS: Record<number, string> = {
+        0: "#FF5733", // Bright Red
+        1: "#3498DB", // Vivid Blue
+        2: "#2ECC71", // Bright Green
+        3: "#F1C40F", // Vibrant Yellow
+        4: "#9B59B6", // Deep Purple
+        5: "#1ABC9C", // Teal
+        6: "#E67E22", // Warm Orange
+        7: "#8E44AD", // Rich Violet
+        8: "#34495E", // Dark Gray-Blue
+        9: "#2C3E50"  // Deep Navy
+    };
+    public forces: ForceApplication[] = [];
+    
 
     public _acceleration: Vector2 = Vector2.zero;
     public _velocity: Vector2 = Vector2.zero;
@@ -31,8 +49,8 @@ export class Projectile {
         this.forces.length = 0;
     }
 
-    public applyForce(force: Vector2): void {
-        this.forces.push(force);
+   public applyForce(force: Vector2, colorIndex: number = 0): void {
+        this.forces.push({ force, colorIndex });
     }
 
     public applyImpulse(force: Vector2): void {
@@ -50,7 +68,7 @@ export class Projectile {
         let netForce = Vector2.zero;
 
         for (const force of this.forces) {
-            netForce = netForce.add(force);
+            netForce = netForce.add(force.force);
         }
 
         this._acceleration = netForce.divide(this.mass);

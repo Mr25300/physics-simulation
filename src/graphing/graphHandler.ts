@@ -2,7 +2,7 @@ import { Graph } from "../graphing/graph.js";
 import { Projectile } from "../objects/projectile.js";
 
 export class GraphHandler {
-  private readonly GRAPH_COUNT: number = 3;
+  private readonly GRAPH_COUNT: number = 4;
   private _activeProjectiles: {Projectile: Projectile, graph: Graph[]}[] = [];
 
   /** 
@@ -24,15 +24,19 @@ export class GraphHandler {
     const vtCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
     const atCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
     const dtCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    const vytCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
     graphDiv.appendChild(vtCanvas);
     graphDiv.appendChild(atCanvas);
     graphDiv.appendChild(dtCanvas);
+    graphDiv.appendChild(vytCanvas);
     // Create the graphs from the elements
     let graph: Graph = new Graph(vtCanvas, "t", "v");
     this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
     graph = new Graph(atCanvas, "t", "a");
     this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
     graph = new Graph(dtCanvas, "t", "dy");
+    this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
+    graph = new Graph(vytCanvas, "t", "vy");
     this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
   }
 
@@ -47,6 +51,7 @@ export class GraphHandler {
         this._activeProjectiles[i].graph[0].addPoint(time, this._activeProjectiles[i].Projectile.velocity.magnitude);
         this._activeProjectiles[i].graph[1].addPoint(time, this._activeProjectiles[i].Projectile.acceleration.magnitude);
         this._activeProjectiles[i].graph[2].addPoint(time, this._activeProjectiles[i].Projectile.position.y);
+        this._activeProjectiles[i].graph[3].addPoint(time, this._activeProjectiles[i].Projectile.velocity.y);
     }
   }
 
