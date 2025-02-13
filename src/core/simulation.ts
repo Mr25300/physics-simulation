@@ -32,11 +32,9 @@ export class Simulation extends Loop {
         this.canvas = new Canvas(canvas);
 
         this.projectiles.push(new Projectile(1, 1, 0.5, Vector2.zero));
-        this.obstacles.push(new Obstacle(Vector2.zero, [new Vector2(-2, -2), new Vector2(2, -2)], 1));
+        this.obstacles.push(new Obstacle(Vector2.zero, [new Vector2(-2, -2), new Vector2(-0.3, -2)], 1));
 
         this.start();
-
-        console.log(Util.solveQuartic(1, -3, -3, 7, 6));
 
         // const graphCanvas = document.getElementById("posGraph") as HTMLCanvasElement;
         // this.posGraph = new Graph(graphCanvas, "t", "dy");

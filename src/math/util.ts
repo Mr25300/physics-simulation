@@ -1,3 +1,5 @@
+type Function = (x: number) => number;
+
 export class Util {
     public static solveQuadratic(a: number, b: number, c: number): number[] {
         const discriminant: number = b * b - 4 * a * c;
@@ -25,7 +27,7 @@ export class Util {
 
         if (discriminant > 0) {
             const sqrtDisc: number = Math.sqrt(discriminant);
-            const u = Math.cbrt(-q / 2 + sqrtDisc);
+            const u: number = Math.cbrt(-q / 2 + sqrtDisc);
             const v: number = Math.cbrt(-q / 2 - sqrtDisc);
 
             return [u + v - b / 3];
@@ -48,6 +50,84 @@ export class Util {
         }
     }
 
+    private static brentsMethod(f: Function, df: Function, a: number, b: number): number | undefined {
+        let fa: number = f(a);
+        let fb: number = f(b);
+
+        if (fa * fb > 0) return undefined;
+
+        let c = a;
+        let fc = fa;
+        let d = b - a;
+        let e = d;
+
+        for (let i = 0; i < 20; i++) {
+            if (Math.abs(fc) < Math.abs(fb)) {
+                [a, b] = [b, a];
+                [fa, fb] = [fb, fa];
+            }
+
+            const tol: number = 2 * 1e-8 * Math.abs(b) + 1e-8;
+            const m: number = 0.5 * (a - b);
+
+            if (Math.abs(m) <= tol || fb === 0) return b;
+
+            if (Math.abs(e) >= tol && Math.abs(fa) > Math.abs(fb)) {
+                const s: number = fb / fa;
+                let p: number;
+                let q: number;
+
+                if (a === c) {
+                    p = 2 * m * s;
+                    q = 1 - s;
+
+                } else {
+                    q = fa / fc;
+
+                    const r: number = fb / fc;
+                    p = s * (2 * m * q * (q - r) - (b - c) * (r - 1));
+                    q = (q - 1) * (r - 1) * (s - 1);
+                }
+
+                if (p > 0) q = -q;
+                p = Math.abs(p);
+
+                if (2 * p < Math.min(3 * m * q - Math.abs(tol * q), Math.abs(e * q))) {
+                    e = d;
+                    d = p / q;
+
+                } else {
+                    d = m;
+                    e = d;
+                }
+
+            } else {
+                d = m;
+                e = d;
+            }
+
+            c = b;
+            fc = fb;
+
+            if (Math.abs(d) > tol) b += d;
+            else b += Math.sign(m) * tol;
+
+            fb = f(b);
+        }
+    }
+
+    private static newtonRaphson(f: Function, df: Function, x: number): number | undefined {
+        for (let i = 0; i < 100; i++) {
+            const y: number = f(x);
+            if (Math.abs(y) < 1e-4) return x;
+
+            const dy: number = df(x);
+            if (Math.abs(dy) < 1e-8) break;
+
+            x -= y / dy;
+        }
+    }
+
     public static solveQuartic(a: number, b: number, c: number, d: number, e: number): number[] {
         if (a === 0) return this.solveCubic(b, c, d, e);
         if (c === 0) return [0, ...this.solveCubic(a, b, c, d)]; // Factor out t making one of the solutions to t zero
@@ -57,55 +137,84 @@ export class Util {
 
             for (const root of this.solveQuadratic(a, c, e)) {
                 const sqrt: number = Math.sqrt(root);
-
-                roots.push(sqrt, -sqrt);
+                if (!isNaN(sqrt)) roots.push(sqrt, -sqrt);
             }
 
             return roots;
         }
 
-        b /= a;
-        c /= a;
-        d /= a;
-        e /= a;
+        const roots: number[] = [];
 
-        const disc: number = 256*a**3*e**3 - 192*a**2*b*d*e**2 - 128*a**2*c**2*e**2 +
-        144*a**2*c*d**2*e - 27*a**2*d**4 + 144*a*b**2*c*e**2 - 6*a*b**2*d**2*e - 80*a*b*c**2*d*e +
-        18*a*b*c*d**3 + 16*a*c**4*e - 4*a*c**3*d**2 - 27*b**4*e**2 + 18*b**3*c*d*e - 4*b**3*d**3 -
-        4*b**2*c**3*e + b**2*c**2*d**2;
+        const dA: number = 4 * a;
+        const dB: number = 3 * b;
+        const dC: number = 2 * c;
+        const dD: number = d;
 
-        const disc0: number = c ** 2 - 3 * b * d + 12 * a * e;
-        const disc1: number = 2 * c ** 3 - 9 * b * c * d + 27 * b ** 2 * e + 27 * a * d ** 2 - 72 * a * c * e;
-        
-        const p: number = (8 * a * c - 3 * b ** 2) / (8 * a ** 2);
-        const q: number = (b ** 3 - 4 * a * b * c + 8 * a ** 2 * d) / (8 * a ** 3);
-
-        const Q: number = Math.cbrt((disc1 + Math.sqrt(-27 * disc)) / 2);
-        let S: number;
-
-        if (disc > 0) {
-            const disc21: number = disc1 ** 2;
-            const disc30: number = (27 * disc + disc21) / 4;
-
-            const P: number = Math.acos(disc1 / (2 * Math.sqrt(disc30)));
-
-            S = Math.sqrt(-2 / 3 * p + 2 / (3 * a) * Math.sqrt(disc0) * Math.cos(P / 3));
-
-        } else {
-            S = Math.sqrt(-2 / 3 * p + 1 / (3 * a) * (Q + disc0 / Q));
+        const f: Function = (x: number) => {
+            return a * x ** 4 + b * x ** 3 + c * x ** 2 + d * x + e;
         }
 
-        const sqrtDisc: number = Math.sqrt(-4 * S ** 2 - 2 * p + q / S) / 2;
+        const df: Function = (x: number) => {
+            return dA * x ** 3 + dB * x ** 2 + 2 * dC * x + dD;
+        }
 
-        console.log(disc, disc0, disc1, p, q, Q, S, sqrtDisc);
+        for (let x: number = -100; x <= 100; x += 0.01) {
+            const nextX: number = x + 0.01;
 
-        const roots: number[] = [
-            -b / (4 * a) - S + sqrtDisc,
-            -b / (4 * a) - S - sqrtDisc,
-            -b / (4 * a) + S + sqrtDisc,
-            -b / (4 * a) + S - sqrtDisc,
-        ];
+            if (f(x) * f(nextX) < 0) {
+                const root: number | undefined = this.newtonRaphson(f, df, x);
 
-        return roots;//.filter(root => !isNaN(root));
+                if (root !== undefined) roots.push(root);
+            }
+        }
+
+        const turningPoints: number[] = this.solveCubic(dA, dB, dC, dD);
+        const turningZeros: number[] = turningPoints.filter(x => Math.abs(f(x)) < 1e-8);
+
+        return [...roots, ...turningZeros];
+
+        // b /= a;
+        // c /= a;
+        // d /= a;
+        // e /= a;
+
+        // // x = y - b / 4a
+        // const b4a: number = b / (4 * a);
+        // const p: number = (12 * a * b4a ** 2 + 6 * b * b4a + 2 * c) / 2; // f''(b / 4a) / 2
+        // const q: number = 4 * a * b4a ** 3 + 3 * b * b4a ** 2 + 2 * c * b4a + d; // f'(b / 4a)
+        // const r: number = a * b4a ** 4 + b * b4a ** 3 + c * b4a ** 2 + d * b4a + e; // f(b / 4a)
+
+        // const lambaCubicRoots: number[] = this.solveCubic(
+        //     -8,
+        //     -20 * p,
+        //     8 * r - 16 * p ** 2,
+        //     4 * p * r + q ** 2 - 4 * p ** 3
+        // );
+
+        // const L: number = lambaCubicRoots[0]; // lambda solution
+
+        // // (y^2 + p + L)^2 = (root(p + 2L)y - q / 2root(p + 2L))^2
+        // // y^2 + p + L = +-(root(p + 2L)y - q / 2root(p + 2L))
+        // // ONE: y^2 + p + L = root(p + 2L)y - q / 2root(p + 2L)
+        // // TWO: y^2 + p + L = -root(p + 2L)y + q / 2root(p + 2L)
+        // // Final: y^2 -+ root(p + 2L)y + (p + L +- q / 2root(p + 2L))
+        // // y^2 -+ Ay + (pL +- B) = 0
+        // // const sqrtP2L: number = Math.sqrt(p + 2 * L);
+        // const A: number = Math.sqrt(p + 2 * L);
+        // const B: number = Math.sqrt(q / (2 * Math.sqrt(p + 2 * L)));
+        // const pL: number = p + L;
+
+        // console.log(A, B, pL);
+
+        // const solutions: number[] = [
+        //     ...this.solveQuadratic(1, -A, pL + B),
+        //     ...this.solveQuadratic(1, A, pL - B)
+        // ];
+
+        // console.log(this.solveQuadratic(1, -A, pL + B));
+
+        // solutions.map(root => root - b4a);
+
+        // return solutions;
     }
 }

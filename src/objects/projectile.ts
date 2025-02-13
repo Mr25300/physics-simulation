@@ -59,6 +59,8 @@ export class Projectile {
 
         for (const obstacle of Simulation.instance.obstacles) {
             const t: number | undefined = obstacle.getCollisionTime(this);
+
+            console.log(t);
         }
     }
 }
