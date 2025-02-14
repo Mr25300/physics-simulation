@@ -32,12 +32,12 @@ export class Simulation extends Loop {
 
         this.canvas = new Canvas(canvas);
 
-        this.projectiles.push(new Projectile(1, 1, 0.5, new Vector2(2, 0)));
-        this.ropes.push(new Rope(Vector2.zero, 4, this.projectiles[0]));
-        // this.obstacles.push(new Obstacle(0.5, [new Vector2(-4, -4), new Vector2(4, -4)]));
-        // this.obstacles.push(new Obstacle(0.5, [new Vector2(4, -4), new Vector2(4, 4)]));
-        // this.obstacles.push(new Obstacle(0.5, [new Vector2(4, 4), new Vector2(-4, 4)]));
-        // this.obstacles.push(new Obstacle(0.5, [new Vector2(-4, 4), new Vector2(-4, -4)]));
+        this.projectiles.push(new Projectile(1, 1, 0.5, new Vector2(0, 0)));
+        // this.ropes.push(new Rope(Vector2.zero, 4, this.projectiles[0]));
+        this.obstacles.push(new Obstacle(0.5, [new Vector2(-4, -4), new Vector2(4, -4), new Vector2(4, -6), new Vector2(-4, -6)]));
+        this.obstacles.push(new Obstacle(0.5, [new Vector2(4, -4), new Vector2(4, 4)]));
+        this.obstacles.push(new Obstacle(0.5, [new Vector2(4, 4), new Vector2(-4, 4)]));
+        this.obstacles.push(new Obstacle(0.5, [new Vector2(-4, 4), new Vector2(-4, -4)]));
 
         // this.obstacles.push(new Obstacle(1, [
         //     new Vector2(-1, -3),
@@ -45,7 +45,7 @@ export class Simulation extends Loop {
         //     new Vector2(0, -1)
         // ]));
 
-        // this.projectiles[0].applyImpulse(new Vector2(0, 0));
+        this.projectiles[0].applyImpulse(new Vector2(5, 0));
 
         this.start();
 
@@ -79,10 +79,6 @@ export class Simulation extends Loop {
 
         for (const rope of this.ropes) {
             rope.update();
-        }
-
-        for (const projectile of this.projectiles) {
-            projectile.clearForces();
         }
 
         this.canvas.render();

@@ -74,6 +74,7 @@ export class Canvas {
                 screenVertices.push(this.pointToPixels(vertex));
             }
             
+            this.context.strokeStyle = "black";
             this.context.fillStyle = "black";
             this.context.beginPath();
             this.context.moveTo(screenVertices[0].x, screenVertices[0].y);

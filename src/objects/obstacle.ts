@@ -78,7 +78,7 @@ export class Obstacle {
             const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
             const [obsMin, obsMax]: [number, number] = info.axisRange;
 
-            if (projMin > obsMax || obsMin > projMax) return;
+            if (projMin > obsMax - 1e-8 || obsMin > projMax - 1e-8) return;
 
             const overlap: number = Math.min(projMax - obsMin, obsMax - projMin);
 

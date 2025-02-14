@@ -67,8 +67,8 @@ export class Projectile {
         return this._velocity.unit.multiply(-dragMagnitude);
     }
 
-    public getPosition(deltaTime: number): Vector2 {
-        return this._position.add(this._velocity.multiply(deltaTime)).add(this._acceleration.multiply(deltaTime ** 2 / 2));
+    public getDisplacement(deltaTime: number): Vector2 {
+        return this._velocity.multiply(deltaTime).add(this._acceleration.multiply(deltaTime ** 2 / 2));
     }
 
     public getVelocity(deltaTime: number): Vector2 {
@@ -83,7 +83,47 @@ export class Projectile {
         }
 
         this._acceleration = this.netForce.divide(this.mass);
-        this._position = this.getPosition(deltaTime);
+
+        const displacement: Vector2 = this.getDisplacement(deltaTime);
+        const lastVelocity: Vector2 = this._velocity;
+
+        this._position = this._position.add(displacement);
         this._velocity = this.getVelocity(deltaTime);
+
+        this.clearForces();
+
+        const info: CollisionInfo | undefined = CollisionManager.queryCollision(this);
+
+        if (info) {
+            const effectiveElasticity: number = this.elasticity * info.object.elasticity;
+
+            const collisionPos: Vector2 = this._position.add(info.normal.multiply(info.overlap));
+            const collisionProgress: number = Math.min(collisionPos.magnitude /  displacement.magnitude, 1);
+            const collisionVel: Vector2 = lastVelocity.add(this._velocity.subtract(lastVelocity).multiply(collisionProgress));
+
+            console.log(collisionVel);
+
+            if (collisionVel.magnitude > 0.01) {
+                const normalImpulse: number = collisionVel.dot(info.normal) * (1 + effectiveElasticity);
+
+                this._velocity = collisionVel.subtract(info.normal.multiply(normalImpulse));
+
+            } else {
+                this._velocity = Vector2.zero;
+            }
+
+            this._position = this._position.add(info.normal.multiply(info.overlap));
+
+            // Figure out how normal and friction forces should be applied
+
+            const normalForceProjection: number = -info.normal.dot(this.netForce);
+
+            this.applyForce(info.normal.multiply(normalForceProjection));
+
+            const surfaceTangent: Vector2 = info.normal.orthogonal;
+            const frictionForce: number = surfaceTangent.dot(collisionVel);
+
+            this.applyForce(surfaceTangent.multiply(-frictionForce));
+        }
     }
 }
