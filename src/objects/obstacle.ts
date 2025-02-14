@@ -1,113 +1,97 @@
-import { Simulation } from "../core/simulation.js";
-import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
-import { CollisionInfo, CollisionManager } from "./collisions.js";
+import { CollisionInfo } from "./collisions.js";
 import { Projectile } from "./projectile.js";
 
-export class Edge {
-    private direction: Vector2;
-    private tangent: Vector2;
-    private normal: Vector2;
-
-    constructor(private start: Vector2, private end: Vector2) {
-        this.direction = end.subtract(start);
-        this.tangent = this.direction.unit;
-        this.normal = this.tangent.orthogonal;
-    }
-
-    public projectOnLine(position: Vector2): number {
-        return this.tangent.dot(position.subtract(this.start)) / this.direction.magnitude;
-    }
-
-    public getPoint(t: number): Vector2 {
-        t = Math.min(Math.max(t, 0), 1);
-
-        return this.start.add(this.direction.multiply(t));
-    }
-
-    public getCollision(projectile: Projectile, timeThreshold: number): number | undefined {
-        // Change perspective so that (0, 0) is v1 and the line is flat, and get the metrics from that point of reference
-        const difference: Vector2 = projectile.position.subtract(this.start);
-        const posY: number = this.normal.dot(difference);
-        const velY: number = this.normal.dot(projectile.velocity);
-        const accelY: number = this.normal.dot(projectile.acceleration);
-
-        // r = py + vy * t + 1/2ay * t^2
-        // 0 = (1/2ay)t^2 + (vy)t + (py - r)
-        const times: number[] = [
-            ...Util.solveQuadratic(
-                accelY / 2,
-                velY,
-                posY - projectile.radius
-            ),
-            ...Util.solveQuadratic(
-                accelY / 2,
-                velY,
-                posY + projectile.radius
-            )
-        ];
-
-        let t: number | undefined = CollisionManager.determineBestTime(times);
-
-        if (t !== undefined) {
-            const posX: number = this.tangent.dot(difference);
-            const velX: number = this.tangent.dot(projectile.velocity);
-            const accelX: number = this.tangent.dot(projectile.acceleration);
-
-            const collisionX: number = posX + velX * t + accelX * t ** 2 / 2;
-
-            if (collisionX < 0) {
-                t = CollisionManager.vertexCollision(projectile, this.start, timeThreshold);
-
-            } else if (collisionX > this.direction.magnitude) {
-                t = CollisionManager.vertexCollision(projectile, this.end, timeThreshold);
-            }
-        }
-
-        if (t !== undefined && t + timeThreshold >= 1e-4) return t;
-    }
+interface NormalInfo {
+    normal: Vector2;
+    axisRange: [number, number];
 }
 
 export class Obstacle {
-    private edges: Edge[] = [];
+    private normalInfos: NormalInfo[] = [];
 
     constructor(public readonly elasticity: number, public readonly vertices: Vector2[]) {
-        for (let i = 0; i < vertices.length; i++) {
-            if (vertices.length === 2 && i > 0) break;
+        const normals: Vector2[] = [];
 
-            this.edges.push(new Edge(
-                vertices[i],
-                vertices[(i + 1) % vertices.length]
-            ));
+        for (let i = 0; i < vertices.length; i++) {
+            if (vertices.length === 2 && i > 1) break;
+
+            const vertex1: Vector2 = vertices[i];
+            const vertex2: Vector2 = vertices[(i + 1) % vertices.length];
+            const edge: Vector2 = vertex2.subtract(vertex1);
+
+            normals.push(edge.unit.orthogonal);
+        }
+
+        normals.filter((normal: Vector2) => {
+            return normals.some((existing: Vector2) => {
+                const dot: number = normal.dot(existing);
+
+                return Math.abs(dot) > 0.999;
+            });
+        });
+
+        for (const normal of normals) {
+            this.normalInfos.push({
+                normal: normal,
+                axisRange: this.getProjectedRange(normal)
+            });
         }
     }
 
-    public getCollision(projectile: Projectile, timeThreshold: number): CollisionInfo | undefined {
-        let collision: boolean = false;
-        let time: number = -Infinity;
-        let collidedEdge: Edge;
+    private getProjectedRange(axis: Vector2): [number, number] {
+        let min: number = Infinity;
+        let max: number = -Infinity;
 
-        for (const edge of this.edges) {
-            const t: number | undefined = edge.getCollision(projectile, timeThreshold);
+        for (const vertex of this.vertices) {
+            const projection: number = axis.dot(vertex);
 
-            if (t !== undefined && t > time) {
-                collision = true;
-                time = t;
-                collidedEdge = edge;
+            if (projection < min) min = projection;
+            if (projection > max) max = projection;
+        }
+
+        return [min, max];
+    }
+
+    public getClosestVertex(position: Vector2): Vector2 {
+        let minDistance: number = Infinity;
+        let closestVertex: Vector2 = Vector2.zero;
+
+        for (const vertex of this.vertices) {
+            const distance: number = vertex.subtract(position).magnitude;
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestVertex = vertex;
             }
         }
 
-        if (collision) {
-            const projCollisionPos: Vector2 = projectile.getPosition(time);
-            const edgeProjection: number = collidedEdge!.projectOnLine(projCollisionPos);
-            const edgeCollisionPos: Vector2 = collidedEdge!.getPoint(edgeProjection);
-            const normal: Vector2 = edgeCollisionPos.subtract(projCollisionPos).unit;
+        return closestVertex;
+    }
 
-            return {
-                time: time,
-                normal: normal,
-                object: this
-            };
+    public getCollision(projectile: Projectile): CollisionInfo | undefined {
+        let minOverlap: number = Infinity;
+        let minNormal: Vector2 = Vector2.zero;
+
+        for (const info of this.normalInfos) {
+            const projProjection: number = info.normal.dot(projectile.position);
+            const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
+            const [obsMin, obsMax]: [number, number] = info.axisRange;
+
+            if (projMin > obsMax || obsMin > projMax) return;
+
+            const overlap: number = Math.min(projMax - obsMin, obsMax - projMin);
+
+            if (overlap < minOverlap) {
+                minOverlap = overlap;
+                minNormal = info.normal;
+            }
         }
+
+        return {
+            object: this,
+            overlap: minOverlap,
+            normal: minNormal
+        };
     }
 }

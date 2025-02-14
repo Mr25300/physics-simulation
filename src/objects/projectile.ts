@@ -85,29 +85,5 @@ export class Projectile {
         this._acceleration = this.netForce.divide(this.mass);
         this._position = this.getPosition(deltaTime);
         this._velocity = this.getVelocity(deltaTime);
-
-        this.clearForces();
-
-        let timeRemaining: number = deltaTime;
-        let collisionInfo: CollisionInfo | undefined = CollisionManager.queryCollision(this, timeRemaining);
-        let iterations = 0;
-
-        while (collisionInfo && timeRemaining >= 1e-8 && iterations < 20) {
-            const effectiveElasticity: number = this.elasticity * collisionInfo.object.elasticity;
-
-            this._position = this.getPosition(collisionInfo.time);
-            this._velocity = this.getVelocity(collisionInfo.time);
-
-            if (collisionInfo.object instanceof Obstacle) {
-                const impulse: Vector2 = collisionInfo.normal.multiply(this._velocity.dot(collisionInfo.normal) * -(1 + effectiveElasticity));
-
-                this.applyImpulse(impulse);
-                this.applyForce(collisionInfo.normal.multiply(-collisionInfo.normal.dot(this.netForce)));
-            }
-
-            timeRemaining = deltaTime + collisionInfo.time;
-            collisionInfo = undefined;//CollisionManager.queryCollision(this, timeRemaining);
-            iterations++;
-        }
     }
 }

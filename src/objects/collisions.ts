@@ -5,9 +5,9 @@ import { Obstacle } from "./obstacle.js";
 import { Projectile } from "./projectile.js";
 
 export interface CollisionInfo {
-    time: number,
-    normal: Vector2,
-    object: Projectile | Obstacle
+    object: Projectile | Obstacle,
+    overlap: number,
+    normal: Vector2
 }
 
 export class CollisionManager {
@@ -49,13 +49,13 @@ export class CollisionManager {
         if (time !== undefined && time + timeThreshold >= 1e-4) return time;
     }
 
-    public static queryCollision(projectile: Projectile, deltaTime: number): CollisionInfo | undefined {
+    public static queryCollision(projectile: Projectile): CollisionInfo | undefined {
         let collisionInfo: CollisionInfo | undefined;
 
         for (const obstacle of Simulation.instance.obstacles) {
-            const info: CollisionInfo | undefined = obstacle.getCollision(projectile, deltaTime);
+            const info: CollisionInfo | undefined = obstacle.getCollision(projectile);
 
-            if (info && (collisionInfo === undefined || info.time > collisionInfo.time)) {
+            if (info && (collisionInfo === undefined || info.overlap < collisionInfo.overlap)) {
                 collisionInfo = info;
             }
         }

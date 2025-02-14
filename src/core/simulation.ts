@@ -81,6 +81,10 @@ export class Simulation extends Loop {
             rope.update();
         }
 
+        for (const projectile of this.projectiles) {
+            projectile.clearForces();
+        }
+
         this.canvas.render();
     }
 }
