@@ -2,6 +2,8 @@ type Function = (x: number) => number;
 
 export class Util {
     public static solveQuadratic(a: number, b: number, c: number): number[] {
+        if (a === 0) return [-c / b];
+
         const discriminant: number = b * b - 4 * a * c;
         if (discriminant < 0) return [];
 

@@ -53,12 +53,12 @@ export class Vector2 {
         return this._angle;
     }
 
-    public dot(vector: Vector2): number {
-        return this.x * vector.x + this.y * vector.y;
+    public get orthogonal(): Vector2 {
+        return new Vector2(-this.y, this.x);
     }
 
-    public orthogonal(): Vector2 {
-        return new Vector2(-this.y, this.x);
+    public dot(vector: Vector2): number {
+        return this.x * vector.x + this.y * vector.y;
     }
 
     public rotate(rotation: number): Vector2 {
@@ -66,8 +66,8 @@ export class Vector2 {
         const sin: number = Math.sin(rotation);
 
         return new Vector2(
-            this.x * cos + this.y * sin,
-            this.y * cos - this.x * sin
+            this.x * cos - this.y * sin,
+            this.y * cos + this.x * sin
         );
     }
 }

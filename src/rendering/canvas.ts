@@ -3,10 +3,9 @@ import { Vector2 } from "../math/vector2.js";
 import { Projectile } from "../objects/projectile.js";
 
 export class Canvas {
-    private SCREEN_UNIT_SCALE: number = 50;
-
-    private ARROW_HEIGHT: number = 20;
-    private ARROW_ANGLE: number = 30 * Math.PI / 180;
+    private readonly SCREEN_UNIT_SCALE: number = 50;
+    private readonly ARROW_HEIGHT: number = 20;
+    private readonly ARROW_WIDTH: number = 20;
 
     private context: CanvasRenderingContext2D;
     private width: number;
@@ -36,16 +35,16 @@ export class Canvas {
     }
 
     private drawArrow(origin: Vector2, vector: Vector2, style: string): void {
-        vector = vector.divide(5);
+        if (vector.magnitude === 0) return;
 
         const pixelOrigin: Vector2 = this.pointToPixels(origin);
-        const pixelEnd: Vector2 = this.pointToPixels(origin.add(vector));
         const pixelDir: Vector2 = this.vecToPixels(vector).unit;
-        const lineEnd: Vector2 = pixelEnd.subtract(pixelDir.multiply(this.ARROW_HEIGHT));
+        const pixelEnd: Vector2 = this.pointToPixels(origin.add(vector));
 
-        const cornerDist: number = this.ARROW_HEIGHT / Math.cos(this.ARROW_ANGLE);
-        const corner1: Vector2 = pixelEnd.subtract(pixelDir.rotate(-this.ARROW_ANGLE).multiply(cornerDist));
-        const corner2: Vector2 = pixelEnd.subtract(pixelDir.rotate(this.ARROW_ANGLE).multiply(cornerDist));
+        const arrowStart: Vector2 = pixelEnd.add(pixelDir.multiply(this.ARROW_HEIGHT / 2));
+        const arrowEnd: Vector2 = pixelEnd.subtract(pixelDir.multiply(this.ARROW_HEIGHT / 2));
+        const corner1: Vector2 = arrowEnd.add(pixelDir.orthogonal.multiply(this.ARROW_WIDTH / 2));
+        const corner2: Vector2 = arrowEnd.subtract(pixelDir.orthogonal.multiply(this.ARROW_WIDTH / 2));
 
         this.context.fillStyle = style;
         this.context.strokeStyle = style;
@@ -53,14 +52,14 @@ export class Canvas {
 
         this.context.beginPath();
         this.context.moveTo(pixelOrigin.x, pixelOrigin.y);
-        this.context.lineTo(lineEnd.x, lineEnd.y);
+        this.context.lineTo(pixelEnd.x, pixelEnd.y);
         this.context.stroke();
 
         this.context.beginPath();
-        this.context.moveTo(pixelEnd.x, pixelEnd.y);
+        this.context.moveTo(arrowStart.x, arrowStart.y);
         this.context.lineTo(corner1.x, corner1.y);
         this.context.lineTo(corner2.x, corner2.y);
-        this.context.lineTo(pixelEnd.x, pixelEnd.y);
+        this.context.lineTo(arrowStart.x, arrowStart.y);
         this.context.closePath();
         this.context.fill();
     }

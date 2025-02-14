@@ -3,12 +3,14 @@ import { Projectile } from "../objects/projectile.js";
 import { Canvas } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { Graph } from "../graphing/graph.js";
-import { Constants } from "../physics/constants.js";
 import { Obstacle } from "../objects/obstacle.js";
+import { Constants } from "../physics/constants.js";
+import { Rope } from "../objects/rope.js";
 
 export class Simulation extends Loop {
     private canvas: Canvas;
 
+    public readonly ropes: Rope[] = [];
     public readonly projectiles: Projectile[] = [];
     public readonly obstacles: Obstacle[] = [];
 
@@ -30,8 +32,20 @@ export class Simulation extends Loop {
 
         this.canvas = new Canvas(canvas);
 
-        this.projectiles.push(new Projectile(1, 1, 0.5, Vector2.zero));
-        this.obstacles.push(new Obstacle(Vector2.zero, [new Vector2(-2, -2), new Vector2(2, -2)], 1));
+        this.projectiles.push(new Projectile(1, 1, 0.5, new Vector2(2, 0)));
+        this.ropes.push(new Rope(Vector2.zero, 4, this.projectiles[0]));
+        // this.obstacles.push(new Obstacle(0.5, [new Vector2(-4, -4), new Vector2(4, -4)]));
+        // this.obstacles.push(new Obstacle(0.5, [new Vector2(4, -4), new Vector2(4, 4)]));
+        // this.obstacles.push(new Obstacle(0.5, [new Vector2(4, 4), new Vector2(-4, 4)]));
+        // this.obstacles.push(new Obstacle(0.5, [new Vector2(-4, 4), new Vector2(-4, -4)]));
+
+        // this.obstacles.push(new Obstacle(1, [
+        //     new Vector2(-1, -3),
+        //     new Vector2(1, -3),
+        //     new Vector2(0, -1)
+        // ]));
+
+        // this.projectiles[0].applyImpulse(new Vector2(0, 0));
 
         this.start();
 
@@ -48,8 +62,11 @@ export class Simulation extends Loop {
     }
 
     public update(deltaTime: number): void {
+        for (const rope of this.ropes) {
+            rope.applyForces(deltaTime);
+        }
+
         for (const projectile of this.projectiles) {
-            projectile.clearForces();
             projectile.applyForce(new Vector2(0, -Constants.ACCELERATION_DUE_TO_GRAVITY));
             // projectile.applyForce(projectile.computeDrag());
 
@@ -58,6 +75,10 @@ export class Simulation extends Loop {
             // this.magGraph.addPoint(this.elapsedTime, projectile.velocity.magnitude);
             // this.posGraph.addPoint(this.elapsedTime, projectile.position.y);
             // this.accGraph.addPoint(this.elapsedTime, projectile.acceleration.magnitude);
+        }
+
+        for (const rope of this.ropes) {
+            rope.update();
         }
 
         this.canvas.render();
