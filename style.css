@@ -57,7 +57,7 @@ html, body {
   margin: 1vw;
   border-radius: 20px;
 } 
-#infotitle {
+#bubbleTitle {
   font-size: 2vw;
   font-weight: 700;
   text-align: center;
@@ -124,7 +124,63 @@ html, body {
 .end-button {
   margin-left: auto;
 }
+
+.settingsDiv { 
+grid-area: 4 / 1 / 5 / 2; 
+  background-color: #2b2b2b; 
+  margin: 1vw;
+  border-radius: 20px;
+  padding-top: 1vh;
+    display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+.settingsInput {
+  width: 10vw;
+  margin: 0.5vw;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+.infobox label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+/* .creationdiv button { */
+/*   width: 75%; /1* 75% of the horizontal space *1/ */
+/*   height: 25%; /1* 25% of the vertical space *1/ */
+/*   border-radius: 5px; */
+/*   background-color: #007acc; */
+/*   font-size: 1.5vw; */
+/*   border: none; */
+/*   transition: background-color 0.2s ease; */
+/*   color: white; */
+/* } */
+
+/* .creationdiv button:hover { */
+/*   background-color: #0060a1; */
+/* } */
+/* .creationdiv button:active { */
+/*   transform: scale(0.98); */
+/* } */
+
+#airResistanceButton {
+  width: 50%;
+  height: 25%;
+  background-color: #BA362E;
+  border-radius: 5px;
+  font-size: 1.5vw;
+  border: none;
+  transition: background-color 0.2s ease;
+  color: white;
+}
+#airResistanceButton:hover {
+  background-color: #9e1209;
+}
+#airResistanceButton:active{
+  transform: scale(0.98);
+}
 .div5 { grid-area: 3 / 2 / 4 / 4; background-color: #92a8d1; } /* light blue */
-.div6 { grid-area: 4 / 1 / 5 / 2; background-color: #955251; } /* maroon */
 .div7 { grid-area: 4 / 2 / 5 / 3; background-color: #b565a7; } /* pink */
 .div8 { grid-area: 4 / 3 / 5 / 4; background-color: #009b77; } /* teal */

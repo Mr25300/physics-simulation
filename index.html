@@ -19,7 +19,7 @@
         <canvas style="width: 100%; height: 100%; display: block" id="simulationcanvas"></canvas>
       </div>
       <div class="infodiv">
-        <p id="infotitle">Simulation Info</p>
+        <p id="bubbleTitle">Simulation Info</p>
         <p class="infobox" id="infotime">Time: 0.00s</p>
         <p class="infobox" id="infofps">FPS: 60</p>
       </div>
@@ -43,7 +43,22 @@
         </div>
       </div>
       <div class="div5"></div>
-      <div class="div6"></div>
+      <div class="settingsDiv">
+        <p id="bubbleTitle">Settings</p>
+        <div class="infobox">
+          <label for="lengthInput">Length:
+            <input type="number" id="lengthInput" step="0.01" value="10.00" class="settingsInput">
+            s
+          </label>
+        </div>
+        <div class="infobox">
+          <label for="gravityInput">Gravity:
+            <input type="number" id="gravityInput" step="0.1" value="-9.8" class="settingsInput">
+            <p>m/s<sup>2</sup></p>
+          </label>
+        </div>
+        <button type="button" id="airResistanceButton">Toggle Air Resistance</button>
+      </div>
       <div class="div7"></div>
       <div class="div8"></div>
     </div>
