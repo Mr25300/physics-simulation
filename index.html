@@ -1,21 +1,60 @@
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>shaded grid layout</title>
     <link rel="stylesheet" href="style.css">
     <style>
-    #graphingDiv canvas {
-    width: 600px;
-    height: 400px;
-    }
     </style>
   </head>
-
   <body>
-    <canvas style="width: 1200px; height: 800px; outline: black 3px solid;"></canvas>
-    <div id="graphingDiv">
-
+    <div class="parent">
+      <div class="creationdiv">
+        <button type="button" id="createprojectilebutton">Create projectile</button>
+        <button type="button" id="createobstaclebutton">Create obstacle</button>
+        <button type="button" id="createropebutton">Create rope</button>
+      </div>
+      <div class="simulationdiv">
+        <!-- todo: make the canvas scale properly -->
+        <canvas style="width: 100%; height: 100%; display: block" id="simulationcanvas"></canvas>
+      </div>
+      <div class="infodiv">
+        <p id="infotitle">Simulation Info</p>
+        <p class="infobox" id="infotime">Time: 0.00s</p>
+        <p class="infobox" id="infofps">FPS: 60</p>
+      </div>
+      <div class="controlButtonDiv">
+        <div class="controlButtons">
+          <button class="control-button start-button">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6 1.41-1.41zM6 6h2v12H6z"/></svg>
+          </button>
+          <button class="control-button">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+          </button>
+          <button class="control-button pause-button">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </button>
+          <button class="control-button">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+          </button>
+          <button class="control-button end-button">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6-1.41 1.41zM16 6h2v12h-2z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="div5"></div>
+      <div class="div6"></div>
+      <div class="div7"></div>
+      <div class="div8"></div>
     </div>
-
     <script type="module" src="dist/core/simulation.js"></script>
     <script type="module" src="dist/graphing/graph.js"></script>
   </body>
 </html>
+<!--     <!-1- <canvas style="width: 1200px; height: 800px; outline: black 3px solid;"></canvas> -1-> -->
+<!--     <!-1- <div id="graphingdiv"> -1-> -->
+
+<!--     <!-1- </div> -1-> -->
+
+<!--   </body> -->
+<!-- </html> -->

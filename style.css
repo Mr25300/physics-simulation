@@ -1,9 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap');
+/* reset margin and padding for all elements */
 * {
-  padding: 0;
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Ubuntu', sans-serif; /* Apply Ubuntu Sans */
 }
 
-canvas {
-  width: 100%;
+/* ensure html and body take up full height */
+html, body {
   height: 100%;
+  background-color: #1e1e1e;
+  color: white;
 }
+
+/* grid container */
+.parent {
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 1.5fr;
+  grid-template-rows: repeat(2, 1fr) 0.25fr 1fr;
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  height: 100vh;
+} 
+
+/* shaded divs */
+.creationdiv { 
+  grid-area: 1 / 1 / 2 / 2; 
+  margin: 1vw;
+  display: flex;
+  flex-direction: column; /* stack buttons vertically */
+  align-items: center; /* center buttons horizontally */
+  justify-content: space-between;
+}
+
+.creationdiv button {
+  width: 75%; /* 75% of the horizontal space */
+  height: 25%; /* 25% of the vertical space */
+  border-radius: 5px;
+  background-color: #007acc;
+  font-size: 1.5vw;
+  border: none;
+  transition: background-color 0.2s ease;
+  color: white;
+}
+
+.creationdiv button:hover {
+  background-color: #0060a1;
+}
+.creationdiv button:active {
+  transform: scale(0.98);
+}
+.simulationdiv { 
+  grid-area: 1 / 2 / 3 / 4; 
+  background-color: #2b2b2b; 
+  margin: 1vw;
+  border-radius: 20px;
+} 
+#infotitle {
+  font-size: 2vw;
+  font-weight: 700;
+  text-align: center;
+}
+.infobox {
+  padding-left: 1vw;
+  font-size: 1.5vw;
+}
+.infodiv { 
+  grid-area: 2 / 1 / 3 / 2; 
+  background-color: #2b2b2b; 
+  margin: 1vw;
+  border-radius: 20px;
+  padding-top: 1vh;
+} 
+.controlButtonDiv { 
+  grid-area: 3 / 1 / 4 / 2; 
+  background-color: #2b2b2b;
+  margin: 1vw;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.controlButtons {
+  display: flex;
+  gap: 1vw;
+  align-items: center;
+  padding: 1vw;
+}
+
+.control-button {
+  background: none;
+  border: none;
+  padding: 0.5em;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.control-button:hover {
+  background-color: #007acc;
+}
+
+.control-button:active {
+  transform: scale(0.9);
+  background-color: #0060a1;
+}
+
+.control-button svg {
+  width: 1.5em;
+  height: 1.5em;
+  pointer-events: none;
+}
+
+.start-button {
+  margin-right: auto;
+}
+
+.end-button {
+  margin-left: auto;
+}
+.div5 { grid-area: 3 / 2 / 4 / 4; background-color: #92a8d1; } /* light blue */
+.div6 { grid-area: 4 / 1 / 5 / 2; background-color: #955251; } /* maroon */
+.div7 { grid-area: 4 / 2 / 5 / 3; background-color: #b565a7; } /* pink */
+.div8 { grid-area: 4 / 3 / 5 / 4; background-color: #009b77; } /* teal */
