@@ -77,7 +77,15 @@ export class Simulation extends Loop {
       // projectile.applyForce(projectile.computeDrag());
 
       projectile.update(deltaTime);
-      tabContents[`Projectile ${i}`] = `Position: (${projectile.position.x.toFixed(1)}, ${projectile.position.y.toFixed(1)})`;
+      tabContents[`Projectile ${i}`] = 
+        `Position: (${projectile.position.x.toFixed(1)}, ${projectile.position.y.toFixed(1)}) <br> 
+        V<sub>x</sub>: ${projectile.velocity.x.toFixed(2)} m/s <br>
+        V<sub>y</sub>: ${projectile.velocity.y.toFixed(2)} m/s <br>
+        V<sub>Magnitude</sub>: ${projectile.velocity.magnitude.toFixed(2)} m/s <br>
+        A<sub>x</sub>: ${projectile.acceleration.x.toFixed(2)} m/s<sup>2</sup> <br>
+        A<sub>y</sub>: ${projectile.acceleration.y.toFixed(2)} m/s<sup>2</sup> <br>
+        A<sub>Magnitude</sub>: ${projectile.acceleration.magnitude.toFixed(2)} m/s<sup>2</sup> <br>
+        `;
       i++
 
       // this.magGraph.addPoint(this.elapsedTime, projectile.velocity.magnitude);
@@ -111,11 +119,11 @@ Object.entries(tabContents).forEach(([key, content], index) => {
   // Set the data attribute to the key so we can reference it later
   tab.setAttribute('data-tab', key);
   // Display the key as the tab text (you can format this as needed)
-  tab.textContent = key;
+  tab.innerHTML = key;
   
   if (index === this.oldIndex) {
     tab.classList.add('active');
-    tabText.textContent = content;
+    tabText.innerHTML = content;
   }
 
 
@@ -130,7 +138,7 @@ const tabs = document.querySelectorAll('.div7 .tab');
     if (tab.classList.contains('active')) {
     const tabText = document.getElementById('tabText');
     if (tabText) {
-      tabText.textContent = tabContents[`Projectile ${this.oldIndex}`];
+      tabText.innerHTML = tabContents[`Projectile ${this.oldIndex}`];
     }
   }
 
