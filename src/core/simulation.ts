@@ -8,7 +8,7 @@ import { Constants } from "../physics/constants.js";
 import { Rope } from "../objects/rope.js";
 
 export class Simulation extends Loop {
-  private canvas: Canvas;
+    private canvas: Canvas;
 
     public readonly ropes: Rope[] = [];
     public readonly projectiles: Projectile[] = [];
@@ -19,8 +19,8 @@ export class Simulation extends Loop {
     public static get instance(): Simulation {
         if (!this._instance) this._instance = new Simulation();
 
-    return this._instance;
-  }
+        return this._instance;
+    }
 
     public init(): void {
         const canvas: HTMLCanvasElement | null = document.querySelector("canvas");
@@ -57,25 +57,22 @@ export class Simulation extends Loop {
         // this.staticObstacles.push(new StaticObstacle([[10, 10], [10, 20], [20, 20], [20, 10]], 0.5));
     }
 
-  public update(deltaTime: number): void {
-    for (const rope of this.ropes) {
-      rope.applyForces(deltaTime);
-    }
+    public update(deltaTime: number): void {
+        for (const rope of this.ropes) {
+            rope.applyForces(deltaTime);
+        }
 
-    for (const projectile of this.projectiles) {
-      projectile.applyForce(new Vector2(0, -Constants.ACCELERATION_DUE_TO_GRAVITY));
-      // projectile.applyForce(projectile.computeDrag());
-
-      projectile.update(deltaTime);
-      // tabContents[`Projectile ${i}`] = 
-      //   `Position: (${projectile.position.x.toFixed(1)}, ${projectile.position.y.toFixed(1)}) <br> 
-      //   V<sub>x</sub>: ${projectile.velocity.x.toFixed(2)} m/s <br>
-      //   V<sub>y</sub>: ${projectile.velocity.y.toFixed(2)} m/s <br>
-      //   V<sub>Magnitude</sub>: ${projectile.velocity.magnitude.toFixed(2)} m/s <br>
-      //   A<sub>x</sub>: ${projectile.acceleration.x.toFixed(2)} m/s<sup>2</sup> <br>
-      //   A<sub>y</sub>: ${projectile.acceleration.y.toFixed(2)} m/s<sup>2</sup> <br>
-      //   A<sub>Magnitude</sub>: ${projectile.acceleration.magnitude.toFixed(2)} m/s<sup>2</sup> <br>
-      //   `;
+        for (const projectile of this.projectiles) {
+            projectile.update(deltaTime);
+            // tabContents[`Projectile ${i}`] = 
+            //   `Position: (${projectile.position.x.toFixed(1)}, ${projectile.position.y.toFixed(1)}) <br> 
+            //   V<sub>x</sub>: ${projectile.velocity.x.toFixed(2)} m/s <br>
+            //   V<sub>y</sub>: ${projectile.velocity.y.toFixed(2)} m/s <br>
+            //   V<sub>Magnitude</sub>: ${projectile.velocity.magnitude.toFixed(2)} m/s <br>
+            //   A<sub>x</sub>: ${projectile.acceleration.x.toFixed(2)} m/s<sup>2</sup> <br>
+            //   A<sub>y</sub>: ${projectile.acceleration.y.toFixed(2)} m/s<sup>2</sup> <br>
+            //   A<sub>Magnitude</sub>: ${projectile.acceleration.magnitude.toFixed(2)} m/s<sup>2</sup> <br>
+            //   `;
 
             // this.magGraph.addPoint(this.elapsedTime, projectile.velocity.magnitude);
             // this.posGraph.addPoint(this.elapsedTime, projectile.position.y);
@@ -86,13 +83,8 @@ export class Simulation extends Loop {
             rope.update();
         }
 
-    for (const projectile of this.projectiles) {
-      projectile.clearForces();
+        this.canvas.render();
     }
-
-
-    this.canvas.render();
-  }
 }
 
 const sim: Simulation = Simulation.instance;
