@@ -1,25 +1,25 @@
-/** 
+/**
  * Our base graph class
- * @example     
+ * @example
  * Creating a basic graph
  * ``const cc = document.getElementById('graphCanvas') as HTMLCanvasElement;
  * const graph = new Graph(cc, 'X Values', 'Y Values');
- * graph.addPoint(10, 20); 
+ * graph.addPoint(10, 20);
  * graph.addPoint(20, 35);
  * graph.addPoint(30, 15);
  * graph.addPoint(12, 15);
  * graph.addPoint(27, 15);``
- * 
+ *
  **/
 export class Graph {
   private _points: { x: number; y: number }[] = [];
   private ctx: CanvasRenderingContext2D;
 
-  
+
   public get points() : { x: number; y: number }[] {
     return this._points;
   }
-  
+
   public get canvas(): HTMLCanvasElement {
     return this._canvas;
   }
@@ -47,7 +47,7 @@ export class Graph {
     this._points = [];
     this.draw();
   }
-  
+
   addPoint(x: number, y: number) {
     // Remove existing point with same x and add new point
     this._points = this._points.filter((point) => point.x !== x);
