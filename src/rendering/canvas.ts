@@ -4,14 +4,12 @@ import { Projectile } from "../objects/projectile.js";
 
 export class Canvas {
     private readonly SCREEN_UNIT_SCALE: number = 50;
-    private readonly ARROW_HEIGHT: number = 20;
-    private readonly ARROW_WIDTH: number = 20;
+    private readonly ARROW_HEIGHT: number = 0.12;
+    private readonly ARROW_WIDTH: number = 0.13;
 
     private context: CanvasRenderingContext2D;
     private width: number;
     private height: number;
-
-    private projectiles: Projectile[] = [];
 
     constructor(private canvas: HTMLCanvasElement) {
         const context: CanvasRenderingContext2D | null = canvas.getContext("2d");
@@ -34,34 +32,42 @@ export class Canvas {
         return new Vector2(vector.x * this.SCREEN_UNIT_SCALE, -vector.y * this.SCREEN_UNIT_SCALE);
     }
 
+    private drawShape(corners: Vector2[], fill: boolean = false): void {
+        const pixelCorners: Vector2[] = [];
+
+        for (let i = 0; i < corners.length; i++) {
+            pixelCorners[i] = this.pointToPixels(corners[i]);
+        }
+
+        this.context.beginPath();
+
+        for (let i = 0; i < corners.length + 1; i++) {
+            const corner: Vector2 = pixelCorners[i % corners.length];
+
+            if (i === 0) this.context.moveTo(corner.x, corner.y);
+            else this.context.lineTo(corner.x, corner.y);
+        }
+
+        this.context.closePath();
+        if (fill) this.context.fill();
+        else this.context.stroke();
+    }
+
     private drawArrow(origin: Vector2, vector: Vector2, style: string): void {
-        if (vector.magnitude === 0) return;
+        vector = vector.divide(5);
+        
+        if (vector.magnitude < 0.01) return;
 
-        const pixelOrigin: Vector2 = this.pointToPixels(origin);
-        const pixelDir: Vector2 = this.vecToPixels(vector).unit;
-        const pixelEnd: Vector2 = this.pointToPixels(origin.add(vector));
-
-        const arrowStart: Vector2 = pixelEnd.add(pixelDir.multiply(this.ARROW_HEIGHT / 2));
-        const arrowEnd: Vector2 = pixelEnd.subtract(pixelDir.multiply(this.ARROW_HEIGHT / 2));
-        const corner1: Vector2 = arrowEnd.add(pixelDir.orthogonal.multiply(this.ARROW_WIDTH / 2));
-        const corner2: Vector2 = arrowEnd.subtract(pixelDir.orthogonal.multiply(this.ARROW_WIDTH / 2));
+        const arrowEnd: Vector2 = origin.add(vector);
+        const widthVec: Vector2 = vector.unit.orthogonal.multiply(vector.magnitude * this.ARROW_WIDTH / 2 + 0.05);
+        const lengthVec: Vector2 = vector.unit.multiply(vector.magnitude * this.ARROW_HEIGHT + 0.1);
 
         this.context.fillStyle = style;
         this.context.strokeStyle = style;
         this.context.lineWidth = 2;
 
-        this.context.beginPath();
-        this.context.moveTo(pixelOrigin.x, pixelOrigin.y);
-        this.context.lineTo(pixelEnd.x, pixelEnd.y);
-        this.context.stroke();
-
-        this.context.beginPath();
-        this.context.moveTo(arrowStart.x, arrowStart.y);
-        this.context.lineTo(corner1.x, corner1.y);
-        this.context.lineTo(corner2.x, corner2.y);
-        this.context.lineTo(arrowStart.x, arrowStart.y);
-        this.context.closePath();
-        this.context.fill();
+        this.drawShape([origin, arrowEnd]);
+        this.drawShape([arrowEnd.add(widthVec), arrowEnd.subtract(widthVec), arrowEnd.add(lengthVec)], true);
     }
 
     public render(): void {
@@ -101,7 +107,7 @@ export class Canvas {
 
         for (const projectile of Simulation.instance.projectiles) {
             for (const force of projectile.forces) {
-                this.drawArrow(projectile.position, force.force, Projectile.VECTOR_COLORS[force.colorIndex]);
+                this.drawArrow(projectile.position, force.vector, "red");
             }
 
             this.drawArrow(projectile.position, projectile._velocity, "green");

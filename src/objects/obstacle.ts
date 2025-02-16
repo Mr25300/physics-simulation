@@ -2,17 +2,17 @@ import { Vector2 } from "../math/vector2.js";
 import { CollisionInfo } from "./collisions.js";
 import { Projectile } from "./projectile.js";
 
-interface NormalInfo {
+interface AxisInfo {
+    point: Vector2;
+    tangent: Vector2;
     normal: Vector2;
     axisRange: [number, number];
 }
 
 export class Obstacle {
-    private normalInfos: NormalInfo[] = [];
+    private axes: AxisInfo[] = [];
 
     constructor(public readonly elasticity: number, public readonly vertices: Vector2[]) {
-        const normals: Vector2[] = [];
-
         for (let i = 0; i < vertices.length; i++) {
             if (vertices.length === 2 && i > 1) break;
 
@@ -20,22 +20,18 @@ export class Obstacle {
             const vertex2: Vector2 = vertices[(i + 1) % vertices.length];
             const edge: Vector2 = vertex2.subtract(vertex1);
 
-            normals.push(edge.unit.orthogonal);
-        }
-
-        normals.filter((normal: Vector2) => {
-            return normals.some((existing: Vector2) => {
-                const dot: number = normal.dot(existing);
-
-                return Math.abs(dot) > 0.999;
+            const exists: boolean = this.axes.some((existing: AxisInfo) => {
+                return Math.abs(edge.unit.dot(existing.tangent)) > 0.999;
             });
-        });
 
-        for (const normal of normals) {
-            this.normalInfos.push({
-                normal: normal,
-                axisRange: this.getProjectedRange(normal)
-            });
+            if (exists) continue;
+
+            this.axes.push({
+                point: vertex1,
+                tangent: edge.unit,
+                normal: edge.unit.orthogonal,
+                axisRange: this.getProjectedRange(edge.unit.orthogonal)
+            })
         }
     }
 
@@ -71,27 +67,32 @@ export class Obstacle {
 
     public getCollision(projectile: Projectile): CollisionInfo | undefined {
         let minOverlap: number = Infinity;
-        let minNormal: Vector2 = Vector2.zero;
+        let minInfo: AxisInfo | undefined;
 
-        for (const info of this.normalInfos) {
+        for (const info of this.axes) {
             const projProjection: number = info.normal.dot(projectile.position);
             const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
             const [obsMin, obsMax]: [number, number] = info.axisRange;
 
-            if (projMin > obsMax - 1e-8 || obsMin > projMax - 1e-8) return;
+            if (projMin >= obsMax || obsMin >= projMax) return;
 
             const overlap: number = Math.min(projMax - obsMin, obsMax - projMin);
 
             if (overlap < minOverlap) {
                 minOverlap = overlap;
-                minNormal = info.normal;
+                minInfo = info;
             }
         }
 
-        return {
-            object: this,
-            overlap: minOverlap,
-            normal: minNormal
-        };
+        if (minInfo) {
+            const edgeProjection: number = projectile.position.subtract(minInfo.point).dot(minInfo.normal);
+            const direction: number = edgeProjection < 0 ? -1 : 1;
+    
+            return {
+                object: this,
+                overlap: minOverlap,
+                normal: minInfo!.normal.multiply(direction)
+            };
+        }
     }
 }

@@ -1,5 +1,5 @@
 import { Vector2 } from "../math/vector2";
-import { Projectile } from "./projectile";
+import { ForceType, Projectile } from "./projectile";
 
 export class Rope {
     constructor(private origin: Vector2, private length: number, private attachment: Projectile) {
@@ -13,7 +13,7 @@ export class Rope {
         if (centerDiff.magnitude >= this.length - 1e-8 && radialVelocity > 0) {
             const tensionForce: number = radialVelocity;
 
-            this.attachment.applyImpulse(centerDiff.unit.multiply(-radialVelocity));
+            this.attachment.applyForce(centerDiff.unit.multiply(-radialVelocity), true, ForceType.tension);
         }
     }
 
