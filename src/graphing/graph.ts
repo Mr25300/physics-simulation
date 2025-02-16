@@ -27,8 +27,8 @@ export class Graph {
 
   constructor(
     private _canvas: HTMLCanvasElement,
-    private xLabel: string,
-    private yLabel: string
+    public xLabel: string,
+    public yLabel: string
   ) {
     const ctx = _canvas.getContext("2d");
     if (!ctx) throw new Error("Could not get canvas context");

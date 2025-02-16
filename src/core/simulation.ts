@@ -6,9 +6,11 @@ import { Graph } from "../graphing/graph.js";
 import { Obstacle } from "../objects/obstacle.js";
 import { Constants } from "../physics/constants.js";
 import { Rope } from "../objects/rope.js";
+import { GraphHandler } from "../graphing/graphHandler.js";
 
 export class Simulation extends Loop {
     private canvas: Canvas;
+    private graphHandler: GraphHandler = new GraphHandler();
 
     public readonly ropes: Rope[] = [];
     public readonly projectiles: Projectile[] = [];
@@ -42,6 +44,7 @@ export class Simulation extends Loop {
         ]));
 
         this.projectiles[0].applyForce(new Vector2(10, 0), true);
+        this.graphHandler.activateProjectile(this.projectiles[0], 1);
 
         this.start();
 
@@ -58,14 +61,15 @@ export class Simulation extends Loop {
     }
 
     public update(deltaTime: number): void {
+        this.graphHandler.updateGraph(this.elapsedTime);
         for (const rope of this.ropes) {
             rope.applyForces(deltaTime);
         }
 
         for (const projectile of this.projectiles) {
             projectile.update(deltaTime);
-            // tabContents[`Projectile ${i}`] = 
-            //   `Position: (${projectile.position.x.toFixed(1)}, ${projectile.position.y.toFixed(1)}) <br> 
+            // tabContents[`Projectile ${i}`] =
+            //   `Position: (${projectile.position.x.toFixed(1)}, ${projectile.position.y.toFixed(1)}) <br>
             //   V<sub>x</sub>: ${projectile.velocity.x.toFixed(2)} m/s <br>
             //   V<sub>y</sub>: ${projectile.velocity.y.toFixed(2)} m/s <br>
             //   V<sub>Magnitude</sub>: ${projectile.velocity.magnitude.toFixed(2)} m/s <br>

@@ -29,13 +29,13 @@
           <button class="control-button start-button">
             <svg viewBox="0 0 24 24"><path fill="currentColor" d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6 1.41-1.41zM6 6h2v12H6z"/></svg>
           </button>
-          <button class="control-button">
+          <button class="control-button back-button">
             <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
           </button>
           <button class="control-button pause-button">
             <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
           </button>
-          <button class="control-button">
+          <button class="control-button forward-button">
             <svg viewBox="0 0 24 24"><path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
           </button>
           <button class="control-button end-button">
@@ -60,10 +60,13 @@
         <button type="button" id="airResistanceButton">Toggle Air Resistance</button>
       </div>
       <div class="activeProjectileDiv">
-        <h1>asdf
-        </h1>
+        <div class="activeContainer" id="activeProjectileDiv">
+
+        </div>
       </div>
-      <div class="graphDiv">graphdiv</div>
+      <div class="graphingDiv">
+        <div id="graphDiv" class="graphDiv"></div>
+      </div>
 
       <script type="module" src="dist/core/simulation.js"></script>
       <script type="module" src="dist/graphing/graph.js"></script>
