@@ -12,7 +12,7 @@ interface AxisInfo {
 export class Obstacle {
     private axes: AxisInfo[] = [];
 
-    constructor(public readonly elasticity: number, public readonly vertices: Vector2[]) {
+    constructor(public readonly elasticity: number, public readonly staticFriction: number, public readonly kineticFriction: number, public readonly vertices: Vector2[]) {
         for (let i = 0; i < vertices.length; i++) {
             if (vertices.length === 2 && i > 1) break;
 
@@ -74,7 +74,7 @@ export class Obstacle {
             const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
             const [obsMin, obsMax]: [number, number] = info.axisRange;
 
-            if (projMin >= obsMax || obsMin >= projMax) return;
+            if (projMin >= obsMax + 0.01 || obsMin >= projMax + 0.01) return;
 
             const overlap: number = Math.min(projMax - obsMin, obsMax - projMin);
 

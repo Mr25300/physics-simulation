@@ -1,23 +1,22 @@
-import { Vector2 } from "../math/vector2";
-import { ForceType, Projectile } from "./projectile";
+import { Vector2 } from "../math/vector2.js";
+import { ForceType, Projectile } from "./projectile.js";
 
 export class Rope {
-    constructor(private origin: Vector2, private length: number, private attachment: Projectile) {
+    constructor(public readonly origin: Vector2, public readonly length: number, public readonly attachment: Projectile) {}
 
-    }
-
-    public applyForces(deltaTime: number): void {
+    public updateForces(): void {
         const centerDiff: Vector2 = this.attachment.position.subtract(this.origin);
-        const radialVelocity: number = centerDiff.unit.dot(this.attachment.velocity);
 
-        if (centerDiff.magnitude >= this.length - 1e-8 && radialVelocity > 0) {
-            const tensionForce: number = radialVelocity;
+        if (centerDiff.magnitude >= this.length - 1e-8) {
+            const radialForce: number = centerDiff.unit.dot(this.attachment.netForce);
+            const radialVel: number = centerDiff.unit.dot(this.attachment.velocity);
 
-            this.attachment.applyForce(centerDiff.unit.multiply(-radialVelocity), true, ForceType.tension);
+            if (radialForce > 0) this.attachment.applyForce(centerDiff.unit.multiply(-radialForce), false, ForceType.tension);
+            if (radialVel > 0) this.attachment.applyForce(centerDiff.unit.multiply(-radialVel), true);
         }
     }
 
-    public update(): void {
+    public updateKinematics(): void {
         const centerDiff: Vector2 = this.attachment.position.subtract(this.origin);
 
         if (centerDiff.magnitude > this.length) {

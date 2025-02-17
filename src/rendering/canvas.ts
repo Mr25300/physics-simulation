@@ -1,11 +1,22 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
-import { Projectile } from "../objects/projectile.js";
+import { ForceType } from "../objects/projectile.js";
 
 export class Canvas {
     private readonly SCREEN_UNIT_SCALE: number = 50;
-    private readonly ARROW_HEIGHT: number = 0.12;
-    private readonly ARROW_WIDTH: number = 0.13;
+    private readonly ARROW_HEIGHT: number = 0.2;
+    private readonly ARROW_WIDTH: number = 0.2;
+    private readonly ROPE_MIN_WIDTH: number = 0.05;
+    private readonly ROPE_MAX_WIDTH: number = 0.2;
+
+    private readonly FORCE_COLORS: Record<ForceType, string> = {
+        [ForceType.unspecified]: "purple",
+        [ForceType.gravity]: "blue",
+        [ForceType.normal]: "red",
+        [ForceType.tension]: "orange",
+        [ForceType.friction]: "yellow",
+        [ForceType.drag]: "white"
+    }
 
     private context: CanvasRenderingContext2D;
     private width: number;
@@ -55,12 +66,12 @@ export class Canvas {
 
     private drawArrow(origin: Vector2, vector: Vector2, style: string): void {
         vector = vector.divide(5);
-        
+
         if (vector.magnitude < 0.01) return;
 
         const arrowEnd: Vector2 = origin.add(vector);
-        const widthVec: Vector2 = vector.unit.orthogonal.multiply(vector.magnitude * this.ARROW_WIDTH / 2 + 0.05);
-        const lengthVec: Vector2 = vector.unit.multiply(vector.magnitude * this.ARROW_HEIGHT + 0.1);
+        const widthVec: Vector2 = vector.unit.orthogonal.multiply((vector.magnitude / 2 + 1) * this.ARROW_WIDTH / 2);
+        const lengthVec: Vector2 = vector.unit.multiply((vector.magnitude / 2 + 1) * this.ARROW_HEIGHT);
 
         this.context.fillStyle = style;
         this.context.strokeStyle = style;
@@ -105,9 +116,22 @@ export class Canvas {
             this.context.fill();
         }
 
+        for (const rope of Simulation.instance.ropes) {
+            const start: Vector2 = rope.origin;
+            const end: Vector2 = rope.attachment.position;
+            const distance: number = start.subtract(end).magnitude;
+            const ropeStretch: number = distance / rope.length;
+            const ropeWidth: number = this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch);
+
+            this.context.strokeStyle = "brown";
+            this.context.lineWidth = ropeWidth * this.SCREEN_UNIT_SCALE;
+
+            this.drawShape([start, end]);
+        }
+
         for (const projectile of Simulation.instance.projectiles) {
             for (const force of projectile.forces) {
-                this.drawArrow(projectile.position, force.vector, "red");
+                this.drawArrow(projectile.position, force.vector, this.FORCE_COLORS[force.type]);
             }
 
             this.drawArrow(projectile.position, projectile._velocity, "green");
