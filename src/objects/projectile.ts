@@ -94,16 +94,16 @@ export class Projectile {
         }
 
         if (this.lastCollision) {
-            const normalVel: number = -this.lastCollision.normal.dot(this._velocity);
+            const normalVel: number = this.lastCollision.normal.dot(this._velocity);
 
             if (Math.abs(normalVel) < 0.2) {
-                this._velocity = this._velocity.add(this.lastCollision.normal.multiply(normalVel));
-
                 const normalForce: number = -this.lastCollision.normal.dot(this.netForce);
 
-                this.applyForce(this.lastCollision.normal.multiply(normalForce), false, ForceType.normal);
+                this.applyForce(this.lastCollision.normal.multiply(-normalVel * this.mass), true);
 
                 if (normalForce > 0) {
+                    this.applyForce(this.lastCollision.normal.multiply(normalForce), false, ForceType.normal);
+
                     const surfaceTangent: Vector2 = this.lastCollision.normal.orthogonal;
                     const tangentialVelocity: number = surfaceTangent.dot(this._velocity);
     

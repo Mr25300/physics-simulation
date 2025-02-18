@@ -3,6 +3,7 @@
 :root {
     --background: rgb(60, 60, 80);
     --secondary-background: rgb(80, 80, 120);
+    --highlight: rgb(120, 120, 160);
     --outline: rgb(30, 30, 35);
 }
 
@@ -59,22 +60,40 @@ body {
     width: 320px;
     background-color: var(--secondary-background);
     border: 2px solid var(--outline);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .collapsible {
     padding: 4px;
 }
 
+.collapsible-select {
+    padding: 2px;
+    transition: background-color 0.2s;
+    overflow: hidden;
+}
+
 .collapsible-select:hover {
-    background-color: black;
+    cursor: pointer;
+    background-color: var(--highlight);
 }
 
 .collapsible-content {
-    transition: max-height 0.2s;
+    transition: max-height 0.2s, margin-top 0.2s;
+    margin-top: 4px;
+    overflow: hidden;
+    background-color: var(--background);
+    border: 2px solid var(--outline);
 }
 
 .collapsible-content.collapsed {
+    margin-top: 0;
     max-height: 0;
+    width: 100%;
+    height: auto;
 }
 
 /* .parent {
