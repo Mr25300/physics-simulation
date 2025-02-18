@@ -2,69 +2,78 @@ import { Graph } from "../graphing/graph.js";
 import { Projectile } from "../objects/projectile.js";
 
 export class GraphHandler {
-  private readonly GRAPH_COUNT: number = 4;
-  private _activeProjectiles: {Projectile: Projectile, graph: Graph[]}[] = [];
+  private _activatedProjectile: {Projectile: Projectile, graph: Graph, index: number};
+  private graphDiv: HTMLDivElement = document.getElementById("graphDiv") as HTMLDivElement;
+  private infoDiv: HTMLDivElement = document.getElementById("activeProjectileDiv") as HTMLDivElement;
 
-  /** 
+  /**
    * @returns Every projectile and it's graph
    * We can uuse this to display the active pronectiles in the gui
   **/
-  public get activeProjectiles(): {Projectile: Projectile, graph: Graph[]}[] {
-    return this._activeProjectiles;
+  public get activeProjectiles(): {Projectile: Projectile, graph: Graph} {
+    return this._activatedProjectile;
   }
 
-  /** 
-   * Initializes the graphs and projectile in preperation for graphing
+  /**
+   * Initializes the graphs in preperation for graphing
   **/
-  public activateProjectile(projectile: Projectile): void {
-    // Add the projectile
-    this._activeProjectiles.push({Projectile: projectile, graph: []});
-    // Create the divs  
-    const graphDiv: HTMLDivElement = document.getElementById("graphingDiv") as HTMLDivElement;
-    const vtCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
-    const atCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
-    const dtCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
-    const vytCanvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
-    graphDiv.appendChild(vtCanvas);
-    graphDiv.appendChild(atCanvas);
-    graphDiv.appendChild(dtCanvas);
-    graphDiv.appendChild(vytCanvas);
-    // Create the graphs from the elements
-    let graph: Graph = new Graph(vtCanvas, "t", "v");
-    this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
-    graph = new Graph(atCanvas, "t", "a");
-    this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
-    graph = new Graph(dtCanvas, "t", "dy");
-    this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
-    graph = new Graph(vytCanvas, "t", "vy");
-    this._activeProjectiles[this._activeProjectiles.length - 1].graph.push(graph);
+  public activateProjectile(projectile: Projectile, index: number): void {
+    // Create the graph for it
+    const canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
+    this.graphDiv.innerHTML = "";
+    this.graphDiv.appendChild(canvas);
+    let graph: Graph = new Graph(canvas, "t", "v Magnitude");
+    this._activatedProjectile = {Projectile: projectile, graph: graph, index};
+    // Initalize all the values in the property viewer
   }
 
-  /** 
-   * Renders all the graphs with accurate data
+
+  /**
+   * Updates the graph with the relevant data
    * This should ideally be called every frame of a simulation
    * @requires `time`: The current time in the simulation. Not the same as deltaTime
   **/
-  public updateAllGraphs(time: number): void {
-    for (let i = 0; i < this._activeProjectiles.length; i++) {
-      // Update all the graphs with new points
-        this._activeProjectiles[i].graph[0].addPoint(time, this._activeProjectiles[i].Projectile.velocity.magnitude);
-        this._activeProjectiles[i].graph[1].addPoint(time, this._activeProjectiles[i].Projectile.acceleration.magnitude);
-        this._activeProjectiles[i].graph[2].addPoint(time, this._activeProjectiles[i].Projectile.position.y);
-        this._activeProjectiles[i].graph[3].addPoint(time, this._activeProjectiles[i].Projectile.velocity.y);
+  public updateGraph(time: number): void {
+    // Based on the y axis, we add a certain value
+    // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    if (this._activatedProjectile.graph.yLabel === "v Magnitude") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.velocity.magnitude.toFixed(2));
+    } else if (this._activatedProjectile.graph.yLabel === "v x") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.velocity.x.toFixed(2));
+    } else if (this._activatedProjectile.graph.yLabel === "v y") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.velocity.y.toFixed(2));
+    } else if (this._activatedProjectile.graph.yLabel === "a Magnitude") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.acceleration.magnitude.toFixed(2));
+    } else if (this._activatedProjectile.graph.yLabel === "a x") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.acceleration.x.toFixed(2));
+    } else if (this._activatedProjectile.graph.yLabel === "a y") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.acceleration.y.toFixed(2));
+    } else if (this._activatedProjectile.graph.yLabel === "d x") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.position.x.toFixed(2));
+    } else if (this._activatedProjectile.graph.yLabel === "d y") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.position.y.toFixed(2));
+    } else if (this._activatedProjectile.graph.yLabel === "d Magnitude") {
+      this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.position.magnitude.toFixed(2));
     }
+    this.updateInfo()
   }
 
-  /** 
-   * Removes all graphs for the nth projectile
-   * The projectiles should be differentiated in the gui
-   * @requires `projectileIndex`: The nth projectile
-  **/
-  public deactivateProjectile(projectileIndex: number): void {
-    // Go through each graph in the projectile and remove it from the dom, then delete the entry
-    for(let i = 0; i < this.GRAPH_COUNT; i++) {
-      this._activeProjectiles[projectileIndex].graph[i].canvas.remove();
-    }
-    this._activeProjectiles.splice(projectileIndex, 1);
+  public updateInfo() {
+    // we refresh the entire thing because there is no point tracking the elements themselves
+    const projectile = this._activatedProjectile.Projectile;
+    this.infoDiv.innerHTML =
+      `<h1 style="text-align: center">Projectile ${this._activatedProjectile.index} Info:</h1> <br>
+      Position: (${projectile.position.x.toFixed(1)}, ${projectile.position.y.toFixed(1)}) <br>
+      V<sub>x</sub>: ${projectile.velocity.x.toFixed(2)} m/s <br>
+      V<sub>y</sub>: ${projectile.velocity.y.toFixed(2)} m/s <br>
+      V<sub>Magnitude</sub>: ${projectile.velocity.magnitude.toFixed(2)} m/s <br>
+      A<sub>x</sub>: ${projectile.acceleration.x.toFixed(2)} m/s<sup>2</sup> <br>
+      A<sub>y</sub>: ${projectile.acceleration.y.toFixed(2)} m/s<sup>2</sup> <br>
+      A<sub>Magnitude</sub>: ${projectile.acceleration.magnitude.toFixed(2)} m/s<sup>2</sup> <br>
+      `;
+
+
+
   }
+
 }

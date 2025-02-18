@@ -14,6 +14,8 @@ export class CollisionManager {
         let collisionInfo: CollisionInfo | undefined;
 
         for (const otherProj of Simulation.instance.projectiles) {
+            if (otherProj == projectile) continue;
+            
             const info: CollisionInfo | undefined = projectile.getCollision(otherProj);
 
             if (info && (collisionInfo === undefined || info.overlap > collisionInfo.overlap)) {

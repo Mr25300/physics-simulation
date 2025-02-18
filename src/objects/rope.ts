@@ -9,10 +9,8 @@ export class Rope {
 
         if (centerDiff.magnitude >= this.length - 1e-8) {
             const radialForce: number = centerDiff.unit.dot(this.attachment.netForce);
-            const radialVel: number = centerDiff.unit.dot(this.attachment.velocity);
 
             if (radialForce > 0) this.attachment.applyForce(centerDiff.unit.multiply(-radialForce), false, ForceType.tension);
-            if (radialVel > 0) this.attachment.applyForce(centerDiff.unit.multiply(-radialVel), true);
         }
     }
 
@@ -21,6 +19,12 @@ export class Rope {
 
         if (centerDiff.magnitude > this.length) {
             this.attachment._position = this.origin.add(centerDiff.unit.multiply(this.length));
+        }
+
+        if (centerDiff.magnitude >= this.length - 1e-8) {
+            const radialVel: number = centerDiff.unit.dot(this.attachment.velocity);
+
+            if (radialVel > 0) this.attachment.applyForce(centerDiff.unit.multiply(-radialVel * this.attachment.mass), true);
         }
     }
 }

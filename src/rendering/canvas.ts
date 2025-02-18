@@ -3,11 +3,12 @@ import { Vector2 } from "../math/vector2.js";
 import { ForceType } from "../objects/projectile.js";
 
 export class Canvas {
-    private readonly SCREEN_UNIT_SCALE: number = 50;
     private readonly ARROW_HEIGHT: number = 0.2;
     private readonly ARROW_WIDTH: number = 0.2;
     private readonly ROPE_MIN_WIDTH: number = 0.05;
     private readonly ROPE_MAX_WIDTH: number = 0.2;
+
+    private readonly BORDER_COLOR: string = "blue";
 
     private readonly FORCE_COLORS: Record<ForceType, string> = {
         [ForceType.unspecified]: "purple",
@@ -28,19 +29,45 @@ export class Canvas {
 
         this.context = context;
 
+        this.updateDimensions();
+
         new ResizeObserver(() => {
-            this.width = this.canvas.width = canvas.clientWidth;
-            this.height = this.canvas.height = canvas.clientHeight;
+            this.updateDimensions();
 
         }).observe(canvas);
     }
 
-    private pointToPixels(point: Vector2): Vector2 {
-        return new Vector2(this.width / 2, this.height / 2).add(this.vecToPixels(point));
+    private updateDimensions(): void {
+        this.width = this.canvas.width = this.canvas.clientWidth;
+        this.height = this.canvas.height = this.canvas.clientHeight;
     }
 
-    private vecToPixels(vector: Vector2): Vector2 {
-        return new Vector2(vector.x * this.SCREEN_UNIT_SCALE, -vector.y * this.SCREEN_UNIT_SCALE);
+    public scaleToPixels(scale: number): number {
+        return scale / Simulation.instance.camera.range * this.height / 2;
+    }
+
+    public pixelsToScale(scale: number): number {
+        return scale / (this.height / 2) * Simulation.instance.camera.range;
+    }
+
+    public vecToPixels(vector: Vector2): Vector2 {
+        return new Vector2(this.scaleToPixels(vector.x), this.scaleToPixels(-vector.y));
+    }
+
+    public pixelsToVec(pixels: Vector2): Vector2 {
+        return new Vector2(this.pixelsToScale(pixels.x), this.pixelsToScale(-pixels.y));
+    }
+
+    public pointToPixels(point: Vector2): Vector2 {
+        const viewPoint: Vector2 = point.subtract(Simulation.instance.camera.position);
+
+        return new Vector2(this.width / 2, this.height / 2).add(this.vecToPixels(viewPoint));
+    }
+
+    public pixelsToPoint(pixels: Vector2): Vector2 {
+        const centerOffset: Vector2 = pixels.subtract(new Vector2(this.width / 2, this.height / 2));
+
+        return Simulation.instance.camera.position.add(this.pixelsToVec(centerOffset));
     }
 
     private drawShape(corners: Vector2[], fill: boolean = false): void {
@@ -112,7 +139,7 @@ export class Canvas {
 
             this.context.fillStyle = "black";
             this.context.beginPath();
-            this.context.arc(screenPos.x, screenPos.y, projectile.radius * this.SCREEN_UNIT_SCALE, 0, 2 * Math.PI);
+            this.context.arc(screenPos.x, screenPos.y, this.scaleToPixels(projectile.radius), 0, 2 * Math.PI);
             this.context.fill();
         }
 
@@ -124,7 +151,7 @@ export class Canvas {
             const ropeWidth: number = this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch);
 
             this.context.strokeStyle = "brown";
-            this.context.lineWidth = ropeWidth * this.SCREEN_UNIT_SCALE;
+            this.context.lineWidth = this.scaleToPixels(ropeWidth);
 
             this.drawShape([start, end]);
         }

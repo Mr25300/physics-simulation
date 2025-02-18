@@ -12,7 +12,13 @@ interface AxisInfo {
 export class Obstacle {
     private axes: AxisInfo[] = [];
 
-    constructor(public readonly elasticity: number, public readonly staticFriction: number, public readonly kineticFriction: number, public readonly vertices: Vector2[]) {
+    constructor(
+        public readonly elasticity: number,
+        public readonly staticFriction: number,
+        public readonly kineticFriction: number,
+        public readonly vertices: Vector2[],
+        public readonly infiniteBarrier: boolean = false
+    ) {
         for (let i = 0; i < vertices.length; i++) {
             if (vertices.length === 2 && i > 1) break;
 
@@ -31,11 +37,18 @@ export class Obstacle {
                 tangent: edge.unit,
                 normal: edge.unit.orthogonal,
                 axisRange: this.getProjectedRange(edge.unit.orthogonal)
-            })
+            });
         }
     }
 
     private getProjectedRange(axis: Vector2): [number, number] {
+        if (this.infiniteBarrier) {
+            const projection: number = axis.dot(this.vertices[0]);
+
+            if (new Vector2(1, 0).dot(axis) < 0) return [-Infinity, projection];
+            else return [projection, Infinity];
+        }
+
         let min: number = Infinity;
         let max: number = -Infinity;
 
@@ -69,12 +82,24 @@ export class Obstacle {
         let minOverlap: number = Infinity;
         let minInfo: AxisInfo | undefined;
 
-        for (const info of this.axes) {
+        const closestVert: Vector2 = this.getClosestVertex(projectile._position);
+        const vertNormal = projectile._position.subtract(closestVert).unit;
+
+        const axes: AxisInfo[] = [...this.axes];
+
+        if (!this.infiniteBarrier) this.axes.push({
+            point: closestVert,
+            tangent: vertNormal.orthogonal,
+            normal: vertNormal,
+            axisRange: this.getProjectedRange(vertNormal)
+        });
+
+        for (const info of axes) {
             const projProjection: number = info.normal.dot(projectile.position);
             const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
             const [obsMin, obsMax]: [number, number] = info.axisRange;
 
-            if (projMin >= obsMax + 0.01 || obsMin >= projMax + 0.01) return;
+            if (projMin >= obsMax + 1e-8 || obsMin >= projMax + 1e-8) return;
 
             const overlap: number = Math.min(projMax - obsMin, obsMax - projMin);
 
@@ -87,7 +112,7 @@ export class Obstacle {
         if (minInfo) {
             const edgeProjection: number = projectile.position.subtract(minInfo.point).dot(minInfo.normal);
             const direction: number = edgeProjection < 0 ? -1 : 1;
-    
+
             return {
                 object: this,
                 overlap: minOverlap,
