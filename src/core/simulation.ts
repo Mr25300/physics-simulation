@@ -47,9 +47,9 @@ export class Simulation extends Loop {
 
         this.canvas = new Canvas(canvas);
 
-        this.projectiles.push(new Projectile(0.25, 0.5, 1, 0, 0.5, 0.5, 0.2, new Vector2(-2, -2)));
-        // this.projectiles.push(new Projectile(1, 0, 0.4, 0.3, 1, new Vector2(2, 0)));
-        this.ropes.push(new Rope(Vector2.zero, 5, this.projectiles[0]));
+        this.projectiles.push(new Projectile(0.25, 0.5, 1, 1, 0.5, 0.5, 0.2, new Vector2(-2, -2)));
+        this.projectiles.push(new Projectile(0.25, 0.5, 0, 1, 0.5, 0.5, 0.2, new Vector2(2, 0)));
+        // this.ropes.push(new Rope(Vector2.zero, 5, this.projectiles[0]));
         this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(6, -4), new Vector2(-6, -4)]));
         this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(-2.5, -2), new Vector2(2, -4), new Vector2(-2.5, -4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, -4), new Vector2(4, 4)]));

@@ -86,12 +86,11 @@ export class Projectile {
         for (const projectile of Simulation.instance.projectiles) {
             if (projectile == this) continue;
 
-            const difference: Vector2 = this._position.subtract(projectile._position);
+            const difference: Vector2 = projectile._position.subtract(this._position);
             const chargeProduct: number = this.charge * projectile.charge;
-            const forceMagnitude: number = Simulation.instance.coloumbConstant * chargeProduct / difference.magnitude ** 2;
-            const forceDirection: Vector2 = chargeProduct < 0 ? difference.unit : difference.unit.multiply(-1);
+            const electrostaticForce: number = Simulation.instance.coloumbConstant * Math.abs(chargeProduct) / difference.magnitude ** 2;
             
-            this.applyForce(forceDirection.multiply(forceMagnitude));
+            this.applyForce(difference.unit.multiply(-Util.sign(chargeProduct) * electrostaticForce));
         }
 
         if (this.lastCollision) {
@@ -158,18 +157,14 @@ export class Projectile {
                 this._velocity = collisionVel.add(info.normal.multiply(normalImpulse));
 
             } else if (info.object instanceof Projectile) {
-                // console.log(info.overlap);
-                const totalMass = this.mass + info.object.mass;
-                const overlap1: number = info.overlap * this.mass / totalMass;
-                const overlap2: number = info.overlap * info.object.mass / totalMass;
+                // DO THE COLLISION PROGRESS THING HERE TOO (only needs to be done for THIS projectile) AND ONLY DO OVERLAP FOR THIS PROJECTILE AS WELL
 
                 const normalVel1: number = info.normal.dot(this._velocity);
                 const normalVel2: number = info.normal.dot(info.object._velocity);
                 const restitution: number = this.elasticity * info.object.elasticity;
                 const impulse: number = -(1 + restitution) * (normalVel1 - normalVel2) / (1 / this.mass + 1 / info.object.mass);
 
-                this._position = this._position.add(info.normal.multiply(overlap1));
-                info.object._position = info.object._position.subtract(info.normal.multiply(overlap2));
+                this._position = this._position.add(info.normal.multiply(info.overlap));
                 
                 this.applyForce(info.normal.multiply(impulse), true);
                 info.object.applyForce(info.normal.multiply(-impulse), true);
