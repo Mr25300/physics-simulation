@@ -18,10 +18,10 @@ class Collapsible {
         //     this.content.classList
         // }
 
-        if (this.content.classList.contains("collapsed")) this.content.style.maxHeight = this.content.scrollHeight + "px";
+        if (this.element.classList.contains("collapsed")) this.content.style.maxHeight = this.content.scrollHeight + "px";
         else this.content.style.maxHeight = "0px";
 
-        this.content.classList.toggle("collapsed");
+        this.element.classList.toggle("collapsed");
     }
 }
 
