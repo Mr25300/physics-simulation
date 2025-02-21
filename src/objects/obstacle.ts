@@ -100,10 +100,8 @@ export class Obstacle {
 
             const overlap: number = this.inverse ? Math.max(obsMin - projMin, projMax - obsMax) : Math.min(projMax - obsMin, obsMax - projMin);
 
-            if (overlap < -1e-8) {
-                if (this.inverse) continue;
-                else return;
-            }
+            if (this.inverse && overlap < -1e-4) continue;
+            else if (!this.inverse && overlap < -1e-8) return;
 
             if ((!this.inverse && overlap < minOverlap) || (this.inverse && overlap > minOverlap)) {
                 minOverlap = overlap;
@@ -112,6 +110,8 @@ export class Obstacle {
         }
 
         if (minInfo) {
+            console.log(minOverlap);
+
             const edgeProjection: number = projectile.position.subtract(minInfo.point).dot(minInfo.normal);
             const direction: number = edgeProjection < 0 ? -1 : 1;
 

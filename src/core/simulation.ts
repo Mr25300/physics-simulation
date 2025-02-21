@@ -49,18 +49,18 @@ export class Simulation extends Loop {
 
         this.canvas = new Canvas(canvas);
 
-        this.projectiles.push(new Projectile(0.25, 0.5, 1, 1, 0.5, 0.5, 0.2, new Vector2(-2, 5)));
+        // this.projectiles.push(new Projectile(0.25, 0.5, 1, 1, 0.5, 0.5, 0.2, new Vector2(-2, 5)));
         this.projectiles.push(new Projectile(0.25, 0.5, 0, 1, 0.5, 0.5, 0.2, new Vector2(2, 0)));
         // this.ropes.push(new Rope(Vector2.zero, 4, this.projectiles[0]));
-        this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(6, -4), new Vector2(-6, -4), new Vector2(-6, -6), new Vector2(6, -6)]));
-        this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(-2.5, -2), new Vector2(2, -4), new Vector2(-2.5, -4)]));
+        // this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(6, -4), new Vector2(-6, -4), new Vector2(-6, -6), new Vector2(6, -6)]));
+        // this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(-2.5, -2), new Vector2(2, -4), new Vector2(-2.5, -4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, -4), new Vector2(4, 4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, 4), new Vector2(-4, 4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(-4, 4), new Vector2(-4, -4)]));
 
-        this.obstacles.push(new Obstacle(1, 0, 0, [new Vector2(-20, -20), new Vector2(20, -20), new Vector2(20, 20), new Vector2(-20, 20)], true));
+        this.obstacles.push(new Obstacle(1, 0, 0, [new Vector2(-5, -5), new Vector2(5, -5), new Vector2(5, 5), new Vector2(-5, 5)], true));
 
-        // this.projectiles[0].applyForce(new Vector2(0, 10), true);
+        this.projectiles[0].applyForce(new Vector2(10, 0), true);
 
         // this.obstacles.push(new Obstacle(1, [
         //     new Vector2(-1, -3),
