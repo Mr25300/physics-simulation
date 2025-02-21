@@ -17,7 +17,7 @@ export class Obstacle {
         public readonly staticFriction: number,
         public readonly kineticFriction: number,
         public readonly vertices: Vector2[],
-        public readonly infiniteBarrier: boolean = false
+        public readonly inverse: boolean = false
     ) {
         for (let i = 0; i < vertices.length; i++) {
             if (vertices.length === 2 && i > 1) break;
@@ -42,13 +42,6 @@ export class Obstacle {
     }
 
     private getProjectedRange(axis: Vector2): [number, number] {
-        if (this.infiniteBarrier) {
-            const projection: number = axis.dot(this.vertices[0]);
-
-            if (new Vector2(1, 0).dot(axis) < 0) return [-Infinity, projection];
-            else return [projection, Infinity];
-        }
-
         let min: number = Infinity;
         let max: number = -Infinity;
 
@@ -79,31 +72,40 @@ export class Obstacle {
     }
 
     public getCollision(projectile: Projectile): CollisionInfo | undefined {
-        let minOverlap: number = Infinity;
+        let minOverlap: number = this.inverse ? -Infinity : Infinity;
         let minInfo: AxisInfo | undefined;
 
         const closestVert: Vector2 = this.getClosestVertex(projectile._position);
         const vertNormal = projectile._position.subtract(closestVert).unit;
 
-        const axes: AxisInfo[] = [...this.axes];
+        const axes: AxisInfo[] = this.inverse ? this.axes : [...this.axes];
 
-        if (!this.infiniteBarrier) this.axes.push({
+        if (!this.inverse) axes.push({
             point: closestVert,
             tangent: vertNormal.orthogonal,
             normal: vertNormal,
             axisRange: this.getProjectedRange(vertNormal)
-        });
+        })
 
         for (const info of axes) {
             const projProjection: number = info.normal.dot(projectile.position);
             const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
             const [obsMin, obsMax]: [number, number] = info.axisRange;
 
-            if (projMin >= obsMax + 1e-8 || obsMin >= projMax + 1e-8) return;
+            // let overlap: number | undefined;
+            // if (overlap !== undefined) // DO MINOVERLAP COMPARISON STUFF
 
-            const overlap: number = Math.min(projMax - obsMin, obsMax - projMin);
+            // if (!this.inverse && (projMin >= obsMax + 1e-8 || obsMin >= projMax + 1e-8)) return;
+            // else if (this.inverse && (projMin > obsMin && projMax < obsMin)) continue;
 
-            if (overlap < minOverlap) {
+            const overlap: number = this.inverse ? Math.max(obsMin - projMin, projMax - obsMax) : Math.min(projMax - obsMin, obsMax - projMin);
+
+            if (overlap < -1e-8) {
+                if (this.inverse) continue;
+                else return;
+            }
+
+            if ((!this.inverse && overlap < minOverlap) || (this.inverse && overlap > minOverlap)) {
                 minOverlap = overlap;
                 minInfo = info;
             }

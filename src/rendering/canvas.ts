@@ -131,7 +131,7 @@ export class Canvas {
 
             this.context.closePath();
             this.context.stroke();
-            this.context.fill();
+            // this.context.fill();
         }
 
         for (const projectile of Simulation.instance.projectiles) {
