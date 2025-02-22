@@ -17,19 +17,16 @@ export interface Constants {
 export class Simulation extends Loop {
     public fixedTimestep: number = 0.01;
 
-    public airDensity: number = 0;//1.225;
+    public airDensity: number = 1.225;
     public gravityDirection: Vector2 = new Vector2(0, -1);
     public gravityAcceleration: number = 9.81;
     public coloumbConstant: number = 30;
     public gravitationalConstant: number = 1;
 
-    private borderWidth: number = 20;
-    private borderHeight: number = 10;
-
     public camera: Camera = new Camera();
     public controller: Controller = new Controller();
     public canvas: Renderer;
-    private graphHandler: GraphHandler = new GraphHandler();
+    // private graphHandler: GraphHandler = new GraphHandler();
 
     public readonly ropes: Rope[] = [];
     public readonly projectiles: Projectile[] = [];
@@ -49,18 +46,18 @@ export class Simulation extends Loop {
 
         this.canvas = new Renderer(canvas);
 
-        this.projectiles.push(new Projectile(0.25, 0.5, 1, 1, 0.5, 0.5, 0.2, new Vector2(-2, 5)));
+        this.projectiles.push(new Projectile(0.25, 0.5, 1, 1, 0.5, 0.5, 0.2, new Vector2(-1, 5)));
         this.projectiles.push(new Projectile(0.25, 0.5, 0, 1, 0.5, 0.5, 0.2, new Vector2(1, 0)));
-        // this.ropes.push(new Rope(Vector2.zero, 4, this.projectiles[0]));
+        this.ropes.push(new Rope(Vector2.zero, 4, this.projectiles[0]));
         this.obstacles.push(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-6, -6), new Vector2(6, -6), new Vector2(6, -4), new Vector2(-6, -4)]));
         this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(-2.5, -2), new Vector2(-2.5, -4), new Vector2(2, -4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, -4), new Vector2(4, 4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, 4), new Vector2(-4, 4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(-4, 4), new Vector2(-4, -4)]));
 
-        this.obstacles.push(new Obstacle(0, 0, 0, [new Vector2(-20, -10), new Vector2(20, -10), new Vector2(20, 10), new Vector2(-20, 10)], 1, true));
+        this.obstacles.push(new Obstacle(0, 0, 0, [new Vector2(-20, -10), new Vector2(20, -10), new Vector2(20, 10), new Vector2(-20, 10)], 5, true));
 
-        // this.projectiles[0].applyForce(new Vector2(10 * this.projectiles[0].mass, 0), true);
+        // this.projectiles[0].applyForce(new Vector2(0, -40 * this.projectiles[0].mass), true);
 
         // this.obstacles.push(new Obstacle(1, [
         //     new Vector2(-1, -3),

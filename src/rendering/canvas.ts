@@ -41,29 +41,34 @@ export class RenderLayer {
 
         const pixelRad: number = this.renderer.scaleToPixels(radius);
 
-        for (let i = 0; i < vertices.length + 1; i++) {
+        for (let i = 0; i < vertices.length; i++) {
             const pixelVert: Vector2 = pixelVertices[i % vertices.length];
+            const prevVert: Vector2 = pixelVertices[(i - 1 + vertices.length) % vertices.length];
+            const nextVert: Vector2 = pixelVertices[(i + 1) % vertices.length];
 
-            if (i === 0) this.context.moveTo(pixelVert.x, pixelVert.y); // ADD RADIUS SPACING HERE
-            else {
-                const prevVert: Vector2 = pixelVertices[(i - 1 + vertices.length) % vertices.length];
-                const nextVert: Vector2 = pixelVertices[(i + 1) % vertices.length];
+            let startAngle: number;
+            let endAngle: number;
 
+            if (vertices.length > 1) {
                 const prevDir: Vector2 = pixelVert.subtract(prevVert).unit;
                 const nextDir: Vector2 = nextVert.subtract(pixelVert).unit;
-
                 const pixelRadStart: Vector2 = prevVert.add(prevDir.orthogonal.multiply(pixelRad));
                 const pixelRadEnd: Vector2 = pixelVert.add(prevDir.orthogonal.multiply(pixelRad));
 
-                const startAngle: number = prevDir.angle;
-                const endAngle: number = nextDir.angle;
+                startAngle = prevDir.angle;
+                endAngle = nextDir.angle;
 
-                this.context.lineTo(pixelRadStart.x, pixelRadStart.y);
+                if (i === 0) this.context.moveTo(pixelRadStart.x, pixelRadStart.y);
+                else this.context.lineTo(pixelRadStart.x, pixelRadStart.y);
+
                 this.context.lineTo(pixelRadEnd.x, pixelRadEnd.y);
-                this.context.arc(pixelVert.x, pixelVert.y, pixelRad, startAngle + Math.PI / 2, endAngle + Math.PI / 2, true);
 
-                // this.context.arcTo(arcPoint1.x, arcPoint1.y, arcPoint2.x, arcPoint2.y, pixelRad);
+            } else {
+                startAngle = -0.001;
+                endAngle = 2 * Math.PI;
             }
+
+            this.context.arc(pixelVert.x, pixelVert.y, pixelRad, startAngle + Math.PI / 2, endAngle + Math.PI / 2, true);
         }
 
         this.context.closePath();
@@ -200,24 +205,26 @@ export class Renderer {
                 stroke: true,
                 fillStyle: "grey",
                 strokeStyle: "black",
-                strokeWidth: 2
+                strokeWidth: 1
             });
         }
 
         for (const projectile of Simulation.instance.projectiles) {
-            const screenPos = this.pointToPixels(projectile.position);
-
-            this.context.fillStyle = "black";
-            this.context.beginPath();
-            this.context.arc(screenPos.x, screenPos.y, this.scaleToPixels(projectile.radius), 0, 2 * Math.PI);
-            this.context.fill();
+            this.mainLayer.drawShape([projectile.position], projectile.radius, {
+                fill: true,
+                stroke: true,
+                fillStyle: "white",
+                strokeStyle: "black",
+                strokeWidth: 1
+            });
 
             for (const force of projectile.forces) {
                 this.vectorLayer.drawArrow(projectile.position, force.vector, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
                     fill: true,
                     stroke: true,
                     fillStyle: this.FORCE_COLORS[force.type],
-                    strokeStyle: "black"
+                    strokeStyle: "black",
+                    strokeWidth: 1
                 });
             }
 
@@ -225,43 +232,37 @@ export class Renderer {
                 fill: true,
                 stroke: true,
                 fillStyle: "green",
-                strokeStyle: "black"
+                strokeStyle: "black",
+                strokeWidth: 1
             });
         }
 
-        // for (const rope of Simulation.instance.ropes) {
-        //     const start: Vector2 = rope.origin;
-        //     const end: Vector2 = rope.attachment.position;
-        //     const distance: number = start.subtract(end).magnitude;
-        //     const ropeStretch: number = distance / rope.length;
-        //     const ropeWidth: number = this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch);
+        for (const rope of Simulation.instance.ropes) {
+            const start: Vector2 = rope.origin;
+            const end: Vector2 = rope.attachment.position;
+            const distance: number = start.subtract(end).magnitude;
+            const ropeStretch: number = distance / rope.length;
+            const ropeWidth: number = this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch);
 
-        //     this.context.strokeStyle = "brown";
-        //     this.context.lineWidth = this.scaleToPixels(ropeWidth);
+            this.context.strokeStyle = "brown";
+            this.context.lineWidth = this.scaleToPixels(ropeWidth);
 
-        //     this.drawShape([start, end]);
-        // }
-
-        // const image: ImageData = this.context.createImageData(this.width, this.height);
+            this.mainLayer.drawShape([start, end], ropeWidth, {
+                fill: true,
+                stroke: true,
+                fillStyle: "brown",
+                strokeStyle: "black",
+                strokeWidth: 1
+            });
+        }
 
         this.context.drawImage(this.inverseObstacleLayer.element, 0, 0);
         this.context.drawImage(this.mainLayer.element, 0, 0);
         this.context.drawImage(this.vectorLayer.element, 0, 0);
 
-        // let start = Math.PI;
-        // let end = Math.PI / 2;
-
-        // this.context.beginPath();
-        // this.context.arc(400, 400, 50, start + Math.PI / 2, end + Math.PI / 2, true);
-        // this.context.lineTo(0, 0);
-        // this.context.stroke();
-
-        // for (const projectile of Simulation.instance.projectiles) {
-        //     for (const force of projectile.forces) {
-        //         this.drawArrow(projectile.position, force.vector, this.FORCE_COLORS[force.type]);
-        //     }
-
-        //     this.drawArrow(projectile.position, projectile._velocity, "green");
-        // }
+        this.context.beginPath();
+        this.context.moveTo(20, 20);
+        this.context.bezierCurveTo(20, 100, 200, 100, 100, -100);
+        this.context.stroke();
     }
 }

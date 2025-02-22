@@ -64,6 +64,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    overflow: auto;
 }
 
 .collapsible {
@@ -100,11 +101,10 @@ body {
 
 .collapsible .collapsible-content {
     margin-top: 0px;
-    max-height: 0;
-    height: auto;
+    height: 0;
     width: 100%;
     overflow: hidden;
-    transition: max-height 0.2s, margin-top 0.2s;
+    transition: height 0.2s, margin-top 0.2s;
 }
 
 .collapsible.expanded .collapsible-content {
