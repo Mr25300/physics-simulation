@@ -2,9 +2,118 @@ import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { ForceType } from "../objects/projectile.js";
 
-export class Canvas {
+interface DrawStyle {
+    fill?: boolean;
+    fillInvert?: boolean;
+    stroke?: boolean;
+    fillStyle?: string;
+    strokeStyle?: string;
+    strokeWidth?: number;
+}
+
+export class RenderLayer {
+    public readonly element: HTMLCanvasElement;
+    public readonly context: CanvasRenderingContext2D;
+
+    constructor(private renderer: Renderer) {
+        this.element = document.createElement("canvas");
+        this.context = this.element.getContext("2d")!;
+        if (!this.context) throw new Error("Failed to get mask canvas 2d context.");
+    }
+
+    public updateDimensions(width: number, height: number): void {
+        this.element.width = width;
+        this.element.height = height;
+    }
+
+    public drawShape(vertices: Vector2[], radius: number, drawStyle: DrawStyle): void {
+        const pixelVertices: Vector2[] = [];
+
+        for (let i = 0; i < vertices.length; i++) {
+            pixelVertices[i] = this.renderer.pointToPixels(vertices[i]);
+        }
+
+        if (drawStyle.fillStyle) this.context.fillStyle = drawStyle.fillStyle;
+        if (drawStyle.strokeStyle) this.context.strokeStyle = drawStyle.strokeStyle;
+        if (drawStyle.strokeWidth) this.context.lineWidth = drawStyle.strokeWidth;
+
+        this.context.beginPath();
+
+        const pixelRad: number = this.renderer.scaleToPixels(radius);
+
+        for (let i = 0; i < vertices.length + 1; i++) {
+            const pixelVert: Vector2 = pixelVertices[i % vertices.length];
+
+            if (i === 0) this.context.moveTo(pixelVert.x, pixelVert.y); // ADD RADIUS SPACING HERE
+            else {
+                const prevVert: Vector2 = pixelVertices[(i - 1 + vertices.length) % vertices.length];
+                const nextVert: Vector2 = pixelVertices[(i + 1) % vertices.length];
+
+                const prevDir: Vector2 = pixelVert.subtract(prevVert).unit;
+                const nextDir: Vector2 = nextVert.subtract(pixelVert).unit;
+
+                const pixelRadStart: Vector2 = prevVert.add(prevDir.orthogonal.multiply(pixelRad));
+                const pixelRadEnd: Vector2 = pixelVert.add(prevDir.orthogonal.multiply(pixelRad));
+
+                const startAngle: number = prevDir.angle;
+                const endAngle: number = nextDir.angle;
+
+                this.context.lineTo(pixelRadStart.x, pixelRadStart.y);
+                this.context.lineTo(pixelRadEnd.x, pixelRadEnd.y);
+                this.context.arc(pixelVert.x, pixelVert.y, pixelRad, startAngle + Math.PI / 2, endAngle + Math.PI / 2, true);
+
+                // this.context.arcTo(arcPoint1.x, arcPoint1.y, arcPoint2.x, arcPoint2.y, pixelRad);
+            }
+        }
+
+        this.context.closePath();
+
+        if (drawStyle.fill && drawStyle.fillInvert) {
+            this.context.fillRect(0, 0, this.element.width, this.element.height);
+            this.context.globalCompositeOperation = "destination-out";
+        }
+
+        if (drawStyle.fill) this.context.fill();
+        if (drawStyle.fill && drawStyle.fillInvert) this.context.globalCompositeOperation = "source-over";
+
+        if (drawStyle.stroke) this.context.stroke();
+    }
+
+    public drawCircle(position: Vector2, radius: number, drawStyle: DrawStyle): void {
+        const screenPos: Vector2 = this.renderer.pointToPixels(position);
+
+        this.context.beginPath();
+        this.context.arc(screenPos.x, screenPos.y, this.renderer.scaleToPixels(radius), 0, 2 * Math.PI);
+        this.context.fill();
+    }
+
+    public drawArrow(origin: Vector2, vector: Vector2, tipWidth: number, tipHeight: number, lineWidth: number, drawStyle: DrawStyle): void {
+        vector = vector.divide(5);
+
+        if (vector.magnitude < 0.001) return;
+
+        const arrowEnd: Vector2 = origin.add(vector);
+        const thicknessVec: Vector2 = vector.unit.orthogonal.multiply(lineWidth);
+        const widthVec: Vector2 = vector.unit.orthogonal.multiply((vector.magnitude / 2 + 1) * tipWidth / 2);
+        const lengthVec: Vector2 = vector.unit.multiply((vector.magnitude / 2 + 1) * tipHeight);
+
+        this.drawShape([
+            origin.add(thicknessVec),
+            arrowEnd.add(thicknessVec),
+            arrowEnd.add(widthVec),
+            arrowEnd.add(lengthVec),
+            arrowEnd.subtract(widthVec),
+            arrowEnd.subtract(thicknessVec),
+            origin.subtract(thicknessVec)
+
+        ], 0, drawStyle);
+    }
+}
+
+export class Renderer {
     private readonly ARROW_HEIGHT: number = 0.2;
     private readonly ARROW_WIDTH: number = 0.2;
+    private readonly ARROW_THICKNESS: number = 0.03;
     private readonly ROPE_MIN_WIDTH: number = 0.05;
     private readonly ROPE_MAX_WIDTH: number = 0.2;
 
@@ -23,11 +132,13 @@ export class Canvas {
     private width: number;
     private height: number;
 
-    constructor(private canvas: HTMLCanvasElement) {
-        const context: CanvasRenderingContext2D | null = canvas.getContext("2d");
-        if (!context) throw new Error("Failed to get canvas 2d context.");
+    private inverseObstacleLayer: RenderLayer = new RenderLayer(this);
+    private mainLayer: RenderLayer = new RenderLayer(this);
+    private vectorLayer: RenderLayer = new RenderLayer(this);
 
-        this.context = context;
+    constructor(private canvas: HTMLCanvasElement) {
+        this.context = canvas.getContext("2d")!;
+        if (!this.context) throw new Error("Failed to get canvas 2d context.");
 
         this.updateDimensions();
 
@@ -40,6 +151,10 @@ export class Canvas {
     private updateDimensions(): void {
         this.width = this.canvas.width = this.canvas.clientWidth;
         this.height = this.canvas.height = this.canvas.clientHeight;
+
+        this.inverseObstacleLayer.updateDimensions(this.width, this.height);
+        this.mainLayer.updateDimensions(this.width, this.height);
+        this.vectorLayer.updateDimensions(this.width, this.height);
     }
 
     public scaleToPixels(scale: number): number {
@@ -70,68 +185,23 @@ export class Canvas {
         return Simulation.instance.camera.position.add(this.pixelsToVec(centerOffset));
     }
 
-    private drawShape(corners: Vector2[], fill: boolean = false): void {
-        const pixelCorners: Vector2[] = [];
-
-        for (let i = 0; i < corners.length; i++) {
-            pixelCorners[i] = this.pointToPixels(corners[i]);
-        }
-
-        this.context.beginPath();
-
-        for (let i = 0; i < corners.length + 1; i++) {
-            const corner: Vector2 = pixelCorners[i % corners.length];
-
-            if (i === 0) this.context.moveTo(corner.x, corner.y);
-            else this.context.lineTo(corner.x, corner.y);
-        }
-
-        this.context.closePath();
-        if (fill) this.context.fill();
-        else this.context.stroke();
-    }
-
-    private drawArrow(origin: Vector2, vector: Vector2, style: string): void {
-        vector = vector.divide(5);
-
-        if (vector.magnitude < 0.01) return;
-
-        const arrowEnd: Vector2 = origin.add(vector);
-        const widthVec: Vector2 = vector.unit.orthogonal.multiply((vector.magnitude / 2 + 1) * this.ARROW_WIDTH / 2);
-        const lengthVec: Vector2 = vector.unit.multiply((vector.magnitude / 2 + 1) * this.ARROW_HEIGHT);
-
-        this.context.fillStyle = style;
-        this.context.strokeStyle = style;
-        this.context.lineWidth = 2;
-
-        this.drawShape([origin, arrowEnd]);
-        this.drawShape([arrowEnd.add(widthVec), arrowEnd.subtract(widthVec), arrowEnd.add(lengthVec)], true);
-    }
-
     public render(): void {
         this.context.clearRect(0, 0, this.width, this.height);
+        this.inverseObstacleLayer.context.clearRect(0, 0, this.width, this.height);
+        this.mainLayer.context.clearRect(0, 0, this.width, this.height);
+        this.vectorLayer.context.clearRect(0, 0, this.width, this.height);
 
         for (const obstacle of Simulation.instance.obstacles) {
-            const screenVertices: Vector2[] = [];
+            const drawLayer: RenderLayer = obstacle.inverse ? this.inverseObstacleLayer : this.mainLayer;
 
-            for (const vertex of obstacle.vertices) {
-                screenVertices.push(this.pointToPixels(vertex));
-            }
-            
-            this.context.strokeStyle = "black";
-            this.context.fillStyle = "black";
-            this.context.beginPath();
-            this.context.moveTo(screenVertices[0].x, screenVertices[0].y);
-
-            for (let i = 0; i < screenVertices.length; i++) {
-                const vertex: Vector2 = screenVertices[(i + 1) % screenVertices.length];
-
-                this.context.lineTo(vertex.x, vertex.y);
-            }
-
-            this.context.closePath();
-            this.context.stroke();
-            // this.context.fill();
+            drawLayer.drawShape(obstacle.vertices, obstacle.radius, {
+                fill: true,
+                fillInvert: obstacle.inverse,
+                stroke: true,
+                fillStyle: "grey",
+                strokeStyle: "black",
+                strokeWidth: 2
+            });
         }
 
         for (const projectile of Simulation.instance.projectiles) {
@@ -141,27 +211,57 @@ export class Canvas {
             this.context.beginPath();
             this.context.arc(screenPos.x, screenPos.y, this.scaleToPixels(projectile.radius), 0, 2 * Math.PI);
             this.context.fill();
-        }
 
-        for (const rope of Simulation.instance.ropes) {
-            const start: Vector2 = rope.origin;
-            const end: Vector2 = rope.attachment.position;
-            const distance: number = start.subtract(end).magnitude;
-            const ropeStretch: number = distance / rope.length;
-            const ropeWidth: number = this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch);
-
-            this.context.strokeStyle = "brown";
-            this.context.lineWidth = this.scaleToPixels(ropeWidth);
-
-            this.drawShape([start, end]);
-        }
-
-        for (const projectile of Simulation.instance.projectiles) {
             for (const force of projectile.forces) {
-                this.drawArrow(projectile.position, force.vector, this.FORCE_COLORS[force.type]);
+                this.vectorLayer.drawArrow(projectile.position, force.vector, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+                    fill: true,
+                    stroke: true,
+                    fillStyle: this.FORCE_COLORS[force.type],
+                    strokeStyle: "black"
+                });
             }
 
-            this.drawArrow(projectile.position, projectile._velocity, "green");
+            this.vectorLayer.drawArrow(projectile.position, projectile._velocity, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+                fill: true,
+                stroke: true,
+                fillStyle: "green",
+                strokeStyle: "black"
+            });
         }
+
+        // for (const rope of Simulation.instance.ropes) {
+        //     const start: Vector2 = rope.origin;
+        //     const end: Vector2 = rope.attachment.position;
+        //     const distance: number = start.subtract(end).magnitude;
+        //     const ropeStretch: number = distance / rope.length;
+        //     const ropeWidth: number = this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch);
+
+        //     this.context.strokeStyle = "brown";
+        //     this.context.lineWidth = this.scaleToPixels(ropeWidth);
+
+        //     this.drawShape([start, end]);
+        // }
+
+        // const image: ImageData = this.context.createImageData(this.width, this.height);
+
+        this.context.drawImage(this.inverseObstacleLayer.element, 0, 0);
+        this.context.drawImage(this.mainLayer.element, 0, 0);
+        this.context.drawImage(this.vectorLayer.element, 0, 0);
+
+        // let start = Math.PI;
+        // let end = Math.PI / 2;
+
+        // this.context.beginPath();
+        // this.context.arc(400, 400, 50, start + Math.PI / 2, end + Math.PI / 2, true);
+        // this.context.lineTo(0, 0);
+        // this.context.stroke();
+
+        // for (const projectile of Simulation.instance.projectiles) {
+        //     for (const force of projectile.forces) {
+        //         this.drawArrow(projectile.position, force.vector, this.FORCE_COLORS[force.type]);
+        //     }
+
+        //     this.drawArrow(projectile.position, projectile._velocity, "green");
+        // }
     }
 }

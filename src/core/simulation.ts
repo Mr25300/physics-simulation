@@ -1,6 +1,6 @@
 import { Vector2 } from "../math/vector2.js";
 import { Projectile } from "../objects/projectile.js";
-import { Canvas } from "../rendering/canvas.js";
+import { Renderer } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { Obstacle } from "../objects/obstacle.js";
 import { Rope } from "../objects/rope.js";
@@ -17,7 +17,7 @@ export interface Constants {
 export class Simulation extends Loop {
     public fixedTimestep: number = 0.01;
 
-    public airDensity: number = 1.225;
+    public airDensity: number = 0;//1.225;
     public gravityDirection: Vector2 = new Vector2(0, -1);
     public gravityAcceleration: number = 9.81;
     public coloumbConstant: number = 30;
@@ -28,7 +28,7 @@ export class Simulation extends Loop {
 
     public camera: Camera = new Camera();
     public controller: Controller = new Controller();
-    public canvas: Canvas;
+    public canvas: Renderer;
     private graphHandler: GraphHandler = new GraphHandler();
 
     public readonly ropes: Rope[] = [];
@@ -47,20 +47,20 @@ export class Simulation extends Loop {
         const canvas: HTMLCanvasElement | null = document.querySelector("#simulation-screen");
         if (!canvas) throw new Error("Failed to get canvas.");
 
-        this.canvas = new Canvas(canvas);
+        this.canvas = new Renderer(canvas);
 
-        // this.projectiles.push(new Projectile(0.25, 0.5, 1, 1, 0.5, 0.5, 0.2, new Vector2(-2, 5)));
-        this.projectiles.push(new Projectile(0.25, 0.5, 0, 1, 0.5, 0.5, 0.2, new Vector2(2, 0)));
+        this.projectiles.push(new Projectile(0.25, 0.5, 1, 1, 0.5, 0.5, 0.2, new Vector2(-2, 5)));
+        this.projectiles.push(new Projectile(0.25, 0.5, 0, 1, 0.5, 0.5, 0.2, new Vector2(1, 0)));
         // this.ropes.push(new Rope(Vector2.zero, 4, this.projectiles[0]));
-        // this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(6, -4), new Vector2(-6, -4), new Vector2(-6, -6), new Vector2(6, -6)]));
-        // this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(-2.5, -2), new Vector2(2, -4), new Vector2(-2.5, -4)]));
+        this.obstacles.push(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-6, -6), new Vector2(6, -6), new Vector2(6, -4), new Vector2(-6, -4)]));
+        this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(-2.5, -2), new Vector2(-2.5, -4), new Vector2(2, -4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, -4), new Vector2(4, 4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, 4), new Vector2(-4, 4)]));
         // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(-4, 4), new Vector2(-4, -4)]));
 
-        this.obstacles.push(new Obstacle(1, 0, 0, [new Vector2(-5, -5), new Vector2(5, -5), new Vector2(5, 5), new Vector2(-5, 5)], true));
+        this.obstacles.push(new Obstacle(0, 0, 0, [new Vector2(-20, -10), new Vector2(20, -10), new Vector2(20, 10), new Vector2(-20, 10)], 1, true));
 
-        this.projectiles[0].applyForce(new Vector2(10, 0), true);
+        // this.projectiles[0].applyForce(new Vector2(10 * this.projectiles[0].mass, 0), true);
 
         // this.obstacles.push(new Obstacle(1, [
         //     new Vector2(-1, -3),
@@ -85,6 +85,15 @@ export class Simulation extends Loop {
         // this.accGraph = new Graph(accCanvas, "t", "a");
 
         // this.staticObstacles.push(new StaticObstacle([[10, 10], [10, 20], [20, 20], [20, 10]], 0.5));
+
+        document.addEventListener("keydown", (event: KeyboardEvent) => {
+            if (event.key === "p") {
+                if (this.running) this.stop();
+                else this.start();
+            } else if (event.key === "r") {
+                this.update(1 / 60);
+            }
+        });
     }
 
     public update(deltaTime: number): void {

@@ -3,8 +3,6 @@ import { CollisionInfo } from "./collisions.js";
 import { Projectile } from "./projectile.js";
 
 interface AxisInfo {
-    point: Vector2;
-    tangent: Vector2;
     normal: Vector2;
     axisRange: [number, number];
 }
@@ -17,6 +15,7 @@ export class Obstacle {
         public readonly staticFriction: number,
         public readonly kineticFriction: number,
         public readonly vertices: Vector2[],
+        public readonly radius: number = 0,
         public readonly inverse: boolean = false
     ) {
         for (let i = 0; i < vertices.length; i++) {
@@ -24,19 +23,17 @@ export class Obstacle {
 
             const vertex1: Vector2 = vertices[i];
             const vertex2: Vector2 = vertices[(i + 1) % vertices.length];
-            const edge: Vector2 = vertex2.subtract(vertex1);
+            const normal: Vector2 = vertex2.subtract(vertex1).unit.orthogonal;
 
             const exists: boolean = this.axes.some((existing: AxisInfo) => {
-                return Math.abs(edge.unit.dot(existing.tangent)) > 0.999;
+                return Math.abs(normal.dot(existing.normal)) > 0.999;
             });
 
             if (exists) continue;
 
             this.axes.push({
-                point: vertex1,
-                tangent: edge.unit,
-                normal: edge.unit.orthogonal,
-                axisRange: this.getProjectedRange(edge.unit.orthogonal)
+                normal: normal,
+                axisRange: this.getProjectedRange(normal)
             });
         }
     }
@@ -52,7 +49,7 @@ export class Obstacle {
             if (projection > max) max = projection;
         }
 
-        return [min, max];
+        return [min - this.radius, max + this.radius];
     }
 
     public getClosestVertex(position: Vector2): Vector2 {
@@ -72,22 +69,19 @@ export class Obstacle {
     }
 
     public getCollision(projectile: Projectile): CollisionInfo | undefined {
+        let intersection: boolean = false;
         let minOverlap: number = this.inverse ? -Infinity : Infinity;
-        let minInfo: AxisInfo | undefined;
+        let minNormal: Vector2 = Vector2.zero;
 
         const closestVert: Vector2 = this.getClosestVertex(projectile._position);
         const vertNormal = projectile._position.subtract(closestVert).unit;
-
-        const axes: AxisInfo[] = this.inverse ? this.axes : [...this.axes];
-
-        if (!this.inverse) axes.push({
-            point: closestVert,
-            tangent: vertNormal.orthogonal,
+        
+        const projVertAxis: AxisInfo = {
             normal: vertNormal,
             axisRange: this.getProjectedRange(vertNormal)
-        })
+        }
 
-        for (const info of axes) {
+        for (const info of [...this.axes, projVertAxis]) {
             const projProjection: number = info.normal.dot(projectile.position);
             const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
             const [obsMin, obsMax]: [number, number] = info.axisRange;
@@ -100,26 +94,33 @@ export class Obstacle {
 
             const overlap: number = this.inverse ? Math.max(obsMin - projMin, projMax - obsMax) : Math.min(projMax - obsMin, obsMax - projMin);
 
-            if (this.inverse && overlap < -1e-4) continue;
-            else if (!this.inverse && overlap < -1e-8) return;
+            // if (overlap < -1e-8) {
+            //     if (this.inverse) continue;
+            //     else return;
+            // }
+
+            if (overlap < -1e-8) {
+                if (this.inverse) continue;
+                else return;
+            }
 
             if ((!this.inverse && overlap < minOverlap) || (this.inverse && overlap > minOverlap)) {
+                const projCenter: number = (projMin + projMax) / 2;
+                const obsCenter: number = (obsMin + obsMax) / 2;
+
+                let normalDir: number = this.inverse ? -1 : 1;
+                if (projCenter - obsCenter < 0) normalDir *= -1;
+
+                intersection = true;
                 minOverlap = overlap;
-                minInfo = info;
+                minNormal = info.normal.multiply(normalDir);
             }
         }
 
-        if (minInfo) {
-            console.log(minOverlap);
-
-            const edgeProjection: number = projectile.position.subtract(minInfo.point).dot(minInfo.normal);
-            const direction: number = edgeProjection < 0 ? -1 : 1;
-
-            return {
-                object: this,
-                overlap: minOverlap,
-                normal: minInfo!.normal.multiply(direction)
-            };
-        }
+        if (intersection) return {
+            object: this,
+            overlap: minOverlap,
+            normal: minNormal
+        };
     }
 }

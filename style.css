@@ -78,19 +78,19 @@ body {
 }
 
 .collapsible .collapsible-select::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    transform: scaleX(0);
+    transform: scaleX(1);
     border-bottom: 2px solid var(--outline);
     transition: transform 0.2s;
 }
 
-.collapsible.collapsed .collapsible-select::after {
-    transform: scaleX(1);
+.collapsible.expanded .collapsible-select::after {
+    transform: scaleX(0);
 }
 
 .collapsible-select:hover {
@@ -99,16 +99,16 @@ body {
 }
 
 .collapsible .collapsible-content {
-    transition: max-height 0.2s, margin-top 0.2s;
-    margin-top: 4px;
+    margin-top: 0px;
+    max-height: 0;
+    height: auto;
+    width: 100%;
     overflow: hidden;
+    transition: max-height 0.2s, margin-top 0.2s;
 }
 
-.collapsible.collapsed .collapsible-content {
-    max-height: 0;
-    margin-top: 0px;
-    width: 100%;
-    height: auto;
+.collapsible.expanded .collapsible-content {
+    margin-top: 4px;
 }
 
 .group-wrapper {

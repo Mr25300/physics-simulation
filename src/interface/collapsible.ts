@@ -6,22 +6,21 @@ class Collapsible {
         this.selector = element.querySelector(".collapsible-select")!;
         this.content = element.querySelector(".collapsible-content")!;
 
-        this.toggleCollapse();
-
         this.selector.addEventListener("click", () => {
             this.toggleCollapse();
         });
+
+        new MutationObserver(() => {
+            if (this.element.classList.contains("expanded")) this.content.style.maxHeight = this.content.scrollHeight + "px";
+
+        }).observe(element, { childList: true, subtree: true, characterData: true });
     }
 
     private toggleCollapse(): void {
-        // if (this.content.classList.contains("collapsed")) {
-        //     this.content.classList
-        // }
+        if (this.element.classList.contains("expanded")) this.content.style.maxHeight = "0";
+        else this.content.style.maxHeight = this.content.scrollHeight + "px";
 
-        if (this.element.classList.contains("collapsed")) this.content.style.maxHeight = this.content.scrollHeight + "px";
-        else this.content.style.maxHeight = "0px";
-
-        this.element.classList.toggle("collapsed");
+        this.element.classList.toggle("expanded");
     }
 }
 
