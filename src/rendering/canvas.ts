@@ -1,6 +1,6 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
-import { ForceType } from "../objects/projectile.js";
+import { ForceType } from "../projectiles/projectile.js";
 
 interface DrawStyle {
     fill?: boolean;

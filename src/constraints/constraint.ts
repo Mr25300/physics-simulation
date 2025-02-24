@@ -1,9 +1,16 @@
 import { Vector2 } from "../math/vector2.js";
-import { ForceType, Projectile } from "./projectile.js";
+import { ForceType, Projectile } from "../projectiles/projectile.js";
 
-export class Rope {
-    constructor(public readonly origin: Vector2, public readonly length: number, public readonly attachment: Projectile) {}
+export abstract class Constraint {
+    public origin: Vector2; // Vector2 | Projectile
+    public attachment: Projectile;
+    public length: number;
 
+    public abstract updateForces(): void;
+    public abstract updateKinematics(): void;
+}
+
+export class Rope extends Constraint {
     public updateForces(): void {
         const centerDiff: Vector2 = this.attachment.position.subtract(this.origin);
 
@@ -26,5 +33,18 @@ export class Rope {
 
             if (radialVel > 0) this.attachment.applyForce(centerDiff.unit.multiply(-radialVel * this.attachment.mass), true);
         }
+    }
+}
+
+export class Spring extends Constraint {
+    public damping: number;
+    public stiffness: number;
+
+    public updateForces(): void {
+        
+    }
+
+    public updateKinematics(): void {
+        
     }
 }

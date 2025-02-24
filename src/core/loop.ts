@@ -1,33 +1,14 @@
+import { Util } from "../math/util.js";
+
 export abstract class Loop {
-    private _running: boolean = false;
-    private lastTime?: number;
+    private _running: boolean = true;
     private _elapsedTime: number = 0;
     private _fps: number;
+    private _timeScale: number = 1;
 
-    public start(): void {
-        if (this._running) return;
-        this._running = true;
-
-        requestAnimationFrame((timestamp: number) => {
-            this.loop(timestamp);
-        });
-    }
-
-    private loop(timestamp: number): void {
-        if (!this._running) return;
-
-        const deltaTime: number = this.lastTime !== undefined ? (timestamp - this.lastTime) / 1000 : 0;
-        this.lastTime = timestamp;
-
-        this._elapsedTime += deltaTime;
-        this._fps = 1 / deltaTime;
-
-        this.update(2 * deltaTime);
-
-        requestAnimationFrame((timestamp: number) => {
-            this.loop(timestamp);
-        });
-    }
+    private lastTime?: number;
+    private deltaTime: number = 0;
+    private updateTimestep: number = 0.01;
 
     public get running(): boolean {
         return this._running;
@@ -41,13 +22,49 @@ export abstract class Loop {
         return this._fps;
     }
 
-    public stop(): void {
-        if (!this._running) return;
-        this._running = false;
+    public set timeScale(scale: number) {
+        this._timeScale = scale;
+    }
+    
+    protected start(): void {
+        requestAnimationFrame((timestamp: number) => {
+            this.loop(timestamp);
+        });
+    }
 
-        delete this.lastTime;
-        this._elapsedTime = 0;
+    public pause(): void {
+        this._running = false;
+    }
+
+    public resume(): void {
+        this._running = true;
+    }
+
+    public advance(deltaTime: number): void {
+        const absTime: number = Math.abs(deltaTime);
+        
+        this.deltaTime += absTime;
+        this._elapsedTime += absTime;
+
+        while (this.deltaTime >= this.updateTimestep) {
+            this.deltaTime -= this.updateTimestep;
+            this.update(Util.sign(deltaTime) * this.updateTimestep);
+        }
+    }
+
+    private loop(timestamp: number): void {
+        const deltaTime: number = (this.lastTime !== undefined ? (timestamp - this.lastTime) / 1000 : 0) * this._timeScale;
+        this.lastTime = timestamp;
+        this._fps = 1 / Math.abs(deltaTime);
+
+        if (this._running) this.advance(deltaTime);
+        this.render();
+
+        requestAnimationFrame((timestamp: number) => {
+            this.loop(timestamp);
+        });
     }
 
     protected abstract update(deltaTime: number): void;
+    protected abstract render(): void;
 }

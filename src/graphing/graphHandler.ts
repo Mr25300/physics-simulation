@@ -1,5 +1,5 @@
 import { Graph } from "../graphing/graph.js";
-import { Projectile } from "../objects/projectile.js";
+import { Projectile } from "../projectiles/projectile.js";
 
 export class GraphHandler {
   private _activatedProjectile: {Projectile: Projectile, graph: Graph, index: number};

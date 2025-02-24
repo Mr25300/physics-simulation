@@ -1,7 +1,7 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { Obstacle } from "./obstacle.js";
-import { Projectile } from "./projectile.js";
+import { Projectile } from "../projectiles/projectile.js";
 
 export interface CollisionInfo {
     object: Projectile | Obstacle,

@@ -5,6 +5,7 @@
     --secondary-background: rgb(80, 80, 120);
     --highlight: rgb(120, 120, 160);
     --outline: rgb(30, 30, 35);
+    --text: rgb(35, 35, 45);
 }
 
 * {
@@ -47,6 +48,19 @@ body {
     height: 48px;
     background-color: var(--secondary-background);
     border: 2px solid var(--outline);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.horizontal-bar-segment {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
 }
 
 .content-container {
@@ -117,6 +131,87 @@ body {
     margin: 1px;
     padding: 2px;
     animation: none;
+}
+
+.pause-button, .skip-button, .skip-button::after, .skip-button.double::before {
+    background: transparent;
+    box-sizing: border-box;
+    width: 0;
+    height: 24px;
+    border-color: transparent transparent transparent var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.pause-button:hover, .skip-button:hover, .skip-button:hover::after, .skip-button.double:hover::before {
+    border-color: transparent transparent transparent var(--highlight);
+}
+
+.pause-button {
+    border-style: double;
+    border-width: 0px 0 0px 20px;
+    transition: border-width 0.1s ease;
+}
+
+.pause-button.paused {
+    border-style: solid;
+    border-width: 12px 0 12px 20px;
+}
+
+.skip-button {
+    position: relative;
+    overflow: visible;
+    margin-right: 2px;
+    --rotation: 0;
+}
+
+.skip-button.back {
+    margin-right: 0;
+    margin-left: 2px;
+    --rotation: 180deg;
+    transform: rotate(180deg);
+}
+
+.skip-button.double {
+    margin-right: 20px;
+}
+
+.skip-button.double.back {
+    margin-right: 0;
+    margin-left: 20px;
+}
+
+.skip-button, .skip-button.double::before {
+    border-style: solid;
+    border-width: 12px 0 12px 18px;
+}
+
+.skip-button::after {
+    content: "";
+    position: absolute;
+    border-style: solid;
+    border-width: 0px 0 0px 4px;
+    transform: translate(-2px, -50%);
+}
+
+.skip-button.double::after {
+    transform: translate(16px, -50%);
+}
+
+.skip-button.double::before {
+    content: "";
+    position: absolute;
+    transform: translateY(-50%);
+}
+
+@keyframes skip-animation {
+    0% { transform: rotate(var(--rotation)) translateX(0); }
+    50% { transform: rotate(var(--rotation)) translateX(4px); }
+    100% { transform: rotate(var(--rotation)) translateX(0); }
+}
+
+.skip-button.skipped {
+    animation: skip-animation 0.2s ease-out;
 }
 
 /* .parent {

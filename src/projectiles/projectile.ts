@@ -1,8 +1,8 @@
 import { Simulation } from "../core/simulation.js";
 import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
-import { CollisionInfo, CollisionManager } from "./collisions.js";
-import { Obstacle } from "./obstacle.js";
+import { CollisionInfo, CollisionManager } from "../collisions/collisions.js";
+import { Obstacle } from "../collisions/obstacle.js";
 
 export enum ForceType {
     unspecified = 0,
@@ -70,7 +70,7 @@ export class Projectile {
     }
 
     public getDisplacement(deltaTime: number): Vector2 {
-        return this._velocity.multiply(deltaTime).add(this._acceleration.multiply(deltaTime ** 2 / 2));
+        return this._velocity.multiply(deltaTime).add(this._acceleration.multiply(deltaTime * deltaTime / 2));
     }
 
     public getVelocity(deltaTime: number): Vector2 {

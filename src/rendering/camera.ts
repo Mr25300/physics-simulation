@@ -1,11 +1,14 @@
 import { Simulation } from "../core/simulation.js";
 import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
+import { Projectile } from "../projectiles/projectile.js";
 
 export class Camera {
     private readonly MIN_ZOOM: number = Math.log10(3);
     private readonly MAX_ZOOM: number = Math.log10(20);
     private readonly ZOOM_SENSITIVITY: number = 0.001;
+
+    public frameOfReference: Projectile | undefined;
 
     private zoom: number = 1;
 

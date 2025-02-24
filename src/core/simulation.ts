@@ -1,23 +1,24 @@
 import { Vector2 } from "../math/vector2.js";
-import { Projectile } from "../objects/projectile.js";
+import { Projectile } from "../projectiles/projectile.js";
 import { Renderer } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
-import { Obstacle } from "../objects/obstacle.js";
-import { Rope } from "../objects/rope.js";
+import { Obstacle } from "../collisions/obstacle.js";
+import { Rope } from "../constraints/constraint.js";
 import { GraphHandler } from "../graphing/graphHandler.js";
 import { Camera } from "../rendering/camera.js";
-import { Controller } from "../interface/controller.js";
+import { Controller } from "../interfacing/controller.js";
 
-import "../interface/collapsible.js";
+import "../interfacing/collapsible.js";
+import { UIManager } from "../interfacing/uimanager.js";
 
 export interface Constants {
-    airDensity: number,
+    airDensity: number;
+    gravitationalConstant: number;
+    coloumbConstant: number;
 }
 
 export class Simulation extends Loop {
-    public fixedTimestep: number = 0.01;
-
-    public airDensity: number = 1.225;
+    public airDensity: number = 0;//1.225;
     public gravityDirection: Vector2 = new Vector2(0, -1);
     public gravityAcceleration: number = 9.81;
     public coloumbConstant: number = 30;
@@ -25,12 +26,13 @@ export class Simulation extends Loop {
 
     public camera: Camera = new Camera();
     public controller: Controller = new Controller();
+    public uiManager: UIManager = new UIManager();
     public canvas: Renderer;
     // private graphHandler: GraphHandler = new GraphHandler();
 
-    public readonly ropes: Rope[] = [];
-    public readonly projectiles: Projectile[] = [];
-    public readonly obstacles: Obstacle[] = [];
+    public readonly projectiles: Set<Projectile> = new Set();
+    public readonly ropes: Set<Rope> = new Set();
+    public readonly obstacles: Set<Obstacle> = new Set();
 
     private static _instance: Simulation;
 
@@ -46,31 +48,20 @@ export class Simulation extends Loop {
 
         this.canvas = new Renderer(canvas);
 
-        this.projectiles.push(new Projectile(0.25, 0.5, 1, 1, 0.5, 0.5, 0.2, new Vector2(-1, 5)));
-        this.projectiles.push(new Projectile(0.25, 0.5, 0, 1, 0.5, 0.5, 0.2, new Vector2(1, 0)));
-        this.ropes.push(new Rope(Vector2.zero, 4, this.projectiles[0]));
-        this.obstacles.push(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-6, -6), new Vector2(6, -6), new Vector2(6, -4), new Vector2(-6, -4)]));
-        this.obstacles.push(new Obstacle(0, 0.5, 0.5, [new Vector2(-2.5, -2), new Vector2(-2.5, -4), new Vector2(2, -4)]));
-        // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, -4), new Vector2(4, 4)]));
-        // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(4, 4), new Vector2(-4, 4)]));
-        // this.obstacles.push(new Obstacle(0.5, 0.4, 0.3, [new Vector2(-4, 4), new Vector2(-4, -4)]));
+        const proj = new Projectile(0.2, 2, 1, 1, 0.5, 0.5, 0.2, new Vector2(-6, 8));
+        this.projectiles.add(proj);
+        // this.projectiles.add(new Projectile(0.5, 1, 0, 1, 0.5, 0.5, 0.2, new Vector2(-4, 6)));
+        // this.ropes.add(new Rope(Vector2.zero, 4, this.projectiles.get(0)));
+        // this.obstacles.add(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-8, -6), new Vector2(8, -6), new Vector2(8, -4), new Vector2(-8, -4)]));
+        // this.obstacles.add(new Obstacle(0, 0.5, 0.5, [new Vector2(-8, 10), new Vector2(-8, -4), new Vector2(8, -4)]));
 
-        this.obstacles.push(new Obstacle(0, 0, 0, [new Vector2(-20, -10), new Vector2(20, -10), new Vector2(20, 10), new Vector2(-20, 10)], 5, true));
+        this.obstacles.add(new Obstacle(0, 0, 0, [new Vector2(-20, -10), new Vector2(20, -10), new Vector2(20, 10), new Vector2(-20, 10)], 5, true));
 
-        // this.projectiles[0].applyForce(new Vector2(0, -40 * this.projectiles[0].mass), true);
-
-        // this.obstacles.push(new Obstacle(1, [
-        //     new Vector2(-1, -3),
-        //     new Vector2(1, -3),
-        //     new Vector2(0, -1)
-        // ]));
-
-        // this.projectiles[0].applyForce(new Vector2(0, -10), true);
-        // this.projectiles[1].applyForce(new Vector2(-10, 0), true);
-
-        // this.graphHandler.activateProjectile(this.projectiles[0], 1);
+        proj.applyForce(new Vector2(40 * proj.mass, 0), true);
 
         this.start();
+
+        this.uiManager.init();
 
         // const graphCanvas = document.getElementById("posGraph") as HTMLCanvasElement;
         // this.posGraph = new Graph(graphCanvas, "t", "dy");
@@ -82,15 +73,6 @@ export class Simulation extends Loop {
         // this.accGraph = new Graph(accCanvas, "t", "a");
 
         // this.staticObstacles.push(new StaticObstacle([[10, 10], [10, 20], [20, 20], [20, 10]], 0.5));
-
-        document.addEventListener("keydown", (event: KeyboardEvent) => {
-            if (event.key === "p") {
-                if (this.running) this.stop();
-                else this.start();
-            } else if (event.key === "r") {
-                this.update(1 / 60);
-            }
-        });
     }
 
     public update(deltaTime: number): void {
@@ -110,9 +92,10 @@ export class Simulation extends Loop {
         for (const rope of this.ropes) {
             rope.updateKinematics();
         }
+    }
 
+    public render(): void {
         this.camera.update();
-
         // this.graphHandler.updateGraph(this.elapsedTime);
         this.canvas.render();
     }
