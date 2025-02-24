@@ -1,25 +1,25 @@
 import { Vector2 } from "../math/vector2.js";
 
 export class Controller {
-    private mouseDown: boolean = false;
+    private rightMouseDown: boolean = false;
     private mousePos: Vector2 = Vector2.zero;
     private dragAmount: Vector2 = Vector2.zero;
     private scrollAmount: number = 0;
 
     constructor() {
         document.addEventListener("mousedown", (event: MouseEvent) => {
-            this.mouseDown = true;
+            if (event.button === 2) this.rightMouseDown = true;
             this.mousePos = new Vector2(event.clientX, event.clientY);
         });
 
-        document.addEventListener("mouseup", () => {
-            this.mouseDown = false;
+        document.addEventListener("mouseup", (event: MouseEvent) => {
+            if (event.button === 2) this.rightMouseDown = false;
         });
 
         document.addEventListener("mousemove", (event: MouseEvent) => {
             const mousePos: Vector2 = new Vector2(event.clientX, event.clientY);
 
-            if (this.mouseDown) this.dragAmount = this.dragAmount.add(mousePos.subtract(this.mousePos));
+            if (this.rightMouseDown) this.dragAmount = this.dragAmount.add(mousePos.subtract(this.mousePos));
             this.mousePos = mousePos;
         });
 

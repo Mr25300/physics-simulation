@@ -55,7 +55,7 @@ export class Simulation extends Loop {
         // this.obstacles.add(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-8, -6), new Vector2(8, -6), new Vector2(8, -4), new Vector2(-8, -4)]));
         // this.obstacles.add(new Obstacle(0, 0.5, 0.5, [new Vector2(-8, 10), new Vector2(-8, -4), new Vector2(8, -4)]));
 
-        this.obstacles.add(new Obstacle(0, 0, 0, [new Vector2(-20, -10), new Vector2(20, -10), new Vector2(20, 10), new Vector2(-20, 10)], 5, true));
+        this.obstacles.add(new Obstacle(0, 0, 0, [new Vector2(-10, -10), new Vector2(10, -10), new Vector2(10, 10), new Vector2(-10, 10)], 5, true));
 
         proj.applyForce(new Vector2(40 * proj.mass, 0), true);
 
@@ -71,8 +71,6 @@ export class Simulation extends Loop {
 
         // const accCanvas = document.getElementById("accGraph") as HTMLCanvasElement;
         // this.accGraph = new Graph(accCanvas, "t", "a");
-
-        // this.staticObstacles.push(new StaticObstacle([[10, 10], [10, 20], [20, 20], [20, 10]], 0.5));
     }
 
     public update(deltaTime: number): void {

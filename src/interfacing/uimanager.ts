@@ -5,6 +5,10 @@ export class UIManager {
 
     public init(): void {
         this.initSimulationControls();
+
+        document.addEventListener("contextmenu", (event) => {
+            event.preventDefault();
+        });
     }
 
     private togglePause(): void {
