@@ -177,12 +177,12 @@ body {
 }
 
 .skip-button.double {
-    margin-right: 20px;
+    margin-right: 14px;
 }
 
 .skip-button.double.back {
     margin-right: 0;
-    margin-left: 20px;
+    margin-left: 14px;
 }
 
 .skip-button, .skip-button.double::before {
@@ -218,7 +218,31 @@ body {
     animation: skip-animation 0.2s ease-out;
 }
 
+.reverse-button {
+    position: relative;
+    overflow: visible;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+}
 
+.reverse-button::before, .reverse-button::after {
+    content: "";
+    position: absolute;
+    background: transparent;
+    border-style: solid;
+    border-width: 12px 12px 0 12px;
+    border-color: var(--outline) transparent transparent transparent;
+}
+
+.reverse-button::before {
+    transform: translate(-12px, calc(-50% - 6px));
+}
+
+.reverse-button::after {
+    transform: translate(-12px, calc(-50% + 6px)) rotate(180deg);
+}
 
 /* .parent {
     display: grid;
