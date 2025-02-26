@@ -4,7 +4,7 @@ export abstract class Loop {
     private _running: boolean = true;
     private _elapsedTime: number = 0;
     private _fps: number;
-    private _timeScale: number = 0.1;
+    private _timeScale: number = 1;
     public timeReverse: boolean = false;
 
     private lastTime?: number;
