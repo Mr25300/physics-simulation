@@ -164,7 +164,6 @@ body {
 
 .skip-button {
     position: relative;
-    overflow: visible;
     margin-right: 2px;
     --rotation: 0;
 }
@@ -220,11 +219,14 @@ body {
 
 .reverse-button {
     position: relative;
-    overflow: visible;
     width: 24px;
     height: 24px;
     border: none;
     background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease-out;
 }
 
 .reverse-button::before, .reverse-button::after {
@@ -234,14 +236,53 @@ body {
     border-style: solid;
     border-width: 12px 12px 0 12px;
     border-color: var(--outline) transparent transparent transparent;
+    transition: border-color 0.2s;
 }
 
 .reverse-button::before {
-    transform: translate(-12px, calc(-50% - 6px));
+    transform: translateY(-6px);
 }
 
 .reverse-button::after {
-    transform: translate(-12px, calc(-50% + 6px)) rotate(180deg);
+    transform: translateY(6px) rotate(180deg);
+}
+
+.reverse-button .arrow {
+    position: relative;
+    height: 2px;
+    width: 18px;
+    background-color: var(--outline);
+    transition: background-color 0.2s;
+}
+
+.reverse-button .arrow::after {
+    position: absolute;
+    content: "";
+    background: transparent;
+    border-style: solid;
+    border-width: 0 2px 2px 0;
+    border-color: transparent var(--outline) var(--outline) transparent;
+    transform: translate(4px, calc(-50% + 1px)) rotate(-45deg);
+    width: 4px;
+    height: 4px;
+    transition: border-color 0.2s;
+}
+
+.reverse-button:hover::after, .reverse-button:hover::before {
+    cursor: pointer;
+    border-color: var(--highlight) transparent transparent transparent;
+}
+
+.reverse-button:hover .arrow {
+    background-color: var(--highlight);
+}
+
+.reverse-button:hover .arrow::after {
+    border-color: transparent var(--highlight) var(--highlight) transparent;
+}
+
+.reverse-button.reversed {
+    transform: rotate(180deg);
 }
 
 /* .parent {

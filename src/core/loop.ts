@@ -4,11 +4,12 @@ export abstract class Loop {
     private _running: boolean = true;
     private _elapsedTime: number = 0;
     private _fps: number;
-    private _timeScale: number = 1;
+    private _timeScale: number = 0.1;
+    public timeReverse: boolean = false;
 
     private lastTime?: number;
     private deltaTime: number = 0;
-    private updateTimestep: number = 0.01;
+    private minTimestep: number = 0.005;
 
     public get running(): boolean {
         return this._running;
@@ -23,7 +24,7 @@ export abstract class Loop {
     }
 
     public set timeScale(scale: number) {
-        this._timeScale = scale;
+        this._timeScale = Math.max(scale, 0);
     }
     
     protected start(): void {
@@ -41,23 +42,28 @@ export abstract class Loop {
     }
 
     public advance(deltaTime: number): void {
-        const absTime: number = Math.abs(deltaTime);
-        
-        this.deltaTime += absTime;
-        this._elapsedTime += absTime;
+        this.deltaTime += deltaTime;
+        this._elapsedTime += deltaTime;
 
-        while (this.deltaTime >= this.updateTimestep) {
-            this.deltaTime -= this.updateTimestep;
-            this.update(Util.sign(deltaTime) * this.updateTimestep);
+        while (Math.abs(this.deltaTime) >= this.minTimestep) {
+            const timeStep: number = Util.sign(this.deltaTime) * this.minTimestep;
+
+            this.deltaTime -= timeStep;
+            this.update(timeStep);
+        }
+
+        if (Math.abs(this.deltaTime) > 0) {
+            this.update(this.deltaTime);
+            this.deltaTime = 0;
         }
     }
 
     private loop(timestamp: number): void {
-        const deltaTime: number = (this.lastTime !== undefined ? (timestamp - this.lastTime) / 1000 : 0) * this._timeScale;
+        const deltaTime: number = this.lastTime !== undefined ? (timestamp - this.lastTime) / 1000 : 0;
         this.lastTime = timestamp;
-        this._fps = 1 / Math.abs(deltaTime);
+        this._fps = 1 / deltaTime;
 
-        if (this._running) this.advance(deltaTime);
+        if (this._running) this.advance(deltaTime * (this.timeReverse ? -this._timeScale : this._timeScale));
         this.render();
 
         requestAnimationFrame((timestamp: number) => {

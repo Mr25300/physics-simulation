@@ -2,6 +2,7 @@ import { Simulation } from "../core/simulation.js";
 
 export class UIManager {
     private pauseButton: HTMLButtonElement;
+    private reverseButton: HTMLButtonElement;
 
     public init(): void {
         this.initSimulationControls();
@@ -34,6 +35,7 @@ export class UIManager {
 
     private initSimulationControls(): void {
         this.pauseButton = document.querySelector("button#sim-pause")!;
+        this.reverseButton = document.querySelector("button#sim-reverse")!;
 
         const skipButton: HTMLButtonElement = document.querySelector("button#sim-skip")!;
         const doubleSkipButton: HTMLButtonElement = document.querySelector("button#sim-double-skip")!;
@@ -46,6 +48,13 @@ export class UIManager {
 
         document.addEventListener("visibilitychange", () => {
             if (Simulation.instance.running) this.togglePause();
+        });
+
+        this.reverseButton.addEventListener("click", () => {
+            Simulation.instance.timeReverse = !Simulation.instance.timeReverse;
+
+            if (Simulation.instance.timeReverse) this.reverseButton.classList.add("reversed");
+            else this.reverseButton.classList.remove("reversed");
         });
 
         this.setupSkipButton(skipButton, 0.1);

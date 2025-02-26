@@ -48,14 +48,14 @@ export class Simulation extends Loop {
 
         this.canvas = new Renderer(canvas);
 
-        const proj = new Projectile(0.2, 2, 1, 1, 0.5, 0.5, 0.2, new Vector2(-6, 8));
+        const proj = new Projectile(0.2, 2, 1, 1, 0.5, 0.5, 0.2, new Vector2(-5, 8));
         this.projectiles.add(proj);
         // this.projectiles.add(new Projectile(0.5, 1, 0, 1, 0.5, 0.5, 0.2, new Vector2(-4, 6)));
         // this.ropes.add(new Rope(Vector2.zero, 4, this.projectiles.get(0)));
         // this.obstacles.add(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-8, -6), new Vector2(8, -6), new Vector2(8, -4), new Vector2(-8, -4)]));
         // this.obstacles.add(new Obstacle(0, 0.5, 0.5, [new Vector2(-8, 10), new Vector2(-8, -4), new Vector2(8, -4)]));
 
-        this.obstacles.add(new Obstacle(0, 0, 0, [new Vector2(-10, -10), new Vector2(10, -10), new Vector2(10, 10), new Vector2(-10, 10)], 5, true));
+        this.obstacles.add(new Obstacle(0.5, 0.5, 0.5, [new Vector2(0, 0)], 10, true));
 
         proj.applyForce(new Vector2(40 * proj.mass, 0), true);
 
