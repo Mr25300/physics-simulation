@@ -42,7 +42,3 @@ class Collapsible {
         this.updateHeight();
     }
 }
-
-document.querySelectorAll(".collapsible").forEach((element: Element) => {
-    new Collapsible(element as HTMLDivElement);
-});

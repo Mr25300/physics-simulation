@@ -137,7 +137,10 @@ body {
     animation: none;
 }
 
-.pause-button, .skip-button, .skip-button::after, .skip-button.double::before {
+.pause-button,
+.skip-button,
+.skip-button::after,
+.skip-button.double::before {
     background: transparent;
     box-sizing: border-box;
     width: 0;
@@ -147,7 +150,10 @@ body {
     transition: border-color 0.2s;
 }
 
-.pause-button:hover, .skip-button:hover, .skip-button:hover::after, .skip-button.double:hover::before {
+.pause-button:hover,
+.skip-button:hover,
+.skip-button:hover::after,
+.skip-button.double:hover::before {
     border-color: transparent transparent transparent var(--highlight);
 }
 
@@ -184,7 +190,8 @@ body {
     margin-left: 14px;
 }
 
-.skip-button, .skip-button.double::before {
+.skip-button,
+.skip-button.double::before {
     border-style: solid;
     border-width: 12px 0 12px 18px;
 }
@@ -208,9 +215,17 @@ body {
 }
 
 @keyframes skip-animation {
-    0% { transform: rotate(var(--rotation)) translateX(0); }
-    50% { transform: rotate(var(--rotation)) translateX(4px); }
-    100% { transform: rotate(var(--rotation)) translateX(0); }
+    0% {
+        transform: rotate(var(--rotation)) translateX(0);
+    }
+
+    50% {
+        transform: rotate(var(--rotation)) translateX(4px);
+    }
+
+    100% {
+        transform: rotate(var(--rotation)) translateX(0);
+    }
 }
 
 .skip-button.skipped {
@@ -229,7 +244,8 @@ body {
     transition: transform 0.2s ease-out;
 }
 
-.reverse-button::before, .reverse-button::after {
+.reverse-button::before,
+.reverse-button::after {
     content: "";
     position: absolute;
     background: transparent;
@@ -268,7 +284,8 @@ body {
     transition: border-color 0.2s;
 }
 
-.reverse-button:hover::after, .reverse-button:hover::before {
+.reverse-button:hover::after,
+.reverse-button:hover::before {
     cursor: pointer;
     border-color: var(--highlight) transparent transparent transparent;
 }
@@ -283,6 +300,34 @@ body {
 
 .reverse-button.reversed {
     transform: rotate(180deg);
+}
+
+.slider {}
+
+.slider .text {}
+
+.slider input[type="range"] {
+    padding: 0;
+    position: absolute;
+    height: 10px;
+    width: 100%;
+    pointer-events: none;
+    appearance: none;
+    background: none;
+}
+
+.slider input[type="range"]::-webkit-slider-thumb {
+    pointer-events: all;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: red;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.slider input[type="range"]::-moz-range-thumb {
+    background-color: red;
 }
 
 /* .parent {

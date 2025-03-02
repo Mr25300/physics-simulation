@@ -1,5 +1,11 @@
 import { Simulation } from "../core/simulation.js";
 
+class Slider {
+    constructor(private element: HTMLDivElement) {
+
+    }
+}
+
 export class UIManager {
     private pauseButton: HTMLButtonElement;
     private reverseButton: HTMLButtonElement;
@@ -9,6 +15,14 @@ export class UIManager {
 
         document.addEventListener("contextmenu", (event) => {
             event.preventDefault();
+        });
+
+        document.querySelectorAll(".collapsible").forEach((element: Element) => {
+            new Collapsible(element as HTMLDivElement);
+        });
+
+        document.querySelectorAll(".slider").forEach((element: Element) => {
+            
         });
     }
 
