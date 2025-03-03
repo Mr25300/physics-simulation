@@ -2,10 +2,11 @@
 
 :root {
     --background: rgb(60, 60, 80);
-    --secondary-background: rgb(80, 80, 120);
-    --highlight: rgb(120, 120, 160);
-    --outline: rgb(30, 30, 35);
-    --text: rgb(35, 35, 45);
+    --secondary-background: rgba(25, 26, 36, 0.7);
+    --highlight: rgba(85, 86, 96, 1);
+    --lineOutline: white;
+    --outline: green;
+    --elements: red;
 }
 
 * {
@@ -14,6 +15,7 @@
     font-family: 'Courier New', Courier, monospace;
     box-sizing: border-box;
     user-select: none;
+    color: #c5dadb;
 }
 
 body {
@@ -49,10 +51,12 @@ body {
     margin-top: 0;
     height: 48px;
     background-color: var(--secondary-background);
-    border: 2px solid var(--outline);
     display: flex;
     flex-direction: row;
     justify-content: center;
+    border-radius: 5px;
+    backdrop-filter: blur(10px); /* Apply blur effect */
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
 }
 
 .horizontal-bar-segment {
@@ -77,12 +81,14 @@ body {
     height: 100%;
     width: 320px;
     background-color: var(--secondary-background);
-    border: 2px solid var(--outline);
     padding: 4px;
     display: flex;
     flex-direction: column;
     gap: 4px;
     overflow: auto;
+    border-radius: 5px;
+    backdrop-filter: blur(10px); /* Apply blur effect */
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
 }
 
 .collapsible {
@@ -92,8 +98,9 @@ body {
 .collapsible .collapsible-select {
     position: relative;
     padding: 2px;
-    transition: border-bottom-width 0.2s;
+    transition: border-bottom-width 0.2s, background-color 0.4s;
     width: 100%;
+    border-radius: 5px;
 }
 
 .collapsible .collapsible-select::after {
@@ -104,7 +111,7 @@ body {
     width: 100%;
     height: 100%;
     transform: scaleX(1);
-    border-bottom: 2px solid var(--outline);
+    border-bottom: 2px solid var(--lineOutline);
     transition: transform 0.2s;
 }
 
@@ -131,7 +138,7 @@ body {
 
 .group-wrapper {
     background-color: var(--background);
-    border: 2px solid var(--outline);
+    border: 2px solid var(--lineOutline);
     margin: 1px;
     padding: 2px;
     animation: none;
@@ -145,9 +152,9 @@ body {
     box-sizing: border-box;
     width: 0;
     height: 24px;
-    border-color: transparent transparent transparent var(--text);
+    border-color: transparent transparent transparent var(--elements);
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background-color 1s, border-width 0.2s ease;
 }
 
 .pause-button:hover,
@@ -160,7 +167,6 @@ body {
 .pause-button {
     border-style: double;
     border-width: 0px 0 0px 20px;
-    transition: border-width 0.1s ease;
 }
 
 .pause-button.paused {
