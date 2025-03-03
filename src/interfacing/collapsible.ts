@@ -1,4 +1,4 @@
-class Collapsible {
+export class Collapsible {
     private selector: HTMLDivElement;
     private content: HTMLDivElement;
 

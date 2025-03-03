@@ -96,6 +96,7 @@ export class Simulation extends Loop {
         this.camera.update();
         // this.graphHandler.updateGraph(this.elapsedTime);
         this.canvas.render();
+        this.uiManager.update();
     }
 }
 

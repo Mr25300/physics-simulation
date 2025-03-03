@@ -259,10 +259,5 @@ export class Renderer {
         this.context.drawImage(this.inverseObstacleLayer.element, 0, 0);
         this.context.drawImage(this.mainLayer.element, 0, 0);
         this.context.drawImage(this.vectorLayer.element, 0, 0);
-
-        this.context.beginPath();
-        this.context.moveTo(20, 20);
-        this.context.bezierCurveTo(20, 100, 200, 100, 100, -100);
-        this.context.stroke();
     }
 }

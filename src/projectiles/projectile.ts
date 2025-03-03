@@ -26,6 +26,7 @@ export class Projectile {
     public _velocity: Vector2 = Vector2.zero;
 
     private lastCollision: CollisionInfo | undefined;
+    private lastCentripetalForce: Vector2 = Vector2.zero
 
     public readonly density: number;
     public readonly crossSectionArea: number;

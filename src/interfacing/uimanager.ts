@@ -1,29 +1,24 @@
 import { Simulation } from "../core/simulation.js";
-
-class Slider {
-    constructor(private element: HTMLDivElement) {
-
-    }
-}
+import { Collapsible } from "./collapsible.js";
+import { Slider } from "./slider.js";
 
 export class UIManager {
+    private collapsibles: Map<HTMLDivElement, Collapsible> = new Map();
+    private sliders: Map<HTMLDivElement, Slider> = new Map();
+
     private pauseButton: HTMLButtonElement;
     private reverseButton: HTMLButtonElement;
 
     public init(): void {
-        this.initSimulationControls();
-
         document.addEventListener("contextmenu", (event) => {
             event.preventDefault();
         });
 
         document.querySelectorAll(".collapsible").forEach((element: Element) => {
-            new Collapsible(element as HTMLDivElement);
+            this.collapsibles.set(element as HTMLDivElement, new Collapsible(element as HTMLDivElement));
         });
 
-        document.querySelectorAll(".slider").forEach((element: Element) => {
-            
-        });
+        this.initSimulationControls();
     }
 
     private togglePause(): void {
@@ -56,6 +51,12 @@ export class UIManager {
         const backButton: HTMLButtonElement = document.querySelector("button#sim-back")!;
         const doubleBackButton: HTMLButtonElement = document.querySelector("button#sim-double-back")!;
 
+        const timeSlider: Slider = new Slider(document.querySelector("div#sim-time-slider")!, -7, 7, 0);
+
+        timeSlider.addListener(() => {
+            Simulation.instance.timeScale = 2 ** timeSlider.value;
+        });
+
         this.pauseButton.addEventListener("click", () => {
             this.togglePause();
         });
@@ -75,5 +76,9 @@ export class UIManager {
         this.setupSkipButton(doubleSkipButton, 1);
         this.setupSkipButton(backButton, -0.1);
         this.setupSkipButton(doubleBackButton, -1);
+    }
+
+    public update(): void {
+        document.getElementById("sim-time-elapsed")!.innerText = Simulation.instance.elapsedTime.toFixed(2);
     }
 }

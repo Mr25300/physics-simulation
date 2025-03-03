@@ -302,33 +302,89 @@ body {
     transform: rotate(180deg);
 }
 
-.slider {}
-
-.slider .text {}
-
-.slider input[type="range"] {
-    padding: 0;
-    position: absolute;
-    height: 10px;
-    width: 100%;
-    pointer-events: none;
-    appearance: none;
-    background: none;
+.slider-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
-.slider input[type="range"]::-webkit-slider-thumb {
-    pointer-events: all;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: red;
+.slider-container {
+    position: relative;
+    width: 240px;
+    height: 4px;
+    display: flex;
+    align-items: center;
+    background-color: var(--outline);
+}
+
+.slider-text {
+    position: absolute;
+    top: -20px;
+}
+
+.slider-container input[type="range"] {
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: transparent;
+    z-index: 2;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
     cursor: pointer;
+    width: 4px;
+    height: 20px;
+    border-radius: 0;
+    background-color: var(--outline);
+    transition: background-color 0.2s, height 0.2s ease;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb:hover {
+    height: 24px;
+    background-color: var(--highlight);
+}
+
+.slider-progress {
+    position: absolute;
+    left: 0%;
+    right: 100%;
+    height: 4px;
+    background-color: var(--highlight);
+    z-index: 0;
+}
+
+.slider-marker-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+}
+
+.slider-marker-container div {
+    width: 2px;
+    height: 12px;
+    background-color: var(--outline);
     transition: background-color 0.2s;
 }
 
-.slider input[type="range"]::-moz-range-thumb {
-    background-color: red;
+.slider-marker-container div:first-of-type, .slider-marker-container div:last-of-type {
+    width: 4px;
+    height: 16px;
 }
+
+.highlighted {
+    background-color: var(--highlight) !important;
+    height: 100px;
+}
+
+/* .slider input[type="range"]::-moz-range-thumb {
+    background-color: red;
+} */
 
 /* .parent {
     display: grid;
