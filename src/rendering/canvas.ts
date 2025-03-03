@@ -203,7 +203,7 @@ export class Renderer {
                 fill: true,
                 fillInvert: obstacle.inverse,
                 stroke: true,
-                fillStyle: "grey",
+                fillStyle: obstacle.material.color,
                 strokeStyle: "black",
                 strokeWidth: 1
             });
@@ -213,7 +213,7 @@ export class Renderer {
             this.mainLayer.drawShape([projectile.position], projectile.radius, {
                 fill: true,
                 stroke: true,
-                fillStyle: "white",
+                fillStyle: projectile.material.color,
                 strokeStyle: "black",
                 strokeWidth: 1
             });

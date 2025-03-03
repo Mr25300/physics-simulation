@@ -10,6 +10,7 @@ import { Controller } from "../interfacing/controller.js";
 
 import "../interfacing/collapsible.js";
 import { UIManager } from "../interfacing/uimanager.js";
+import { PhysicsMaterial } from "../projectiles/physicsMaterial.js";
 
 export interface Constants {
     airDensity: number;
@@ -48,14 +49,16 @@ export class Simulation extends Loop {
 
         this.canvas = new Renderer(canvas);
 
-        const proj = new Projectile(0.2, 2, 1, 1, 0.5, 0.5, 0.2, new Vector2(-5, 8));
+        const material: PhysicsMaterial = new PhysicsMaterial(0, 0.9, 0.5, 0.4, 0.1, "red");
+
+        const proj = new Projectile(0.2, 2, new Vector2(-5, 8), material);
         this.projectiles.add(proj);
         // this.projectiles.add(new Projectile(0.5, 1, 0, 1, 0.5, 0.5, 0.2, new Vector2(-4, 6)));
         // this.ropes.add(new Rope(Vector2.zero, 4, this.projectiles.get(0)));
         // this.obstacles.add(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-8, -6), new Vector2(8, -6), new Vector2(8, -4), new Vector2(-8, -4)]));
         // this.obstacles.add(new Obstacle(0, 0.5, 0.5, [new Vector2(-8, 10), new Vector2(-8, -4), new Vector2(8, -4)]));
 
-        this.obstacles.add(new Obstacle(0.5, 0.5, 0.5, [new Vector2(0, 0)], 10, true));
+        this.obstacles.add(new Obstacle([new Vector2(0, 0)], 10, true, material));
 
         proj.applyForce(new Vector2(40 * proj.mass, 0), true);
 

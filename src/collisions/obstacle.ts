@@ -1,6 +1,7 @@
 import { Vector2 } from "../math/vector2.js";
 import { CollisionInfo } from "./collisions.js";
 import { Projectile } from "../projectiles/projectile.js";
+import { PhysicsMaterial } from "../projectiles/physicsMaterial.js";
 
 interface AxisInfo {
     normal: Vector2;
@@ -11,12 +12,10 @@ export class Obstacle {
     private axes: AxisInfo[] = [];
 
     constructor(
-        public readonly elasticity: number,
-        public readonly staticFriction: number,
-        public readonly kineticFriction: number,
         public readonly vertices: Vector2[],
         public readonly radius: number = 0,
-        public readonly inverse: boolean = false
+        public readonly inverse: boolean = false,
+        public readonly material: PhysicsMaterial
     ) {
         for (let i = 0; i < vertices.length; i++) {
             if (vertices.length === 2 && i > 1) break;
@@ -73,8 +72,8 @@ export class Obstacle {
         let minOverlap: number = this.inverse ? -Infinity : Infinity;
         let minNormal: Vector2 = Vector2.zero;
 
-        const closestVert: Vector2 = this.getClosestVertex(projectile._position);
-        const vertNormal = projectile._position.subtract(closestVert).unit;
+        const closestVert: Vector2 = this.getClosestVertex(projectile.position);
+        const vertNormal = projectile.position.subtract(closestVert).unit;
         
         const projVertAxis: AxisInfo = {
             normal: vertNormal,

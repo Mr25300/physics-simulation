@@ -3,6 +3,7 @@ import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
 import { CollisionInfo, CollisionManager } from "../collisions/collisions.js";
 import { Obstacle } from "../collisions/obstacle.js";
+import { PhysicsMaterial } from "./physicsMaterial.js";
 
 export enum ForceType {
     unspecified = 0,
@@ -34,12 +35,8 @@ export class Projectile {
     constructor(
         public readonly radius: number,
         public readonly mass: number,
-        public readonly charge: number,
-        public readonly elasticity: number,
-        public readonly staticFriction: number,
-        public readonly kineticFriction: number,
-        public readonly drag: number,
-        public _position: Vector2
+        private _position: Vector2,
+        public readonly material: PhysicsMaterial
     ) {
         this.density = mass / radius;
         this.crossSectionArea = Math.PI * radius ** 2;
@@ -81,14 +78,14 @@ export class Projectile {
     public updateForces(): void {
         this.applyForce(Simulation.instance.gravityDirection.multiply(Simulation.instance.gravityAcceleration * this.mass), false, ForceType.gravity);
 
-        const dragMagnitude: number = this.drag * Simulation.instance.airDensity * this.crossSectionArea * this._velocity.magnitude ** 2 / 2;
+        const dragMagnitude: number = this.material.drag * Simulation.instance.airDensity * this.crossSectionArea * this._velocity.magnitude ** 2 / 2;
         this.applyForce(this._velocity.unit.multiply(-dragMagnitude), false, ForceType.drag);
 
         for (const projectile of Simulation.instance.projectiles) {
             if (projectile == this) continue;
 
             const difference: Vector2 = projectile._position.subtract(this._position);
-            const chargeProduct: number = this.charge * projectile.charge;
+            const chargeProduct: number = this.material.charge * projectile.material.charge;
             const electrostaticForce: number = Simulation.instance.coloumbConstant * Math.abs(chargeProduct) / difference.magnitude ** 2;
             
             this.applyForce(difference.unit.multiply(-Util.sign(chargeProduct) * electrostaticForce));
@@ -109,7 +106,8 @@ export class Projectile {
                     const tangentialVelocity: number = surfaceTangent.dot(this._velocity);
     
                     if (Math.abs(tangentialVelocity) < 0.05) {
-                        const maxFriction: number = normalForce * (this.staticFriction * this.lastCollision.object.staticFriction);
+                        const staticFriction: number = this.material.combineStaticFrction(this.lastCollision.object.material);
+                        const maxFriction: number = normalForce * staticFriction;
                         const tangentialForce: number = surfaceTangent.dot(this.netForce);
                         const tangentialMag: number = Math.abs(tangentialForce);
                         const frictionForce: number = -Util.sign(tangentialForce) * Math.min(maxFriction, tangentialMag);
@@ -119,7 +117,8 @@ export class Projectile {
                         this.applyForce(surfaceTangent.multiply(frictionForce), false, ForceType.friction);
     
                     } else {
-                        const frictionForce: number = -Util.sign(tangentialVelocity) * normalForce * (this.kineticFriction * this.lastCollision.object.kineticFriction);
+                        const kineticFriction: number = this.material.combineKineticFriction(this.lastCollision.object.material);
+                        const frictionForce: number = -Util.sign(tangentialVelocity) * normalForce * kineticFriction;
 
                         // find out if this is the right way to do things, and whether or not tangential force should be accounted for here
     
@@ -145,24 +144,24 @@ export class Projectile {
         this.lastCollision = info;
 
         if (info) {
+            const restitution: number = this.material.combineElasticity(info.object.material);
+
             if (info.object instanceof Obstacle) {
                 const collisionPos: Vector2 = this._position.add(info.normal.multiply(info.overlap));
                 const collisionProgress: number = displacement.magnitude === 0 ? 0 : Math.min(collisionPos.subtract(lastPosition).magnitude / displacement.magnitude, 1);
                 const collisionVel: Vector2 = lastVelocity.add(this._velocity.subtract(lastVelocity).multiply(collisionProgress));
                 const normalVel: number = -info.normal.dot(collisionVel);
                 let normalImpulse: number = normalVel;
-    
-                if (Math.abs(normalVel) > 0.1) normalImpulse += normalVel * (this.elasticity * info.object.elasticity);
+
+                if (Math.abs(normalVel) > 0.1) normalImpulse += normalVel * restitution;
     
                 this._position = this._position.add(info.normal.multiply(info.overlap));
                 this._velocity = collisionVel.add(info.normal.multiply(normalImpulse));
 
             } else if (info.object instanceof Projectile) {
                 // DO THE COLLISION PROGRESS THING HERE TOO (only needs to be done for THIS projectile) AND ONLY DO OVERLAP FOR THIS PROJECTILE AS WELL
-
                 const normalVel1: number = info.normal.dot(this._velocity);
                 const normalVel2: number = info.normal.dot(info.object._velocity);
-                const restitution: number = this.elasticity * info.object.elasticity;
                 const impulse: number = -(1 + restitution) * (normalVel1 - normalVel2) / (1 / this.mass + 1 / info.object.mass);
 
                 this._position = this._position.add(info.normal.multiply(info.overlap));
