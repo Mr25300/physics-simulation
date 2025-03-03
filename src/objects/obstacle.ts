@@ -1,7 +1,7 @@
 import { Vector2 } from "../math/vector2.js";
-import { CollisionInfo } from "./collisions.js";
-import { Projectile } from "../projectiles/projectile.js";
-import { PhysicsMaterial } from "../projectiles/physicsMaterial.js";
+import { CollisionInfo } from "../collisions/collisions.js";
+import { Projectile } from "./projectile.js";
+import { PhysicsMaterial } from "./physicsMaterial.js";
 
 interface AxisInfo {
     normal: Vector2;

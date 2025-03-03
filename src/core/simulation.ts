@@ -1,8 +1,8 @@
 import { Vector2 } from "../math/vector2.js";
-import { Projectile } from "../projectiles/projectile.js";
+import { Projectile } from "../objects/projectile.js";
 import { Renderer } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
-import { Obstacle } from "../collisions/obstacle.js";
+import { Obstacle } from "../objects/obstacle.js";
 import { Rope } from "../constraints/constraint.js";
 import { GraphHandler } from "../graphing/graphHandler.js";
 import { Camera } from "../rendering/camera.js";
@@ -10,7 +10,7 @@ import { Controller } from "../interfacing/controller.js";
 
 import "../interfacing/collapsible.js";
 import { UIManager } from "../interfacing/uimanager.js";
-import { PhysicsMaterial } from "../projectiles/physicsMaterial.js";
+import { PhysicsMaterial } from "../objects/physicsMaterial.js";
 
 export interface Constants {
     airDensity: number;

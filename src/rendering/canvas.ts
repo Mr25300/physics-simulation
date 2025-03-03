@@ -1,6 +1,6 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
-import { ForceType } from "../projectiles/projectile.js";
+import { ForceType } from "../objects/projectile.js";
 
 interface DrawStyle {
     fill?: boolean;
@@ -250,7 +250,7 @@ export class Renderer {
             this.mainLayer.drawShape([start, end], ropeWidth, {
                 fill: true,
                 stroke: true,
-                fillStyle: "brown",
+                fillStyle: rope.material.color,
                 strokeStyle: "black",
                 strokeWidth: 1
             });

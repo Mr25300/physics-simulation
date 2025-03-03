@@ -2,11 +2,11 @@
 
 :root {
     --background: rgb(60, 60, 80);
-    --secondary-background: rgba(25, 26, 36, 0.7);
+    --secondary-background: rgb(37, 38, 47);
     --highlight: rgba(85, 86, 96, 1);
     --lineOutline: white;
     --outline: green;
-    --elements: red;
+    --elements: rgb(124, 124, 149);
 }
 
 * {
@@ -54,9 +54,6 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    border-radius: 5px;
-    backdrop-filter: blur(10px); /* Apply blur effect */
-    -webkit-backdrop-filter: blur(10px); /* For Safari support */
 }
 
 .horizontal-bar-segment {
@@ -80,15 +77,19 @@ body {
 .side-bar {
     height: 100%;
     width: 320px;
-    background-color: var(--secondary-background);
-    padding: 4px;
     display: flex;
     flex-direction: column;
+    padding: 4px;
     gap: 4px;
     overflow: auto;
+}
+
+.window {
+    background-color: var(--secondary-background);
     border-radius: 5px;
-    backdrop-filter: blur(10px); /* Apply blur effect */
-    -webkit-backdrop-filter: blur(10px); /* For Safari support */
+    opacity: 0.8;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .collapsible {
@@ -257,7 +258,7 @@ body {
     background: transparent;
     border-style: solid;
     border-width: 12px 12px 0 12px;
-    border-color: var(--outline) transparent transparent transparent;
+    border-color: var(--elements) transparent transparent transparent;
     transition: border-color 0.2s;
 }
 
@@ -273,7 +274,7 @@ body {
     position: relative;
     height: 2px;
     width: 18px;
-    background-color: var(--outline);
+    background-color: var(--elements);
     transition: background-color 0.2s;
 }
 
@@ -283,7 +284,7 @@ body {
     background: transparent;
     border-style: solid;
     border-width: 0 2px 2px 0;
-    border-color: transparent var(--outline) var(--outline) transparent;
+    border-color: transparent var(--elements) var(--elements) transparent;
     transform: translate(4px, calc(-50% + 1px)) rotate(-45deg);
     width: 4px;
     height: 4px;
@@ -320,7 +321,7 @@ body {
     height: 4px;
     display: flex;
     align-items: center;
-    background-color: var(--outline);
+    background-color: var(--elements);
 }
 
 .slider-text {
@@ -342,7 +343,7 @@ body {
     width: 4px;
     height: 20px;
     border-radius: 0;
-    background-color: var(--outline);
+    background-color: var(--elements);
     transition: background-color 0.2s, height 0.2s ease;
 }
 
@@ -352,7 +353,7 @@ body {
     width: 4px;
     height: 20px;
     border-radius: 0;
-    background-color: var(--outline);
+    background-color: var(--elements);
     transition: background-color 0.2s, height 0.2s ease;
 }
 
@@ -389,7 +390,7 @@ body {
 .slider-marker-container div {
     width: 2px;
     height: 12px;
-    background-color: var(--outline);
+    background-color: var(--elements);
     transition: background-color 0.2s;
 }
 

@@ -2,7 +2,7 @@ import { Simulation } from "../core/simulation.js";
 import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
 import { CollisionInfo, CollisionManager } from "../collisions/collisions.js";
-import { Obstacle } from "../collisions/obstacle.js";
+import { Obstacle } from "./obstacle.js";
 import { PhysicsMaterial } from "./physicsMaterial.js";
 
 export enum ForceType {
@@ -65,6 +65,10 @@ export class Projectile {
             this.forces.push({ vector: force, type });
             this.netForce = this.netForce.add(force);
         }
+    }
+
+    public displace(offset: Vector2): void {
+        this._position = this._position.add(offset);
     }
 
     public getDisplacement(deltaTime: number): Vector2 {
