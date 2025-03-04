@@ -31,9 +31,12 @@ export class Simulation extends Loop {
     public canvas: Renderer;
     // private graphHandler: GraphHandler = new GraphHandler();
 
+    public readonly materials: Set<PhysicsMaterial> = new Set();
+
     public readonly projectiles: Set<Projectile> = new Set();
     public readonly ropes: Set<Rope> = new Set();
     public readonly obstacles: Set<Obstacle> = new Set();
+    
 
     private static _instance: Simulation;
 
@@ -49,7 +52,7 @@ export class Simulation extends Loop {
 
         this.canvas = new Renderer(canvas);
 
-        const material: PhysicsMaterial = new PhysicsMaterial(0, 0.9, 0.5, 0.4, 0.1, "red");
+        const material: PhysicsMaterial = new PhysicsMaterial(0, 0.5, 0.5, 0.4, 0.1, "grey");
 
         const proj = new Projectile(0.2, 2, new Vector2(-5, 8), material);
         this.projectiles.add(proj);
@@ -58,7 +61,7 @@ export class Simulation extends Loop {
         // this.obstacles.add(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-8, -6), new Vector2(8, -6), new Vector2(8, -4), new Vector2(-8, -4)]));
         // this.obstacles.add(new Obstacle(0, 0.5, 0.5, [new Vector2(-8, 10), new Vector2(-8, -4), new Vector2(8, -4)]));
 
-        this.obstacles.add(new Obstacle([new Vector2(0, 0)], 10, true, material));
+        // this.obstacles.add(new Obstacle([new Vector2(0, 0)], 10, true, material));
 
         proj.applyForce(new Vector2(40 * proj.mass, 0), true);
 

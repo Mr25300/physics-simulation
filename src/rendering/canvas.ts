@@ -1,6 +1,7 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { ForceType } from "../objects/projectile.js";
+import { Camera } from "./camera.js";
 
 interface DrawStyle {
     fill?: boolean;
@@ -122,7 +123,7 @@ export class Renderer {
     private readonly ROPE_MIN_WIDTH: number = 0.05;
     private readonly ROPE_MAX_WIDTH: number = 0.2;
 
-    private readonly BORDER_COLOR: string = "blue";
+    private readonly GRID_COLOR: string = "white";
 
     private readonly FORCE_COLORS: Record<ForceType, string> = {
         [ForceType.unspecified]: "purple",
@@ -136,6 +137,7 @@ export class Renderer {
     private context: CanvasRenderingContext2D;
     private width: number;
     private height: number;
+    private aspectRatio: number;
 
     private inverseObstacleLayer: RenderLayer = new RenderLayer(this);
     private mainLayer: RenderLayer = new RenderLayer(this);
@@ -156,6 +158,7 @@ export class Renderer {
     private updateDimensions(): void {
         this.width = this.canvas.width = this.canvas.clientWidth;
         this.height = this.canvas.height = this.canvas.clientHeight;
+        this.aspectRatio = this.width / this.height;
 
         this.inverseObstacleLayer.updateDimensions(this.width, this.height);
         this.mainLayer.updateDimensions(this.width, this.height);
@@ -196,44 +199,46 @@ export class Renderer {
         this.mainLayer.context.clearRect(0, 0, this.width, this.height);
         this.vectorLayer.context.clearRect(0, 0, this.width, this.height);
 
+        const camera: Camera = Simulation.instance.camera;
+        let minX: number = camera.position.x - camera.range * this.aspectRatio;
+        let maxX: number = camera.position.x + camera.range * this.aspectRatio;
+        let minY: number = camera.position.y - camera.range;
+        let maxY: number = camera.position.y + camera.range;
+
+        for (let x: number = Math.round(minX); x <= Math.round(maxX); x++) {
+            
+        }
+
+        for (let y: number = Math.round(minY); y <= Math.round(maxY); y++) {
+            
+        }
+
         for (const obstacle of Simulation.instance.obstacles) {
             const drawLayer: RenderLayer = obstacle.inverse ? this.inverseObstacleLayer : this.mainLayer;
 
             drawLayer.drawShape(obstacle.vertices, obstacle.radius, {
                 fill: true,
                 fillInvert: obstacle.inverse,
-                stroke: true,
-                fillStyle: obstacle.material.color,
-                strokeStyle: "black",
-                strokeWidth: 1
+                fillStyle: obstacle.material.color
             });
         }
 
         for (const projectile of Simulation.instance.projectiles) {
             this.mainLayer.drawShape([projectile.position], projectile.radius, {
                 fill: true,
-                stroke: true,
-                fillStyle: projectile.material.color,
-                strokeStyle: "black",
-                strokeWidth: 1
+                fillStyle: projectile.material.color
             });
 
             for (const force of projectile.forces) {
                 this.vectorLayer.drawArrow(projectile.position, force.vector, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
                     fill: true,
-                    stroke: true,
-                    fillStyle: this.FORCE_COLORS[force.type],
-                    strokeStyle: "black",
-                    strokeWidth: 1
+                    fillStyle: this.FORCE_COLORS[force.type]
                 });
             }
 
             this.vectorLayer.drawArrow(projectile.position, projectile._velocity, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
                 fill: true,
-                stroke: true,
-                fillStyle: "green",
-                strokeStyle: "black",
-                strokeWidth: 1
+                fillStyle: "green"
             });
         }
 
@@ -249,10 +254,7 @@ export class Renderer {
 
             this.mainLayer.drawShape([start, end], ropeWidth, {
                 fill: true,
-                stroke: true,
-                fillStyle: rope.material.color,
-                strokeStyle: "black",
-                strokeWidth: 1
+                fillStyle: rope.material.color
             });
         }
 
