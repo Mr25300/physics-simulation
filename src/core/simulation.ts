@@ -29,7 +29,7 @@ export class Simulation extends Loop {
     public controller: Controller = new Controller();
     public uiManager: UIManager = new UIManager();
     public canvas: Renderer;
-    // private graphHandler: GraphHandler = new GraphHandler();
+    private graphHandler: GraphHandler = new GraphHandler();
 
     public readonly materials: Set<PhysicsMaterial> = new Set();
 
@@ -69,6 +69,8 @@ export class Simulation extends Loop {
 
         this.uiManager.init();
 
+        this.graphHandler.activateProjectile(proj, 0);
+
         // const graphCanvas = document.getElementById("posGraph") as HTMLCanvasElement;
         // this.posGraph = new Graph(graphCanvas, "t", "dy");
 
@@ -100,7 +102,7 @@ export class Simulation extends Loop {
 
     public render(): void {
         this.camera.update();
-        // this.graphHandler.updateGraph(this.elapsedTime);
+        this.graphHandler.updateGraph(this.elapsedTime);
         this.canvas.render();
         this.uiManager.update();
     }

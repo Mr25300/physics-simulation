@@ -1,29 +1,15 @@
-/**
- * Our base graph class
- * @example
- * Creating a basic graph
- * ``const cc = document.getElementById('graphCanvas') as HTMLCanvasElement;
- * const graph = new Graph(cc, 'X Values', 'Y Values');
- * graph.addPoint(10, 20);
- * graph.addPoint(20, 35);
- * graph.addPoint(30, 15);
- * graph.addPoint(12, 15);
- * graph.addPoint(27, 15);``
- *
- **/
 export class Graph {
   private _points: { x: number; y: number }[] = [];
   private ctx: CanvasRenderingContext2D;
+  private resizeObserver: ResizeObserver;
 
-
-  public get points() : { x: number; y: number }[] {
+  public get points(): { x: number; y: number }[] {
     return this._points;
   }
 
   public get canvas(): HTMLCanvasElement {
     return this._canvas;
   }
-
 
   constructor(
     private _canvas: HTMLCanvasElement,
@@ -34,13 +20,33 @@ export class Graph {
     if (!ctx) throw new Error("Could not get canvas context");
     this.ctx = ctx;
 
-    // Handle high DPI scaling
-    const dpr = window.devicePixelRatio || 1;
-    const rect = _canvas.getBoundingClientRect();
-    _canvas.width = rect.width * dpr;
-    _canvas.height = rect.height * dpr;
-    this.ctx.scale(dpr, dpr);
+    // Set canvas CSS dimensions to fill container
+    _canvas.style.width = "100%";
+    _canvas.style.height = "100%";
+
+    // Handle initial high DPI scaling
+    this.updateCanvasSize();
+
+    // Setup resize observer to handle container size changes
+    this.resizeObserver = new ResizeObserver(() => this.updateCanvasSize());
+    this.resizeObserver.observe(_canvas);
+
     this.reset();
+  }
+
+  private updateCanvasSize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = this._canvas.getBoundingClientRect();
+
+    // Set actual canvas buffer size
+    this._canvas.width = rect.width * dpr;
+    this._canvas.height = rect.height * dpr;
+
+    // Scale context to account for DPI
+    this.ctx.scale(dpr, dpr);
+
+    // Redraw content after resize
+    this.draw();
   }
 
   reset() {
@@ -98,11 +104,7 @@ export class Graph {
     // X-axis label
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText(
-      this.xLabel,
-      cssWidth / 2,
-      cssHeight - padding.bottom + 25
-    );
+    ctx.fillText(this.xLabel, cssWidth / 2, cssHeight - padding.bottom + 25);
 
     // Y-axis label
     ctx.save();
@@ -151,7 +153,13 @@ export class Graph {
 
     // Vertical gridlines (x-ticks)
     xTicks.forEach((x) => {
-      const screenX = this.mapX(x, effectiveMinX, effectiveMaxX, padding, cssWidth);
+      const screenX = this.mapX(
+        x,
+        effectiveMinX,
+        effectiveMaxX,
+        padding,
+        cssWidth
+      );
       ctx.beginPath();
       ctx.moveTo(screenX, padding.top);
       ctx.lineTo(screenX, cssHeight - padding.bottom);
@@ -160,7 +168,13 @@ export class Graph {
 
     // Horizontal gridlines (y-ticks)
     yTicks.forEach((y) => {
-      const screenY = this.mapY(y, effectiveMinY, effectiveMaxY, padding, cssHeight);
+      const screenY = this.mapY(
+        y,
+        effectiveMinY,
+        effectiveMaxY,
+        padding,
+        cssHeight
+      );
       ctx.beginPath();
       ctx.moveTo(padding.left, screenY);
       ctx.lineTo(cssWidth - padding.right, screenY);
@@ -176,30 +190,46 @@ export class Graph {
 
     // X-axis tick labels
     xTicks.forEach((x) => {
-      const screenX = this.mapX(x, effectiveMinX, effectiveMaxX, padding, cssWidth);
-      ctx.fillText(
-        this.formatTick(x),
-        screenX,
-        cssHeight - padding.bottom + 5
+      const screenX = this.mapX(
+        x,
+        effectiveMinX,
+        effectiveMaxX,
+        padding,
+        cssWidth
       );
+      ctx.fillText(this.formatTick(x), screenX, cssHeight - padding.bottom + 5);
     });
 
     // Y-axis tick labels
     ctx.textAlign = "right";
     yTicks.forEach((y) => {
-      const screenY = this.mapY(y, effectiveMinY, effectiveMaxY, padding, cssHeight);
-      ctx.fillText(
-        this.formatTick(y),
-        padding.left - 5,
-        screenY
+      const screenY = this.mapY(
+        y,
+        effectiveMinY,
+        effectiveMaxY,
+        padding,
+        cssHeight
       );
+      ctx.fillText(this.formatTick(y), padding.left - 5, screenY);
     });
 
     // Draw connecting line
     ctx.beginPath();
     this._points.forEach((point, index) => {
-      const x = this.mapX(point.x, effectiveMinX, effectiveMaxX, padding, cssWidth);
-      const y = this.mapY(point.y, effectiveMinY, effectiveMaxY, padding, cssHeight);
+      const x = this.mapX(
+        point.x,
+        effectiveMinX,
+        effectiveMaxX,
+        padding,
+        cssWidth
+      );
+      const y = this.mapY(
+        point.y,
+        effectiveMinY,
+        effectiveMaxY,
+        padding,
+        cssHeight
+      );
       index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
     ctx.strokeStyle = "blue";
@@ -209,8 +239,20 @@ export class Graph {
     // Draw individual points
     ctx.fillStyle = "red";
     this._points.forEach((point) => {
-      const x = this.mapX(point.x, effectiveMinX, effectiveMaxX, padding, cssWidth);
-      const y = this.mapY(point.y, effectiveMinY, effectiveMaxY, padding, cssHeight);
+      const x = this.mapX(
+        point.x,
+        effectiveMinX,
+        effectiveMaxX,
+        padding,
+        cssWidth
+      );
+      const y = this.mapY(
+        point.y,
+        effectiveMinY,
+        effectiveMaxY,
+        padding,
+        cssHeight
+      );
       ctx.beginPath();
       ctx.arc(x, y, 3, 0, Math.PI * 2);
       ctx.fill();
@@ -280,9 +322,17 @@ export class Graph {
     // Format numbers with appropriate decimal places
     if (value === 0) return "0";
     const absValue = Math.abs(value);
-    return absValue >= 1000 ? value.toExponential(0) :
-           absValue >= 10 ? value.toFixed(0) :
-           absValue >= 1 ? value.toFixed(1) :
-           value.toFixed(2);
+    return absValue >= 1000
+      ? value.toExponential(0)
+      : absValue >= 10
+      ? value.toFixed(0)
+      : absValue >= 1
+      ? value.toFixed(1)
+      : value.toFixed(2);
+  }
+
+  // Optional: Add a destroy method to clean up the observer
+  destroy() {
+    this.resizeObserver.disconnect();
   }
 }
