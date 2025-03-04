@@ -2,12 +2,12 @@
 
 :root {
     --background: rgb(25, 25, 25);
-    --window: rgba(37, 39, 56, 0.8);
+    --window: rgba(43, 44, 58, 0.8);
     --group: rgb(25, 25, 35);
-    --button: rgb(106, 111, 153);
-    --detail: rgb(190, 198, 255);
-    --highlight: rgb(106, 133, 255);
-    --detail-highlight: rgb(137, 165, 255);
+    --button: rgb(177, 181, 202);
+    --detail: rgb(193, 196, 219);
+    --highlight: rgb(83, 117, 255);
+    --detail-highlight: rgb(82, 120, 248);
     --highlight-time: 0.2s;
 }
 
@@ -389,7 +389,7 @@ body {
     width: 2px;
     height: 12px;
     background-color: var(--button);
-    transition: background-color 0.2s;
+    transition: background-color var(--highlight-time);
 }
 
 .slider-marker-container div:first-of-type, .slider-marker-container div:last-of-type {
@@ -397,9 +397,8 @@ body {
     height: 16px;
 }
 
-.highlighted {
+.slider-marker-container div.highlighted {
     background-color: var(--highlight) !important;
-    height: 100px;
 }
 
 /* .slider input[type="range"]::-moz-range-thumb {
