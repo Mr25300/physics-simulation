@@ -52,10 +52,13 @@ export class Simulation extends Loop {
 
         this.canvas = new Renderer(canvas);
 
-        const material: PhysicsMaterial = new PhysicsMaterial(0, 0.5, 0.5, 0.4, 0.1, "grey");
+        const material: PhysicsMaterial = new PhysicsMaterial(0, 0, 0.5, 0.4, 0.1, "grey");
 
         const proj = new Projectile(0.2, 2, new Vector2(-5, 8), material);
         this.projectiles.add(proj);
+
+        const proj2 = new Projectile(0.2, 2, new Vector2(5, 8), material);
+        this.projectiles.add(proj2);
         // this.projectiles.add(new Projectile(0.5, 1, 0, 1, 0.5, 0.5, 0.2, new Vector2(-4, 6)));
         // this.ropes.add(new Rope(Vector2.zero, 4, this.projectiles.get(0)));
         // this.obstacles.add(new Obstacle(0.25, 0.5, 0.5, [new Vector2(-8, -6), new Vector2(8, -6), new Vector2(8, -4), new Vector2(-8, -4)]));
@@ -90,6 +93,7 @@ export class Simulation extends Loop {
         }
 
         for (const projectile of this.projectiles) {
+            if (!this.running) break;
             projectile.updateKinematics(deltaTime);
         }
 

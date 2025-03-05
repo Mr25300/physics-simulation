@@ -123,7 +123,9 @@ export class Renderer {
     private readonly ROPE_MIN_WIDTH: number = 0.05;
     private readonly ROPE_MAX_WIDTH: number = 0.2;
 
-    private readonly GRID_COLOR: string = "white";
+    private readonly GRID_COLOR: string = "#49403F";
+
+    private gridScale: number;
 
     private readonly FORCE_COLORS: Record<ForceType, string> = {
         [ForceType.unspecified]: "purple",
@@ -205,12 +207,30 @@ export class Renderer {
         let minY: number = camera.position.y - camera.range;
         let maxY: number = camera.position.y + camera.range;
 
-        for (let x: number = Math.round(minX); x <= Math.round(maxX); x++) {
-            
+        this.gridScale = 10 ** Math.floor(Math.log10(camera.range));
+
+        console.log(this.gridScale);
+
+        for (let x: number = Math.ceil(minX / this.gridScale); x <= Math.floor(maxX / this.gridScale); x++) {
+            const start: Vector2 = new Vector2(x * this.gridScale, minY);
+            const end: Vector2 = new Vector2(x * this.gridScale, maxY);
+
+            this.mainLayer.drawShape([start, end], 0, {
+                stroke: true,
+                strokeWidth: 1,
+                strokeStyle: this.GRID_COLOR
+            });
         }
 
-        for (let y: number = Math.round(minY); y <= Math.round(maxY); y++) {
-            
+        for (let y: number = Math.ceil(minY / this.gridScale); y <= Math.floor(maxY / this.gridScale); y++) {
+            const start: Vector2 = new Vector2(minX, y * this.gridScale);
+            const end: Vector2 = new Vector2(maxX, y * this.gridScale);
+
+            this.mainLayer.drawShape([start, end], 0, {
+                stroke: true,
+                strokeWidth: 1,
+                strokeStyle: this.GRID_COLOR
+            });
         }
 
         for (const obstacle of Simulation.instance.obstacles) {
