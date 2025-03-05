@@ -59,21 +59,7 @@ export class GraphHandler {
   }
 
   public updateInfo() {
-    // we refresh the entire thing because there is no point tracking the elements themselves
-    const projectile = this._activatedProjectile.Projectile;
-    this.infoDiv.innerHTML =
-      `<h1 style="text-align: center">Projectile ${this._activatedProjectile.index} Info:</h1> <br>
-      Position: (${projectile.position.x.toFixed(1)}, ${projectile.position.y.toFixed(1)}) <br>
-      V<sub>x</sub>: ${projectile.velocity.x.toFixed(2)} m/s <br>
-      V<sub>y</sub>: ${projectile.velocity.y.toFixed(2)} m/s <br>
-      V<sub>Magnitude</sub>: ${projectile.velocity.magnitude.toFixed(2)} m/s <br>
-      A<sub>x</sub>: ${projectile.acceleration.x.toFixed(2)} m/s<sup>2</sup> <br>
-      A<sub>y</sub>: ${projectile.acceleration.y.toFixed(2)} m/s<sup>2</sup> <br>
-      A<sub>Magnitude</sub>: ${projectile.acceleration.magnitude.toFixed(2)} m/s<sup>2</sup> <br>
-      `;
-
-
-
+    // nothing here yet
   }
 
 }
