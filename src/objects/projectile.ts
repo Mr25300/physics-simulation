@@ -162,10 +162,6 @@ export class Projectile {
                 this._velocity = collisionVel.add(info.normal.multiply(normalImpulse));
 
             } else if (info.object instanceof Projectile) {
-                // Simulation.instance.pause();
-                // console.log(info.normal, this._position.subtract(info.object._position));
-                // return;
-
                 const massSum: number = this.mass + info.object.mass;
                 const portion1: number = this.mass / massSum;
                 const portion2: number = info.object.mass / massSum;
@@ -174,7 +170,6 @@ export class Projectile {
                 const collisionProgress: number = displacement.magnitude === 0 ? 0 : Math.min(collisionPos1.subtract(lastPosition).magnitude / displacement.magnitude, 1);
 
                 const collisionVel: Vector2 = lastVelocity.add(this._velocity.subtract(lastVelocity).multiply(collisionProgress));
-                // DO THE COLLISION PROGRESS THING HERE TOO (only needs to be done for THIS projectile) AND ONLY DO OVERLAP FOR THIS PROJECTILE AS WELL
                 const normalVel1: number = info.normal.dot(collisionVel);
                 const normalVel2: number = info.normal.dot(info.object._velocity);
                 const impulse: number = -(1 + restitution) * (normalVel1 - normalVel2) / (1 / this.mass + 1 / info.object.mass);

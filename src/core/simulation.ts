@@ -3,27 +3,28 @@ import { Projectile } from "../objects/projectile.js";
 import { Renderer } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { Obstacle } from "../objects/obstacle.js";
-import { Rope } from "../constraints/constraint.js";
+import { Rope } from "../objects/constraint.js";
 import { GraphHandler } from "../graphing/graphHandler.js";
 import { Camera } from "../rendering/camera.js";
 import { Controller } from "../interfacing/controller.js";
 
-import "../interfacing/collapsible.js";
 import { UIManager } from "../interfacing/uimanager.js";
 import { PhysicsMaterial } from "../objects/physicsMaterial.js";
+import { Field } from "../objects/field.js";
 
-export interface Constants {
-    airDensity: number;
-    gravitationalConstant: number;
-    coloumbConstant: number;
-}
+// export interface Constants {
+//     airDensity: number;
+//     gravitationalConstant: number;
+//     coloumbConstant: number;
+// }
 
 export class Simulation extends Loop {
     public airDensity: number = 0;//1.225;
     public gravityDirection: Vector2 = new Vector2(0, -1);
     public gravityAcceleration: number = 9.81;
-    public coloumbConstant: number = 30;
     public gravitationalConstant: number = 1;
+    public coloumbConstant: number = 1;
+    public magneticConstant: number = 1;
 
     public camera: Camera = new Camera();
     public controller: Controller = new Controller();
@@ -36,7 +37,7 @@ export class Simulation extends Loop {
     public readonly projectiles: Set<Projectile> = new Set();
     public readonly ropes: Set<Rope> = new Set();
     public readonly obstacles: Set<Obstacle> = new Set();
-    
+    public readonly fields: Set<Field> = new Set();
 
     private static _instance: Simulation;
 
@@ -66,7 +67,7 @@ export class Simulation extends Loop {
 
         // this.obstacles.add(new Obstacle([new Vector2(0, 0)], 10, true, material));
 
-        proj.applyForce(new Vector2(40 * proj.mass, 0), true);
+        proj.applyForce(new Vector2(10 * proj.mass, 0), true);
 
         this.start();
 
