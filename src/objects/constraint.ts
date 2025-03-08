@@ -65,7 +65,7 @@ export class Rope extends Constraint {
         if (centerDiff.magnitude >= this.length - 1e-8) {
             const radialVel: number = centerDiff.unit.dot(this.attachment.velocity);
 
-            if (radialVel > 0) this.attachment.applyForce(centerDiff.unit.multiply(-radialVel * this.attachment.mass), true);
+            if (radialVel > 0) this.attachment.applyForce(centerDiff.unit.multiply(-radialVel * this.attachment.properties.mass), true);
         }
     }
 }

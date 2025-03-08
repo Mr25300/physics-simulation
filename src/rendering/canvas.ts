@@ -94,9 +94,11 @@ export class RenderLayer {
     }
 
     public drawArrow(origin: Vector2, vector: Vector2, tipWidth: number, tipHeight: number, lineWidth: number, drawStyle: DrawStyle): void {
-        vector = vector.divide(5);
-
         if (vector.magnitude < 0.001) return;
+
+        const logMagnitude: number = Math.min(Math.log(1 + vector.magnitude), 10);
+
+        vector = vector.unit.multiply(logMagnitude);
 
         const arrowEnd: Vector2 = origin.add(vector);
         const thicknessVec: Vector2 = vector.unit.orthogonal.multiply(lineWidth);
@@ -133,7 +135,8 @@ export class Renderer {
         [ForceType.normal]: "red",
         [ForceType.tension]: "orange",
         [ForceType.friction]: "yellow",
-        [ForceType.drag]: "white"
+        [ForceType.drag]: "white",
+        [ForceType.electrostatic]: "black"
     }
 
     private context: CanvasRenderingContext2D;
@@ -196,20 +199,19 @@ export class Renderer {
     }
 
     public render(): void {
+        const camera: Camera = Simulation.instance.camera;
+
         this.context.clearRect(0, 0, this.width, this.height);
         this.inverseObstacleLayer.context.clearRect(0, 0, this.width, this.height);
         this.mainLayer.context.clearRect(0, 0, this.width, this.height);
         this.vectorLayer.context.clearRect(0, 0, this.width, this.height);
-
-        const camera: Camera = Simulation.instance.camera;
+        
         let minX: number = camera.position.x - camera.range * this.aspectRatio;
         let maxX: number = camera.position.x + camera.range * this.aspectRatio;
         let minY: number = camera.position.y - camera.range;
         let maxY: number = camera.position.y + camera.range;
 
         this.gridScale = 10 ** Math.floor(Math.log10(camera.range));
-
-        console.log(this.gridScale);
 
         for (let x: number = Math.ceil(minX / this.gridScale); x <= Math.floor(maxX / this.gridScale); x++) {
             const start: Vector2 = new Vector2(x * this.gridScale, minY);
@@ -244,19 +246,60 @@ export class Renderer {
         }
 
         for (const projectile of Simulation.instance.projectiles) {
-            this.mainLayer.drawShape([projectile.position], projectile.radius, {
+            this.mainLayer.drawShape([projectile.position], projectile.properties.radius, {
                 fill: true,
-                fillStyle: projectile.material.color
+                fillStyle: projectile.properties.material.color
             });
 
+            // if (projectile === camera.frameOfReference) continue;
+
             for (const force of projectile.forces) {
-                this.vectorLayer.drawArrow(projectile.position, force.vector, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+                let relativeForce: Vector2 = force.vector;
+
+                if (camera.frameOfReference) {
+                    for (const camForce of camera.frameOfReference.forces) {
+                        if (camForce.type === force.type) {
+                            relativeForce = relativeForce.subtract(camForce.vector.multiply(projectile.properties.mass / camera.frameOfReference.properties.mass));
+                        }
+                    }
+                }
+                
+                this.vectorLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
                     fill: true,
                     fillStyle: this.FORCE_COLORS[force.type]
                 });
             }
 
-            this.vectorLayer.drawArrow(projectile.position, projectile._velocity, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+            if (camera.frameOfReference) {
+                for (const camForce of camera.frameOfReference.forces) {
+                    let forceFound: boolean = false;
+
+                    for (const force of projectile.forces) {
+                        if (force.type === camForce.type) {
+                            forceFound = true;
+
+                            break;
+                        }
+                    }
+
+                    if (!forceFound) {
+                        const relativeForce = camForce.vector.multiply(-projectile.properties.mass / camera.frameOfReference.properties.mass);
+
+                        this.vectorLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+                            fill: true,
+                            fillStyle: this.FORCE_COLORS[camForce.type]
+                        });
+                    }
+                }
+            }
+
+            let relativeVel: Vector2 = projectile.velocity;
+
+            if (camera.frameOfReference) {
+                relativeVel =  relativeVel.subtract(camera.frameOfReference.velocity);
+            }
+
+            this.vectorLayer.drawArrow(projectile.position, relativeVel, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
                 fill: true,
                 fillStyle: "green"
             });

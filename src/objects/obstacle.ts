@@ -82,7 +82,7 @@ export class Obstacle {
 
         for (const info of [...this.axes, projVertAxis]) {
             const projProjection: number = info.normal.dot(projectile.position);
-            const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
+            const [projMin, projMax]: [number, number] = [projProjection - projectile.properties.radius, projProjection + projectile.properties.radius];
             const [obsMin, obsMax]: [number, number] = info.axisRange;
 
             // let overlap: number | undefined;
