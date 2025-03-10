@@ -42,7 +42,7 @@ export class Projectile {
     private _velocity: Vector2 = Vector2.zero;
 
     private lastCollision: CollisionInfo | undefined;
-    private lastCentripetalForce: Vector2 = Vector2.zero;
+    // private lastCentripetalForce: Vector2 = Vector2.zero;
 
     constructor(
         public readonly properties: ProjectileProperties,
@@ -145,47 +145,47 @@ export class Projectile {
         this._position = lastPosition.add(displacement);
         this._velocity = this.getVelocity(deltaTime);
 
-        const info: CollisionInfo | undefined = CollisionManager.queryCollision(this);
+        const info = CollisionManager.queryCollision(this);
 
         this.lastCollision = info;
 
         if (info) {
             if (info.object instanceof Obstacle) {
-                const collisionPos: Vector2 = this._position.add(info.normal.multiply(info.overlap));
-                const collisionProgress: number = displacement.magnitude === 0 ? 0 : Math.min(collisionPos.subtract(lastPosition).magnitude / displacement.magnitude, 1);
-                const collisionVel: Vector2 = lastVelocity.add(this._velocity.subtract(lastVelocity).multiply(collisionProgress));
-                
-                const normalVel: number = info.normal.dot(collisionVel);
-                let normalImpulse: number = -normalVel;
-
-                const restitution: number = this.properties.material.combineElasticity(info.object.material);
-
-                if (Math.abs(normalVel) > 0.1) normalImpulse -= normalVel * restitution;
-    
                 this._position = this._position.add(info.normal.multiply(info.overlap));
-                this._velocity = collisionVel.add(info.normal.multiply(normalImpulse));
+
+                const normalVel: number = info.normal.dot(this._velocity);
+                let normalImpulse: number = normalVel;
+
+                if (Math.abs(normalVel) > 0.1) {
+                    let restitution: number = this.properties.material.combineElasticity(info.object.material);
+                    if (deltaTime < 0) restitution = 1 / restitution;
+
+                    normalImpulse += normalVel * restitution;
+                }
+
+                this.applyForce(info.normal.multiply(-normalImpulse * this.properties.mass), true);
 
             } else if (info.object instanceof Projectile) {
-                const massSum: number = this.properties.mass + info.object.properties.mass;
-                const portion1: number = this.properties.mass / massSum;
-                const portion2: number = info.object.properties.mass / massSum;
-                const collisionPos1: Vector2 = this._position.add(info.normal.multiply(info.overlap * portion1));
-                const collisionPos2: Vector2 = info.object._position.subtract(info.normal.multiply(info.overlap * portion2));
-                const collisionProgress: number = displacement.magnitude === 0 ? 0 : Math.min(collisionPos1.subtract(lastPosition).magnitude / displacement.magnitude, 1);
+                const mass1: number = this.properties.mass;
+                const mass2: number = info.object.properties.mass;
+                const massSum: number = mass1 + mass2;
 
-                const collisionVel: Vector2 = lastVelocity.add(this._velocity.subtract(lastVelocity).multiply(collisionProgress));
-                const normalVel1: number = info.normal.dot(collisionVel);
+                this._position = this._position.add(info.normal.multiply(info.overlap * mass1 / massSum));;
+                info.object._position = info.object._position.subtract(info.normal.multiply(info.overlap * mass2 / massSum));
+
+                const normalVel1: number = info.normal.dot(this._velocity);
                 const normalVel2: number = info.normal.dot(info.object._velocity);
+                const normalVelDiff: number = normalVel1 - normalVel2;
 
-                const restitution: number = this.properties.material.combineElasticity(info.object.properties.material);
+                if (normalVelDiff * Util.sign(deltaTime) < 0) {
+                    let restitution: number = this.properties.material.combineElasticity(info.object.properties.material);
+                    if (deltaTime < 0) restitution = 1 / restitution;
 
-                const impulse: number = -(1 + restitution) * (normalVel1 - normalVel2) / (1 / this.properties.mass + 1 / info.object.properties.mass);
+                    const impulse: number = mass1 * mass2 * (1 + restitution) * normalVelDiff / massSum;
 
-                this._position = collisionPos1;
-                info.object._position = collisionPos2;
-                
-                this.applyForce(info.normal.multiply(impulse), true);
-                info.object.applyForce(info.normal.multiply(-impulse), true);
+                    this.applyForce(info.normal.multiply(-impulse), true);
+                    info.object.applyForce(info.normal.multiply(impulse), true);
+                }
             }
         }
     }

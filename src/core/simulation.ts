@@ -53,24 +53,25 @@ export class Simulation extends Loop {
         if (!canvas) throw new Error("Failed to get canvas.");
 
         this.renderer = new Renderer(canvas);
+        this.uiManager.init();
+        
+        const material: PhysicsMaterial = new PhysicsMaterial(0.5, 0.8, 0.75, 0.1, "grey");
+        const ballMaterial: PhysicsMaterial = new PhysicsMaterial(1, 0.5, 0.4, 0.1, "red");
+        const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 2, 0, ballMaterial);
+        const properties2: ProjectileProperties = new ProjectileProperties(0.4, 1, 0, ballMaterial);
 
-        const material: PhysicsMaterial = new PhysicsMaterial(0, 0.5, 0.4, 0.1, "grey");
-        const projProperties: ProjectileProperties = new ProjectileProperties(0.2, 2, 0, material);
-
-        const proj = new Projectile(projProperties, new Vector2(-8, 8));
+        const proj = new Projectile(projProperties, new Vector2(-8, 10));
         this.projectiles.add(proj);
 
-        const proj2 = new Projectile(projProperties, new Vector2(10, 12));
+        const proj2 = new Projectile(properties2, new Vector2(10, 8));
         this.projectiles.add(proj2);
 
         this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(20, 0)], 1, false, material));
-        this.obstacles.add(new Obstacle([new Vector2(-10, 10), new Vector2(0, 0), new Vector2(-10, 0)], 0, false, material));
+        this.obstacles.add(new Obstacle([new Vector2(-10, 10), new Vector2(-10, 0), new Vector2(0, 0)], 1, false, material));
 
         // this.camera.setFrameOfReference(proj);
 
         this.start();
-
-        this.uiManager.init();
 
         // this.graphHandler.activateProjectile(proj, 0);
 
@@ -106,6 +107,8 @@ export class Simulation extends Loop {
         }
 
         for (const projectile of this.projectiles) {
+            if (!Simulation.instance.running) break;
+
             projectile.updateKinematics(deltaTime);
         }
 
