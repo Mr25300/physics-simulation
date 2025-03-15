@@ -1,10 +1,10 @@
 import { Simulation } from "../core/simulation.js";
 import { Collapsible } from "./collapsible.js";
-import { Slider } from "./slider.js";
+import { QuantityInput } from "./quantityinput.js";
 
 export class UIManager {
     private collapsibles: Map<HTMLDivElement, Collapsible> = new Map();
-    private sliders: Map<HTMLDivElement, Slider> = new Map();
+    private quantityInputs: Map<string, QuantityInput> = new Map();
 
     private pauseButton: HTMLButtonElement;
     private reverseButton: HTMLButtonElement;
@@ -14,11 +14,11 @@ export class UIManager {
             event.preventDefault();
         });
 
-        document.querySelectorAll(".collapsible").forEach((element: Element) => {
-            this.collapsibles.set(element as HTMLDivElement, new Collapsible(element as HTMLDivElement));
-        });
+        customElements.define("collapsible-dropdown", Collapsible);
+        customElements.define("quantity-input", QuantityInput);
 
         this.initSimulationControls();
+        this.initConstantsControls();
     }
 
     private togglePause(): void {
@@ -51,10 +51,12 @@ export class UIManager {
         const backButton: HTMLButtonElement = document.querySelector("button#sim-back")!;
         const doubleBackButton: HTMLButtonElement = document.querySelector("button#sim-double-back")!;
 
-        const timeSlider: Slider = new Slider(document.querySelector("div#sim-time-slider")!, -7, 7, 0);
+        const timeSlider: QuantityInput = document.getElementById("sim-time-slider") as QuantityInput;
 
-        timeSlider.addListener(() => {
-            Simulation.instance.timeScale = 2 ** timeSlider.value;
+        // timeSlider.setValue(Simulation.instance.timeScale);
+
+        timeSlider.addListener((value: number) => {
+            Simulation.instance.timeScale = value;
         });
 
         this.pauseButton.addEventListener("click", () => {
@@ -76,6 +78,31 @@ export class UIManager {
         this.setupSkipButton(doubleSkipButton, 1);
         this.setupSkipButton(backButton, -0.1);
         this.setupSkipButton(doubleBackButton, -1);
+    }
+
+    private initConstantsControls(): void {
+        const gInput: QuantityInput = document.getElementById("grav-constant-input") as QuantityInput;
+        const couloumbInput: QuantityInput = document.getElementById("coloumb-constant-input") as QuantityInput;
+        const airInput: QuantityInput = document.getElementById("air-density-input") as QuantityInput;
+
+        gInput.addListener((value: number) => {
+            Simulation.instance.constants.gravitationalConstant = value;
+        });
+
+        couloumbInput.addListener((value: number) => {
+            Simulation.instance.constants.coloumbConstant = value;
+        });
+
+        airInput.addListener((value: number) => {
+            Simulation.instance.constants.airDensity = value;
+        });
+
+        // const airDensityInput: QuantityInput = document.querySelector("quantity-input#air-density-input")!;
+
+        // airDensityInput.addListener(() => {
+        //     console.log(airDensityInput.value);
+        //     Simulation.instance.constants.airDensity = airDensityInput.value;
+        // });
     }
 
     public update(): void {

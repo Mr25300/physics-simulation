@@ -1,649 +1,470 @@
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap');
-
 :root {
-    --background: rgb(25, 25, 25);
-    --window: rgba(43, 44, 58, 0.7);
-    --group: rgb(25, 25, 35);
-    --button: rgb(177, 181, 202);
-    --detail: rgb(193, 196, 219);
-    --highlight: rgb(83, 117, 255);
-    --detail-highlight: rgb(82, 120, 248);
-    --highlight-time: 0.2s;
+  --background: rgb(25, 25, 25);
+  --window: rgba(43, 44, 58, 0.7);
+  --group: rgb(25, 25, 35);
+  --button: rgb(177, 181, 202);
+  --detail: rgb(193, 196, 219);
+  --highlight: rgb(83, 117, 255);
+  --detail-highlight: rgb(82, 120, 248);
+  --highlight-time: 0.2s;
 }
 
 * {
-    margin: 0;
-    padding: 0;
-    font-family: 'Courier New', Courier, monospace;
-    box-sizing: border-box;
-    user-select: none;
-    color: var(--detail);
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier New', Courier, monospace;
+  box-sizing: border-box;
+  user-select: none;
+  color: var(--detail);
 }
 
 body {
-    background-color: var(--background);
-    overflow: hidden;
+  background-color: var(--background);
+  overflow: hidden;
 }
 
 #simulation-screen {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .main-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column-reverse;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .horizontal-bar {
-    display: flex;
-    width: 100%;
-    height: auto;
-    flex-shrink: 0;
+  display: flex;
+  width: 100%;
+  height: auto;
+  flex-shrink: 0;
 }
 
 .horizontal-bar-inner {
-    flex: 1;
-    margin: 8px;
-    margin-top: 0;
-    height: 48px;
-    background-color: var(--window);
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
+  flex: 1;
+  margin: 8px;
+  margin-top: 0;
+  height: 48px;
+  background-color: var(--window);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .horizontal-bar-segment {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
-    /* border-left: 1px solid var(--outline);
+  flex: 1;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  /* border-left: 1px solid var(--outline);
     border-right: 1px solid var(--outline); */
 }
 
 .content-container {
-    display: flex;
-    padding: 8px;
-    flex: 1;
+  display: flex;
+  padding: 8px;
+  flex: 1;
 }
 
 .side-bar {
-    height: 100%;
-    width: 320px;
-    display: flex;
-    flex-direction: column;
-    padding: 4px;
-    gap: 4px;
-    overflow: auto;
+  height: 100%;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  gap: 4px;
+  overflow: auto;
 }
 
 .window {
-    background-color: var(--window);
-    border-radius: 5px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+  background-color: var(--window);
+  border-radius: 5px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.collapsible {
-    padding: 2px;
+collapsible-dropdown {
+  padding: 2px;
 }
 
 .collapsible-select {
-    position: relative;
-    padding: 2px;
-    transition: color var(--highlight-time);
-    width: 100%;
-    border-radius: 5px;
+  position: relative;
+  padding: 2px;
+  transition: color var(--highlight-time);
+  width: 100%;
+  border-radius: 5px;
 }
 
 .collapsible-select::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    transform: scaleX(1);
-    border-bottom: 2px solid;
-    border-bottom-color: var(--detail);
-    transition: transform 0.2s ease, border-bottom-color var(--highlight-time);
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(1);
+  border-bottom: 2px solid;
+  border-bottom-color: var(--detail);
+  transition: transform 0.2s ease, border-bottom-color var(--highlight-time);
 }
 
 .collapsible-select:hover {
-    cursor: pointer;
-    color: var(--detail-highlight);
+  cursor: pointer;
+  color: var(--detail-highlight);
 }
 
 .collapsible-select:hover::after {
-    border-bottom-color: var(--detail-highlight);
+  border-bottom-color: var(--detail-highlight);
 }
 
-.collapsible.expanded .collapsible-select::after {
-    transform: scaleX(0);
+collapsible-dropdown.expanded .collapsible-select::after {
+  transform: scaleX(0);
 }
 
-.collapsible .collapsible-content {
-    margin-top: 0px;
-    height: 0;
-    width: 100%;
-    overflow: hidden;
-    transition: height 0.2s ease, margin-top var(--highlight-time);
+.collapsible-content {
+  margin-top: 0px;
+  height: 0;
+  width: 100%;
+  overflow: hidden;
+  transition: height 0.2s ease, margin-top var(--highlight-time);
 }
 
-.collapsible.expanded .collapsible-content {
-    margin-top: 4px;
+collapsible-dropdown.expanded .collapsible-content {
+  margin-top: 4px;
 }
 
-.group-wrapper {
-    background-color: var(--group);
-    margin: 1px;
-    padding: 4px;
-    border-radius: 5px;
+.collapsible-content-wrapper {
+  background-color: var(--group);
+  margin: 1px;
+  padding: 4px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 2px solid var(--detail);
 }
 
 .pause-button,
 .skip-button,
 .skip-button::after,
 .skip-button.double::before {
-    background: transparent;
-    box-sizing: border-box;
-    width: 0;
-    height: 24px;
-    border-color: transparent transparent transparent var(--button);
-    cursor: pointer;
-    transition: border-color var(--highlight-time);
+  background: transparent;
+  box-sizing: border-box;
+  width: 0;
+  height: 24px;
+  border-color: transparent transparent transparent var(--button);
+  cursor: pointer;
+  transition: border-color var(--highlight-time);
 }
 
 .pause-button:hover,
 .skip-button:hover,
 .skip-button:hover::after,
 .skip-button.double:hover::before {
-    border-color: transparent transparent transparent var(--highlight);
+  border-color: transparent transparent transparent var(--highlight);
 }
 
 .pause-button {
-    border-style: double;
-    border-width: 0px 0 0px 20px;
-    transition: border-color var(--highlight-time), border-width 0.2s ease;
+  border-style: double;
+  border-width: 0px 0 0px 20px;
+  transition: border-color var(--highlight-time), border-width 0.2s ease;
 }
 
 .pause-button.paused {
-    border-style: solid;
-    border-width: 12px 0 12px 20px;
+  border-style: solid;
+  border-width: 12px 0 12px 20px;
 }
 
 .skip-button {
-    position: relative;
-    margin-right: 2px;
-    --rotation: 0;
+  position: relative;
+  margin-right: 2px;
+  --rotation: 0;
 }
 
 .skip-button.back {
-    margin-right: 0;
-    margin-left: 2px;
-    --rotation: 180deg;
-    transform: rotate(180deg);
+  margin-right: 0;
+  margin-left: 2px;
+  --rotation: 180deg;
+  transform: rotate(180deg);
 }
 
 .skip-button.double {
-    margin-right: 14px;
+  margin-right: 14px;
 }
 
 .skip-button.double.back {
-    margin-right: 0;
-    margin-left: 14px;
+  margin-right: 0;
+  margin-left: 14px;
 }
 
 .skip-button,
 .skip-button.double::before {
-    border-style: solid;
-    border-width: 12px 0 12px 18px;
+  border-style: solid;
+  border-width: 12px 0 12px 18px;
 }
 
 .skip-button::after {
-    content: "";
-    position: absolute;
-    border-style: solid;
-    border-width: 0px 0 0px 4px;
-    transform: translate(-4px, -50%);
+  content: "";
+  position: absolute;
+  border-style: solid;
+  border-width: 0px 0 0px 4px;
+  transform: translate(-4px, -50%);
 }
 
 .skip-button.double::after {
-    transform: translate(10px, -50%);
+  transform: translate(10px, -50%);
 }
 
 .skip-button.double::before {
-    content: "";
-    position: absolute;
-    transform: translate(-4px, -50%);
+  content: "";
+  position: absolute;
+  transform: translate(-4px, -50%);
 }
 
 @keyframes skip-animation {
-    0% { transform: rotate(var(--rotation)) translateX(0); }
-    50% { transform: rotate(var(--rotation)) translateX(4px); }
-    100% { transform: rotate(var(--rotation)) translateX(0); }
+  0% {
+    transform: rotate(var(--rotation)) translateX(0);
+  }
+
+  50% {
+    transform: rotate(var(--rotation)) translateX(4px);
+  }
+
+  100% {
+    transform: rotate(var(--rotation)) translateX(0);
+  }
 }
 
 .skip-button.skipped {
-    animation: skip-animation 0.3s ease-out;
+  animation: skip-animation 0.3s ease-out;
 }
 
 .reverse-button {
-    position: relative;
-    width: 24px;
-    height: 24px;
-    border: none;
-    background: transparent;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.4s ease-out;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.4s ease-out;
 }
 
 .reverse-button::before,
 .reverse-button::after {
-    content: "";
-    position: absolute;
-    background: transparent;
-    border-style: solid;
-    border-width: 12px 12px 0 12px;
-    border-color: var(--button) transparent transparent transparent;
-    transition: border-color 0.2s;
+  content: "";
+  position: absolute;
+  background: transparent;
+  border-style: solid;
+  border-width: 12px 12px 0 12px;
+  border-color: var(--button) transparent transparent transparent;
+  transition: border-color 0.2s;
 }
 
 .reverse-button::before {
-    transform: translateY(-6px);
+  transform: translateY(-6px);
 }
 
 .reverse-button::after {
-    transform: translateY(6px) rotate(180deg);
+  transform: translateY(6px) rotate(180deg);
 }
 
 .reverse-button .arrow {
-    position: relative;
-    height: 2px;
-    width: 18px;
-    background-color: var(--button);
-    transition: background-color 0.2s;
+  position: relative;
+  height: 2px;
+  width: 18px;
+  background-color: var(--button);
+  transition: background-color 0.2s;
 }
 
 .reverse-button .arrow::after {
-    position: absolute;
-    content: "";
-    background: transparent;
-    border-style: solid;
-    border-width: 0 2px 2px 0;
-    border-color: transparent var(--button) var(--button) transparent;
-    transform: translate(4px, calc(-50% + 1px)) rotate(-45deg);
-    width: 4px;
-    height: 4px;
-    transition: border-color 0.2s;
+  position: absolute;
+  content: "";
+  background: transparent;
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  border-color: transparent var(--button) var(--button) transparent;
+  transform: translate(4px, calc(-50% + 1px)) rotate(-45deg);
+  width: 4px;
+  height: 4px;
+  transition: border-color 0.2s;
 }
 
 .reverse-button:hover::after,
 .reverse-button:hover::before {
-    cursor: pointer;
-    border-color: var(--highlight) transparent transparent transparent;
+  cursor: pointer;
+  border-color: var(--highlight) transparent transparent transparent;
 }
 
 .reverse-button:hover .arrow {
-    background-color: var(--highlight);
+  background-color: var(--highlight);
 }
 
 .reverse-button:hover .arrow::after {
-    border-color: transparent var(--highlight) var(--highlight) transparent;
+  border-color: transparent var(--highlight) var(--highlight) transparent;
 }
 
 .reverse-button.reversed {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
-.slider-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
+quantity-input {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 0.9em;
+  height: auto;
+  gap: 6px;
 }
 
-.slider-container {
-    position: relative;
-    width: 240px;
-    height: 4px;
-    display: flex;
-    align-items: center;
-    background-color: var(--button);
+.qi-label {
+  display: inline-block;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  height: auto;
 }
 
-.slider-text {
-    position: absolute;
-    top: -20px;
+.qi-input-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
-.slider-container input[type="range"] {
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    background: transparent;
-    z-index: 2;
+.qi-text-input-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 80px;
+  height: 24px;
+  overflow: hidden;
+  align-items: center;
 }
 
-.slider-container input[type="range"]::-webkit-slider-thumb {
-    appearance: none;
-    cursor: pointer;
-    width: 4px;
-    height: 20px;
-    border-radius: 0;
-    background-color: var(--button);
-    transition: background-color 0.2s, height 0.2s ease;
+.qi-text-input-container span {
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
-.slider-container input[type="range"]::-moz-range-thumb {
-    appearance: none;
-    cursor: pointer;
-    width: 4px;
-    height: 20px;
-    border-radius: 0;
-    background-color: var(--button);
-    transition: background-color var(--highlight-time), height var(--highlight-time) ease;
+.qi-text-input {
+  position: relative;
+  outline: none;
+  white-space: nowrap;
+  overflow: visible;
+  transition: color var(--highlight-time);
 }
 
-.slider-container input[type="range"]::-webkit-slider-thumb:hover {
-    height: 24px;
-    background-color: var(--highlight);
+.qi-text-input::after {
+  position: absolute;
+  content: "";
+  height: 100%;
+  width: 100%;
+  border-bottom: 2px solid var(--highlight);
+  transform: scaleX(0);
+  transition: transform var(--highlight-time) ease;
+  pointer-events: none;
 }
 
-.slider-container input[type="range"]::-moz-range-thumb:hover {
-    height: 24px;
-    background-color: var(--highlight);
+.qi-text-input:focus {
+  color: var(--detail-highlight);
 }
 
-.slider-progress {
-    position: absolute;
-    left: 0%;
-    right: 100%;
-    height: 4px;
-    background-color: var(--highlight);
-    z-index: 0;
+.qi-text-input:focus::after {
+  transform: scaleX(1);
 }
 
-.slider-marker-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 1;
+.qi-slider-container {
+  position: relative;
+  width: 100px;
+  height: 24px;
+  display: flex;
+  align-items: center;
 }
 
-.slider-marker-container div {
-    width: 2px;
-    height: 12px;
-    background-color: var(--button);
-    transition: background-color var(--highlight-time);
+.qi-slider {
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  z-index: 3;
 }
 
-.slider-marker-container div:first-of-type, .slider-marker-container div:last-of-type {
-    width: 4px;
-    height: 16px;
+.qi-slider::-webkit-slider-thumb {
+  appearance: none;
+  cursor: pointer;
+  width: 4px;
+  height: 18px;
+  border-radius: 0;
+  background-color: var(--button);
+  transition: background-color 0.2s, height 0.2s ease;
 }
 
-.slider-marker-container div.highlighted {
-    background-color: var(--highlight) !important;
+.qi-slider::-moz-range-thumb {
+  appearance: none;
+  cursor: pointer;
+  width: 4px;
+  height: 18px;
+  border-radius: 0;
+  background-color: var(--button);
+  transition: background-color var(--highlight-time), height var(--highlight-time) ease;
 }
 
-/* .slider input[type="range"]::-moz-range-thumb {
-    background-color: red;
-} */
-
-/* .parent {
-    display: grid;
-    grid-template-columns: 1fr 0.5fr 1.5fr;
-    grid-template-rows: 1fr 1fr 0.25fr 0.5fr;
-    grid-column-gap: 0px;
-    grid-row-gap: 0px;
-    height: 100vh;
+.qi-slider::-webkit-slider-thumb:hover {
+  height: 16px;
+  background-color: var(--highlight);
 }
 
-.creationdiv {
-    grid-area: 1 / 1 / 2 / 2;
-    margin: 0.5vw;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
+.qi-slider::-moz-range-thumb:hover {
+  height: 16px;
+  background-color: var(--highlight);
 }
 
-.creationdiv button {
-    width: 75%;
-    height: 18%;
-    border-radius: 5px;
-    background-color: #007acc;
-    font-size: clamp(12px, 1.5vw, 20px);
-    border: none;
-    transition: background-color 0.2s ease;
-    color: white;
+.qi-slider-background {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  left: 0;
+  background-color: var(--button);
+  z-index: 0;
 }
 
-.creationdiv button:hover {
-    background-color: #0060a1;
+.qi-slider-progress {
+  position: absolute;
+  left: 0%;
+  right: 100%;
+  height: 4px;
+  background-color: var(--highlight);
+  z-index: 1;
 }
 
-.creationdiv button:active {
-    transform: scale(0.98);
+.qi-slider-marker-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
 }
 
-.simulationdiv {
-    grid-area: 1 / 2 / 3 / 4;
-    background-color: #2b2b2b;
-    margin: 0.5vw;
-    border-radius: 20px;
+.qi-slider-marker-container div {
+  width: 1px;
+  height: 8px;
+  background-color: var(--button);
+  transition: background-color var(--highlight-time);
 }
 
-#bubbleTitle {
-    font-size: clamp(12px, 2vw, 25px);
-    font-weight: 700;
-    text-align: center;
+.qi-slider-marker-container div.highlighted {
+  background-color: var(--highlight) !important;
 }
-
-.infobox {
-    padding-left: 1vw;
-    font-size: clamp(12px, 1.5vw, 20px);
-}
-
-.infodiv {
-    grid-area: 3 / 2 / 5 / 3;
-    background-color: #2b2b2b;
-    margin: 0.5vw;
-    border-radius: 20px;
-    padding-top: 1vh;
-}
-
-.controlButtonDiv {
-    grid-area: 3 / 1 / 4 / 2;
-    background-color: #2b2b2b;
-    margin: 0.5vw;
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.controlButtons {
-    display: flex;
-    gap: 1vw;
-    align-items: center;
-    padding: 1vw;
-}
-
-#resetSimulationButton {
-    background-color: #b82621;
-}
-
-#resetSimulationButton:hover {
-    background-color: #851a17;
-}
-
-.control-button {
-    background: none;
-    border: none;
-    padding: 0.5em;
-    cursor: pointer;
-    color: white;
-    display: flex;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-    position: relative;
-    width: 2vw;
-    height: 2vw;
-}
-
-.control-button:hover {
-    background-color: #007acc;
-}
-
-.control-button:active {
-    transform: scale(0.9);
-    background-color: #0060a1;
-}
-
-.control-button svg {
-    pointer-events: none;
-}
-
-.start-button {
-    margin-right: auto;
-}
-
-.end-button {
-    margin-left: auto;
-}
-
-.settingsDiv {
-    grid-area: 4 / 1 / 5 / 2;
-    background-color: #2b2b2b;
-    margin: 0.5vw;
-    border-radius: 20px;
-    padding-top: 1vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-}
-
-.settingsInput {
-    width: 10vw;
-    margin: 0.5vw;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-}
-
-.infobox label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-#airResistanceButton {
-    width: 50%;
-    height: 25%;
-    background-color: #BA362E;
-    border-radius: 5px;
-    font-size: clamp(12px, 1.5vw, 20px);
-    border: none;
-    transition: background-color 0.2s ease;
-    color: white;
-}
-
-#airResistanceButton:hover {
-    background-color: #9e1209;
-}
-
-#airResistanceButton:active {
-    transform: scale(0.98);
-}
-
-.timeSeekerContainer {
-    grid-area: 3 / 2 / 4 / 4;
-    margin: 0.5vw;
-    background-color: #2b2b2b;
-    border-radius: 20px;
-    padding: 1.5vw;
-    display: flex;
-    align-items: center;
-}
-
-.timeSeekerBubble {
-    width: 100%;
-    height: 100%;
-}
-
-.timeline {
-    position: relative;
-    width: 100%;
-    height: 1.5vw;
-    background-color: white;
-    border-radius: 0.75vw;
-    margin: 0 auto;
-}
-
-.progress {
-    position: absolute;
-    height: 100%;
-    width: 0%;
-    background-color: orange;
-    border-radius: 0.75vw;
-    transition: width 0.1s linear;
-}
-
-.timeCircle {
-    position: absolute;
-    width: 2vw;
-    height: 2vw;
-    background-color: #666;
-    border-radius: 50%;
-    top: 50%;
-    left: 0%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    transition: left 0.1s linear;
-}
-
-.timeLabels {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 0.5vw;
-    font-size: clamp(14px, 1.2vw, 18px);
-}
-
-#timeStart,
-#timeMid,
-#timeEnd {
-    color: white;
-}
-
-.activeProjectileDiv {
-    grid-area: 2 / 1 / 3 / 2;
-    background-color: #2b2b2b;
-    margin: 0.5vw;
-    padding: 1vw;
-    border-radius: 20px;
-    padding-top: 1vh;
-}
-
-.activeContainer {
-    line-height: 150%;
-
-}
-
-

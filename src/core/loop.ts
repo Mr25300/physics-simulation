@@ -3,7 +3,7 @@ import { Util } from "../math/util.js";
 export abstract class Loop {
     private _running: boolean = true;
     private _elapsedTime: number = 0;
-    private _fps: number;
+    private _fps: number = 0;
     private _timeScale: number = 1;
     public timeReverse: boolean = false;
 

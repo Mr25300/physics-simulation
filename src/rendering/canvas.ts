@@ -251,8 +251,6 @@ export class Renderer {
                 fillStyle: projectile.properties.material.color
             });
 
-            // if (projectile === camera.frameOfReference) continue;
-
             for (const force of projectile.forces) {
                 let relativeForce: Vector2 = force.vector;
 

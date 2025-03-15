@@ -3,6 +3,7 @@ import { Vector2 } from "../math/vector2.js";
 import { CollisionInfo, CollisionManager } from "../collisions/collisions.js";
 import { Obstacle } from "./obstacle.js";
 import { PhysicsMaterial } from "./physicsMaterial.js";
+import { Simulation } from "../core/simulation.js";
 
 export enum ForceType {
     unspecified = "Unspecified",
@@ -93,8 +94,8 @@ export class Projectile {
     }
 
     public updateForces(): void {
-        // const dragMagnitude: number = this.properties.material.drag * Simulation.instance.constants.airDensity * this.properties.crossSectionArea * this._velocity.magnitude ** 2 / 2;
-        // this.applyForce(this._velocity.unit.multiply(-dragMagnitude), false, ForceType.drag);
+        const dragMagnitude: number = this.properties.material.drag * Simulation.instance.constants.airDensity * this.properties.crossSectionArea * this._velocity.magnitude ** 2 / 2;
+        this.applyForce(this._velocity.unit.multiply(-dragMagnitude), false, ForceType.drag);
 
         if (this.lastCollision) {
             const normalVel: number = this.lastCollision.normal.dot(this._velocity);
@@ -137,15 +138,10 @@ export class Projectile {
 
     public updateKinematics(deltaTime: number): void {
         this._acceleration = this._netForce.divide(this.properties.mass);
-
-        const displacement: Vector2 = this.getDisplacement(deltaTime);
-        const lastPosition: Vector2 = this._position;
-        const lastVelocity: Vector2 = this._velocity;
-
-        this._position = lastPosition.add(displacement);
+        this._position = this._position.add(this.getDisplacement(deltaTime));
         this._velocity = this.getVelocity(deltaTime);
 
-        const info = CollisionManager.queryCollision(this);
+        const info: CollisionInfo | undefined = CollisionManager.queryCollision(this);
 
         this.lastCollision = info;
 
@@ -158,7 +154,7 @@ export class Projectile {
 
                 if (Math.abs(normalVel) > 0.1) {
                     let restitution: number = this.properties.material.combineElasticity(info.object.material);
-                    if (deltaTime < 0) restitution = 1 / restitution;
+                    if (deltaTime < 0 && restitution !== 0) restitution = 1 / restitution;
 
                     normalImpulse += normalVel * restitution;
                 }
@@ -179,7 +175,7 @@ export class Projectile {
 
                 if (normalVelDiff * Util.sign(deltaTime) < 0) {
                     let restitution: number = this.properties.material.combineElasticity(info.object.properties.material);
-                    if (deltaTime < 0) restitution = 1 / restitution;
+                    if (deltaTime < 0 && restitution !== 0) restitution = 1 / restitution;
 
                     const impulse: number = mass1 * mass2 * (1 + restitution) * normalVelDiff / massSum;
 

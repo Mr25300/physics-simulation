@@ -25,7 +25,7 @@ export class Simulation extends Loop {
     public readonly obstacles: Set<Obstacle> = new Set();
 
     public readonly fields: Set<Field> = new Set([
-        new Field(new Vector2(0, -1), false, FieldType.gravitational, 9.81)
+        new Field(new Vector2(0, -1).unit, false, FieldType.gravitational, 9.81)
     ]);
 
     public readonly constants: Constants = {
@@ -55,10 +55,10 @@ export class Simulation extends Loop {
         this.renderer = new Renderer(canvas);
         this.uiManager.init();
         
-        const material: PhysicsMaterial = new PhysicsMaterial(0.5, 0.8, 0.75, 0.1, "grey");
-        const ballMaterial: PhysicsMaterial = new PhysicsMaterial(1, 0.5, 0.4, 0.1, "red");
-        const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 2, 0, ballMaterial);
-        const properties2: ProjectileProperties = new ProjectileProperties(0.4, 1, 0, ballMaterial);
+        const material: PhysicsMaterial = new PhysicsMaterial(0.8, 0, 0, 0.1, "grey");
+        const ballMaterial: PhysicsMaterial = new PhysicsMaterial(1, 0, 0, 0.1, "grey");
+        const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 3, 0, ballMaterial);
+        const properties2: ProjectileProperties = new ProjectileProperties(0.5, 2, 0, ballMaterial);
 
         const proj = new Projectile(projProperties, new Vector2(-8, 10));
         this.projectiles.add(proj);
@@ -68,6 +68,7 @@ export class Simulation extends Loop {
 
         this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(20, 0)], 1, false, material));
         this.obstacles.add(new Obstacle([new Vector2(-10, 10), new Vector2(-10, 0), new Vector2(0, 0)], 1, false, material));
+        this.obstacles.add(new Obstacle([new Vector2(20, 0), new Vector2(20, 10)], 1, false, material));
 
         // this.camera.setFrameOfReference(proj);
 
@@ -107,8 +108,6 @@ export class Simulation extends Loop {
         }
 
         for (const projectile of this.projectiles) {
-            if (!Simulation.instance.running) break;
-
             projectile.updateKinematics(deltaTime);
         }
 
@@ -125,5 +124,7 @@ export class Simulation extends Loop {
     }
 }
 
-const sim: Simulation = Simulation.instance;
+const sim = Simulation.instance;
 sim.init();
+
+export const simulation = sim;

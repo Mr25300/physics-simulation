@@ -1,5 +1,5 @@
 import { Vector2 } from "../math/vector2.js";
-import { ForceType, Projectile } from "../objects/projectile.js";
+import { ForceType, Projectile } from "./projectile.js";
 
 export class ConstraintMaterial {
     constructor(

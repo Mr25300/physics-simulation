@@ -5,11 +5,14 @@ export class Controller {
     private mousePos: Vector2 = Vector2.zero;
     private dragAmount: Vector2 = Vector2.zero;
     private scrollAmount: number = 0;
+    private _clicked: boolean = false;
 
     constructor() {
         document.addEventListener("mousedown", (event: MouseEvent) => {
             if (event.button === 2) this.rightMouseDown = true;
             this.mousePos = new Vector2(event.clientX, event.clientY);
+
+            if (event.button === 1) this._clicked = true;
         });
 
         document.addEventListener("mouseup", (event: MouseEvent) => {
@@ -40,5 +43,15 @@ export class Controller {
         this.dragAmount = Vector2.zero;
 
         return dragAmount;
+    }
+
+    public get clicked(): boolean {
+        if (this._clicked) {
+            this._clicked = false;
+
+            return true;
+        }
+
+        return false;
     }
 }

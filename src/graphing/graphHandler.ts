@@ -1,4 +1,4 @@
-import { Graph } from "../graphing/graph.js";
+import { Graph } from "./graph.js";
 import { Projectile } from "../objects/projectile.js";
 
 export class GraphHandler {

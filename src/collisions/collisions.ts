@@ -11,26 +11,18 @@ export interface CollisionInfo {
 
 export class CollisionManager {
     public static queryCollision(projectile: Projectile): CollisionInfo | undefined {
-        let collisionInfo: CollisionInfo | undefined;
+        let maxInfo: CollisionInfo | undefined
 
-        for (const otherProj of Simulation.instance.projectiles) {
-            if (otherProj == projectile) continue;
-            
-            const info: CollisionInfo | undefined = projectile.getCollision(otherProj);
+        for (const object of [...Simulation.instance.projectiles, ...Simulation.instance.obstacles]) {
+            if (object == projectile) continue;
 
-            if (info && (collisionInfo === undefined || info.overlap > collisionInfo.overlap)) {
-                collisionInfo = info;
+            const info: CollisionInfo | undefined = object instanceof Projectile ? projectile.getCollision(object) : object.getCollision(projectile);
+
+            if (info && (!maxInfo || info.overlap > maxInfo.overlap)) {
+                maxInfo = info;
             }
         }
 
-        for (const obstacle of Simulation.instance.obstacles) {
-            const info: CollisionInfo | undefined = obstacle.getCollision(projectile);
-
-            if (info && (collisionInfo === undefined || info.overlap > collisionInfo.overlap)) {
-                collisionInfo = info;
-            }
-        }
-
-        return collisionInfo;
+        return maxInfo;
     }
 }

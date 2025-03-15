@@ -22,9 +22,6 @@ export class Field {
         if (this.positionBased) vector = this.vector.subtract(position).unit;
         else vector = this.vector.unit;
 
-        if (this.type === FieldType.gravitational) magnitude *= Simulation.instance.constants.gravitationalConstant;
-        else if (this.type === FieldType.electric) magnitude *= Simulation.instance.constants.coloumbConstant;
-
         return vector.multiply(magnitude);
     }
 
