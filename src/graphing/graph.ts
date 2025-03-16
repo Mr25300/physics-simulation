@@ -29,25 +29,27 @@ export class Graph {
 
     // Setup resize observer to handle container size changes
     this.resizeObserver = new ResizeObserver(() => this.updateCanvasSize());
-    this.resizeObserver.observe(_canvas);
+    this.resizeObserver.observe(_canvas.parentElement!);
 
     this.reset();
   }
 
-  private updateCanvasSize() {
-    const dpr = window.devicePixelRatio || 1;
-    const rect = this._canvas.getBoundingClientRect();
+public updateCanvasSize() {
+  const parent = this._canvas.parentElement;
+  if (!parent) return;
 
-    // Set actual canvas buffer size
-    this._canvas.width = rect.width * dpr;
-    this._canvas.height = rect.height * dpr;
+  // Get dimensions from PARENT container
+  const parentRect = parent.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
 
-    // Scale context to account for DPI
-    this.ctx.scale(dpr, dpr);
+  // Set canvas buffer size to match parent
+  this._canvas.width = parentRect.width * dpr;
+  this._canvas.height = parentRect.height * dpr;
 
-    // Redraw content after resize
-    this.draw();
-  }
+  // Scale context for DPI
+  this.ctx.scale(dpr, dpr);
+  this.draw(); // Force redraw
+}
 
   reset() {
     this._points = [];
@@ -84,7 +86,7 @@ export class Graph {
 
     // Draw axes
     ctx.save();
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = "white";
     ctx.lineWidth = 1;
 
     // Y-axis
@@ -98,7 +100,7 @@ export class Graph {
     ctx.stroke();
 
     // Draw labels
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "white";
     ctx.font = "14px Arial";
 
     // X-axis label
@@ -183,8 +185,8 @@ export class Graph {
     ctx.restore();
 
     // Draw axis labels
-    ctx.fillStyle = "black";
-    ctx.font = "12px Arial";
+    ctx.fillStyle = "white";
+    ctx.font = "12px Ubuntu";
     ctx.textBaseline = "top";
     ctx.textAlign = "center";
 

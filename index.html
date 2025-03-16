@@ -62,10 +62,25 @@
           <quantity-input id="air-density-input" label="Air Density" unit="kg * m^-3" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
         </collapsible-dropdown>
 
-        <collapsible-dropdown label="Graphs">
+    <label for="graphLabel">Select Y-Axis Label:</label>
+    <select name="graphLabel" id="graphLabel">
+      <option value="v Magnitude">Velocity Magnitude</option>
+      <option value="v x">Velocity x</option>
+      <option value="v y">Velocity y</option>
+      <option value="a Magnitude">Acceleration Magnitude</option>
+      <option value="a x">Acceleration x</option>
+      <option value="a y">Acceleration y</option>
+      <option value="d x">Displacement x</option>
+      <option value="d y">Displacement y</option>
+      <option value="d Magnitude">Displacement Magnitude</option>
+    </select>
+
+
           <div id="graphDiv" style="height: 30vh">
 
+
           </div>
+        <collapsible-dropdown label="Graphs">
         </collapsible-dropdown>
       </div>
     </div>
