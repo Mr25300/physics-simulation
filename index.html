@@ -26,8 +26,7 @@
         </div>
 
         <div class="horizontal-bar-segment">
-          <quantity-input id="sim-time-slider" label="Time Scale" unit="×" min="-7" max="7" logarithmic="2" sig-figs="3"
-            fill-from="0" value="0"></quantity-input>
+          <quantity-input id="sim-time-slider" label="Time Scale" unit="×" min="-7" max="7" logarithmic="2" sig-figs="3" fill-from="0" value="0"></quantity-input>
 
           <button id="sim-reverse" class="reverse-button">
             <div class="arrow"></div>
@@ -57,9 +56,11 @@
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Fields & Constraints">
-          <quantity-input id="grav-constant-input" label="Gravitational Constant" unit="m^3 * kg^-1 * s^-2" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
-          <quantity-input id="coloumb-constant-input" label="Coloumb Constant" unit="N * m^2 * C^-2" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
-          <quantity-input id="air-density-input" label="Air Density" unit="kg * m^-3" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
+          <quantity-input id="grav-constant-input" label="Gravitational Constant" unit="m^3 * kg^-1 * s^-2" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
+          <quantity-input id="coloumb-constant-input" label="Coloumb Constant" unit="N * m^2 * C^-2" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
+          <quantity-input id="air-density-input" label="Air Density" unit="kg * m^-3" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
+
+          <item-lister id="field-list" item-name="Field" item-type="field-item"></item-lister>
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Graphs">

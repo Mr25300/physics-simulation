@@ -1,11 +1,9 @@
 import { Simulation } from "../core/simulation.js";
 import { Collapsible } from "./collapsible.js";
+import { FieldItem, ItemLister } from "./itemlister.js";
 import { QuantityInput } from "./quantityinput.js";
 
 export class UIManager {
-    private collapsibles: Map<HTMLDivElement, Collapsible> = new Map();
-    private quantityInputs: Map<string, QuantityInput> = new Map();
-
     private pauseButton: HTMLButtonElement;
     private reverseButton: HTMLButtonElement;
 
@@ -16,6 +14,8 @@ export class UIManager {
 
         customElements.define("collapsible-dropdown", Collapsible);
         customElements.define("quantity-input", QuantityInput);
+        customElements.define("item-lister", ItemLister);
+        customElements.define("field-item", FieldItem);
 
         this.initSimulationControls();
         this.initConstantsControls();
@@ -84,6 +84,11 @@ export class UIManager {
         const gInput: QuantityInput = document.getElementById("grav-constant-input") as QuantityInput;
         const couloumbInput: QuantityInput = document.getElementById("coloumb-constant-input") as QuantityInput;
         const airInput: QuantityInput = document.getElementById("air-density-input") as QuantityInput;
+        const fieldList: ItemLister = document.getElementById("field-list") as ItemLister;
+
+        gInput.setValue(Simulation.instance.constants.gravitationalConstant);
+        couloumbInput.setValue(Simulation.instance.constants.coloumbConstant);
+        airInput.setValue(Simulation.instance.constants.airDensity);
 
         gInput.addListener((value: number) => {
             Simulation.instance.constants.gravitationalConstant = value;
@@ -96,6 +101,10 @@ export class UIManager {
         airInput.addListener((value: number) => {
             Simulation.instance.constants.airDensity = value;
         });
+
+        for (const field of Simulation.instance.fields) {
+            fieldList.createItem(field);
+        }
 
         // const airDensityInput: QuantityInput = document.querySelector("quantity-input#air-density-input")!;
 

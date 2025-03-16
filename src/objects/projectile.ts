@@ -150,16 +150,22 @@ export class Projectile {
                 this._position = this._position.add(info.normal.multiply(info.overlap));
 
                 const normalVel: number = info.normal.dot(this._velocity);
-                let normalImpulse: number = normalVel;
+                let normalImpulse: number = 0;
 
-                if (Math.abs(normalVel) > 0.1) {
-                    let restitution: number = this.properties.material.combineElasticity(info.object.material);
-                    if (deltaTime < 0 && restitution !== 0) restitution = 1 / restitution;
+                if (normalVel * Util.sign(deltaTime) < 0) {
+                    const normalAccel: number = info.normal.dot(this._acceleration);
 
-                    normalImpulse += normalVel * restitution;
+                    normalImpulse -= normalVel;
+
+                    if (Math.abs(normalVel) > Math.abs(normalAccel * (deltaTime + 1e-2))) { // 1e-2 error term due to limited timestep
+                        let restitution: number = this.properties.material.combineElasticity(info.object.material);
+                        if (deltaTime < 0 && restitution !== 0) restitution = 1 / restitution;
+    
+                        normalImpulse -= normalVel * restitution;
+                    }
                 }
 
-                this.applyForce(info.normal.multiply(-normalImpulse * this.properties.mass), true);
+                this.applyForce(info.normal.multiply(normalImpulse * this.properties.mass), true);
 
             } else if (info.object instanceof Projectile) {
                 const mass1: number = this.properties.mass;

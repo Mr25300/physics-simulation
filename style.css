@@ -3,9 +3,10 @@
   --window: rgba(43, 44, 58, 0.7);
   --group: rgb(25, 25, 35);
   --button: rgb(177, 181, 202);
-  --detail: rgb(193, 196, 219);
   --highlight: rgb(83, 117, 255);
+  --detail: rgb(193, 196, 219);
   --detail-highlight: rgb(82, 120, 248);
+  --detail-contrast: rgb(67, 67, 73);
   --highlight-time: 0.2s;
 }
 
@@ -91,6 +92,7 @@ body {
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* #region Collapsible */
 collapsible-dropdown {
   padding: 2px;
 }
@@ -151,18 +153,34 @@ collapsible-dropdown.expanded .collapsible-content {
   gap: 4px;
   border: 2px solid var(--detail);
 }
+/* #endregion */
+
+/* #region Buttons */
+button {
+  border: none;
+  background: var(--button);
+  border-radius: 2px;
+  color: var(--detail-contrast);
+  transition: background-color var(--highlight-time) ease;
+}
+
+button:hover {
+  cursor: pointer;
+  background-color: var(--highlight);
+}
 
 .pause-button,
 .skip-button,
 .skip-button::after,
 .skip-button.double::before {
-  background: transparent;
+  background: transparent !important;
+  border-radius: 0 !important;
   box-sizing: border-box;
   width: 0;
   height: 24px;
   border-color: transparent transparent transparent var(--button);
   cursor: pointer;
-  transition: border-color var(--highlight-time);
+  transition: border-color var(--highlight-time) !important;
 }
 
 .pause-button:hover,
@@ -175,7 +193,7 @@ collapsible-dropdown.expanded .collapsible-content {
 .pause-button {
   border-style: double;
   border-width: 0px 0 0px 20px;
-  transition: border-color var(--highlight-time), border-width 0.2s ease;
+  transition: border-color var(--highlight-time), border-width 0.2s ease !important;
 }
 
 .pause-button.paused {
@@ -252,11 +270,12 @@ collapsible-dropdown.expanded .collapsible-content {
   width: 24px;
   height: 24px;
   border: none;
-  background: transparent;
+  border-radius: 0 !important;
+  background: transparent !important;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: transform 0.4s ease-out;
+  transition: transform 0.4s ease-out !important;
 }
 
 .reverse-button::before,
@@ -316,7 +335,9 @@ collapsible-dropdown.expanded .collapsible-content {
 .reverse-button.reversed {
   transform: rotate(180deg);
 }
+/* #endregion */
 
+/* #region Quantity Input */
 quantity-input {
   display: flex;
   flex-direction: row;
@@ -468,3 +489,27 @@ quantity-input {
 .qi-slider-marker-container div.highlighted {
   background-color: var(--highlight) !important;
 }
+/* #endregion */
+
+/* #region Item Lister */
+item-lister {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+}
+
+.listed-item {
+  display: flex;
+  flex-direction: column;
+  border: 1px dashed var(--detail);
+  padding: 4px;
+  gap: 4px;
+}
+
+.item-delete {
+  order: 1000;
+}
+/* #endregion */

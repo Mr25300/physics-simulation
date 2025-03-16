@@ -10,9 +10,9 @@ export class QuantityInput extends HTMLElement {
     private readonly max: number = 1;
     private readonly fillFrom: number;
 
-    private readonly step: number = 0.01;
+    private readonly precision: number = 0.01;
     private readonly snapDist: number = 0;
-    private readonly markerInc: number = 1;
+    private readonly markerCount: number = 0;
 
     private readonly logBase: number | undefined;
     private readonly sigFigs: number = 2;
@@ -21,17 +21,19 @@ export class QuantityInput extends HTMLElement {
 
     private callback: (value: number) => void;
 
-    constructor() {
+    constructor(label?: string, unit?: string, min?: number, max?: number, fillFrom?: number, precision?: number, snapDist?: number, markerCount?: number, sigFigs?: number, value?: number) {
         super();
 
-        const min: number | undefined = this.getFloatAttribute("min");
-        const max: number | undefined = this.getFloatAttribute("max");
-        const fillFrom: number | undefined = this.getFloatAttribute("fill-from")
-        const step: number | undefined = this.getFloatAttribute("step");
-        const snapDist: number | undefined = this.getFloatAttribute("snap-distance");
-        const markerInc: number | undefined = this.getFloatAttribute("marker-increment");
-        const sigFigs: number | undefined = this.getIntAttribute("sig-figs");
-        const value: number | undefined = this.getFloatAttribute("value");
+        if (label === undefined) label = this.getAttribute("label") || "";
+        if (unit === undefined) unit = this.getAttribute("unit") || "";
+        if (min === undefined) min = this.getFloatAttribute("min");
+        if (max === undefined) max = this.getFloatAttribute("max");
+        if (fillFrom === undefined) fillFrom = this.getFloatAttribute("fill-from")
+        if (precision === undefined) precision = this.getFloatAttribute("precision");
+        if (snapDist === undefined) snapDist = this.getFloatAttribute("snap-distance");
+        if (markerCount === undefined) markerCount = this.getFloatAttribute("marker-count");
+        if (sigFigs === undefined) sigFigs = this.getIntAttribute("sig-figs");
+        if (value === undefined) value = this.getFloatAttribute("value");
 
         if (min !== undefined) this.min = min;
         if (max !== undefined) this.max = max;
@@ -39,30 +41,40 @@ export class QuantityInput extends HTMLElement {
 
         this.fillFrom = fillFrom !== undefined ? fillFrom : this.min;
         
-        if (step !== undefined) this.step = step;
+        if (precision !== undefined) this.precision = precision;
         if (snapDist !== undefined) this.snapDist = snapDist;
-        if (markerInc !== undefined) this.markerInc = markerInc;
+        if (markerCount !== undefined) this.markerCount = markerCount;
 
         if (sigFigs !== undefined) this.sigFigs = sigFigs;
 
         this.logBase = this.getFloatAttribute("logarithmic");
         this.value = value !== undefined ? value : this.fillFrom;
 
-        this.initElements();
+        this.initElements(label, unit);
         this.initListeners();
         this.updateSlider();
     }
 
-    private initElements(): void {
+    private getIntAttribute(name: string, defaultVal?: number): number | undefined {
+        if (this.hasAttribute(name)) return parseInt(this.getAttribute(name)!);
+        else return defaultVal;
+    }
+
+    private getFloatAttribute(name: string, defaultVal?: number): number | undefined {
+        if (this.hasAttribute(name)) return parseFloat(this.getAttribute(name)!);
+        else return defaultVal;
+    }
+
+    private initElements(label: string, unit: string): void {
         const inputLabel: HTMLSpanElement = document.createElement("span");
         inputLabel.className = "qi-label";
-        inputLabel.innerText = (this.getAttribute("label") || "") + ": ";
+        inputLabel.innerText = `${label}: `;
 
         const inputContainer: HTMLDivElement = document.createElement("div");
         inputContainer.className = "qi-input-container";
 
         const unitContainer: HTMLSpanElement = document.createElement("span");
-        unitContainer.innerHTML = this.parseUnit(this.getAttribute("unit") || "");
+        unitContainer.innerHTML = this.parseUnit(unit);
 
         const textInputContainer: HTMLSpanElement = document.createElement("span");
         textInputContainer.className = "qi-text-input-container";
@@ -88,7 +100,7 @@ export class QuantityInput extends HTMLElement {
         this.slider.type = "range";
         this.slider.min = this.min.toString();
         this.slider.max = this.max.toString();
-        this.slider.step = this.step.toString();
+        this.slider.step = this.precision.toString();
 
         const sliderBackground: HTMLDivElement = document.createElement("div");
         sliderBackground.className = "qi-slider-background";
@@ -99,7 +111,7 @@ export class QuantityInput extends HTMLElement {
         const markerContainer = document.createElement("div");
         markerContainer.className = "qi-slider-marker-container";
 
-        for (let i = this.min; i <= this.max; i += this.markerInc) {
+        for (let i = 0; i < this.markerCount; i++) {
             const marker: HTMLDivElement = document.createElement("div");
 
             markerContainer.appendChild(marker);
@@ -169,32 +181,27 @@ export class QuantityInput extends HTMLElement {
         });
 
         this.text.addEventListener("blur", () => {
-            let input: number = this.parseValue();
-            if (this.logBase !== undefined) input = Math.log(input) / Math.log(this.logBase);
+            const prevVal: number = this.value;
 
-            if (!isNaN(input)) {
-                this.value = Util.clamp(input, this.min, this.max);
-                this.fireListener();
-            }
+            this.setValue(this.parseTextInput());
 
-            this.updateSlider();
+            if (this.value !== prevVal) this.fireListener();
         });
 
         this.slider.addEventListener("input", () => {
-            this.value = parseFloat(this.slider.value);
+            this.setValue(parseFloat(this.slider.value), true);
 
-            const rounded: number = Math.round(this.value);
+            // const rounded: number = Math.round(this.value);
 
-            if (Math.abs(this.value - rounded) <= this.snapDist) {
-                this.value = rounded;
-            }
+            // if (Math.abs(this.value - rounded) <= this.snapDist) {
+            //     this.value = rounded;
+            // }
 
             this.fireListener();
-            this.updateSlider();
         });
     }
 
-    private parseValue(): number {
+    private parseTextInput(): number {
         const input: string = this.text.innerText;
         const parts: string[] = input.split("e");
 
@@ -204,14 +211,16 @@ export class QuantityInput extends HTMLElement {
         return value;
     }
 
-    private getIntAttribute(name: string, defaultVal?: number): number | undefined {
-        if (this.hasAttribute(name)) return parseInt(this.getAttribute(name)!);
-        else return defaultVal;
-    }
+    public setValue(newVal: number, linear?: boolean): void {
+        if (isNaN(newVal)) return;
 
-    private getFloatAttribute(name: string, defaultVal?: number): number | undefined {
-        if (this.hasAttribute(name)) return parseFloat(this.getAttribute(name)!);
-        else return defaultVal;
+        if (!linear && this.logBase !== undefined) newVal = Math.log(newVal) / Math.log(this.logBase);
+
+        newVal = Util.clamp(newVal, this.min, this.max);
+        newVal = Math.round(newVal / this.precision) * this.precision;
+
+        this.value = newVal;
+        this.updateSlider();
     }
 
     private getProgress(value: number): number {

@@ -1,6 +1,7 @@
 export class Collapsible extends HTMLElement {
     private selector: HTMLDivElement;
     private content: HTMLDivElement;
+    private contentWrapper: HTMLDivElement;
 
     constructor() {
         super();
@@ -12,14 +13,14 @@ export class Collapsible extends HTMLElement {
         this.selector.innerText = label;
         this.selector.className = "collapsible-select";
 
-        const contentWrapper: HTMLDivElement = document.createElement("div");
-        contentWrapper.innerHTML = content;
-        contentWrapper.className = "collapsible-content-wrapper";
+        this.contentWrapper = document.createElement("div");
+        this.contentWrapper.innerHTML = content;
+        this.contentWrapper.className = "collapsible-content-wrapper";
 
         this.content = document.createElement("div");
         this.content.className = "collapsible-content";
-        this.content.appendChild(contentWrapper);
-        
+        this.content.appendChild(this.contentWrapper);
+
         this.innerHTML = "";
 
         this.appendChild(this.selector);
@@ -52,7 +53,7 @@ export class Collapsible extends HTMLElement {
     }
 
     private updateHeight(): void {
-        if (this.classList.contains("expanded")) this.content.style.height = this.content.scrollHeight + "px";
+        if (this.classList.contains("expanded")) this.content.style.height = this.contentWrapper.offsetHeight + 1 + "px";
         else this.content.style.height = "0";
     }
 
