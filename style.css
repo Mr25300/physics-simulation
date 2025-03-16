@@ -468,3 +468,8 @@ quantity-input {
 .qi-slider-marker-container div.highlighted {
   background-color: var(--highlight) !important;
 }
+
+#graphExport, #graphLabel{
+  color: black;
+}
+

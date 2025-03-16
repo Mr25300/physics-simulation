@@ -5,9 +5,11 @@ export class GraphHandler {
   private _activatedProjectile: {Projectile: Projectile, graph: Graph, index: number};
   private graphDiv: HTMLDivElement = document.getElementById("graphDiv") as HTMLDivElement;
   private dropdown: HTMLSelectElement = document.getElementById("graphLabel") as HTMLSelectElement;
+  private exportGraphButton: HTMLButtonElement = document.getElementById("graphExport") as HTMLButtonElement;
 
   constructor (){
     this.dropdown.addEventListener("change", this.changeY.bind(this));
+    this.exportGraphButton.addEventListener("click", this.exportGraph.bind(this));
   }
 
   /**
@@ -61,6 +63,9 @@ export class GraphHandler {
     }
   }
 
+  private exportGraph = (): void => {
+    this._activatedProjectile.graph.startDownload();
+  }
   private changeY = (): void => {
     const selectedValue = this.dropdown.value;
     this._activatedProjectile.graph.yLabel = selectedValue;

@@ -333,7 +333,42 @@ public updateCanvasSize() {
       : value.toFixed(2);
   }
 
-  // Optional: Add a destroy method to clean up the observer
+  private convertToCSV(delimiter: string = ","): string {
+    let csv = `${this.xLabel}${delimiter}${this.yLabel}\n`;
+    this._points.forEach((point) => {
+      csv += `${point.x}${delimiter}${point.y}\n`;
+    });
+    return csv;
+  }
+
+  public startDownload(filename: string = "data.csv"): void {
+    const csvContent = this.convertToCSV();
+
+    // Create a Blob (binary large object) with the CSV content
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    // Create a temporary URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Create an invisible <a> element
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+
+    // Make the <a> element invisible
+    link.style.display = "none";
+
+    // Append the <a> element to the document body (required for the download to work)
+    document.body.appendChild(link);
+
+    // Programmatically click the <a> element to trigger the download
+    link.click();
+
+    // Clean up by removing the <a> element and revoking the Blob URL
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   destroy() {
     this.resizeObserver.disconnect();
   }

@@ -1,92 +1,91 @@
 <html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Physics Simulation</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Simulation</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
 
-<body>
-  <canvas id="simulation-screen"></canvas>
+  <body>
+    <canvas id="simulation-screen"></canvas>
 
-  <div class="main-container">
-    <div class="horizontal-bar">
-      <div class="horizontal-bar-inner window">
-        <div class="horizontal-bar-segment">
+    <div class="main-container">
+      <div class="horizontal-bar">
+        <div class="horizontal-bar-inner window">
+          <div class="horizontal-bar-segment">
 
-        </div>
+          </div>
 
-        <div class="horizontal-bar-segment">
-          <button id="sim-double-back" class="skip-button double back"></button>
-          <button id="sim-back" class="skip-button back"></button>
-          <button id="sim-pause" class="pause-button" type="button"></button>
-          <button id="sim-skip" class="skip-button"></button>
-          <button id="sim-double-skip" class="skip-button double"></button>
-        </div>
+          <div class="horizontal-bar-segment">
+            <button id="sim-double-back" class="skip-button double back"></button>
+            <button id="sim-back" class="skip-button back"></button>
+            <button id="sim-pause" class="pause-button" type="button"></button>
+            <button id="sim-skip" class="skip-button"></button>
+            <button id="sim-double-skip" class="skip-button double"></button>
+          </div>
 
-        <div class="horizontal-bar-segment">
-          <quantity-input id="sim-time-slider" label="Time Scale" unit="×" min="-7" max="7" logarithmic="2" sig-figs="3"
-            fill-from="0" value="0"></quantity-input>
+          <div class="horizontal-bar-segment">
+            <quantity-input id="sim-time-slider" label="Time Scale" unit="×" min="-7" max="7" logarithmic="2" sig-figs="3"
+              fill-from="0" value="0"></quantity-input>
 
-          <button id="sim-reverse" class="reverse-button">
-            <div class="arrow"></div>
-          </button>
+            <button id="sim-reverse" class="reverse-button">
+              <div class="arrow"></div>
+            </button>
 
-          <div>Time Elapsed: <span id="sim-time-elapsed"></span>s</div>
+            <div>Time Elapsed: <span id="sim-time-elapsed"></span>s</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="content-container">
-      <div class="side-bar window">
-        <collapsible-dropdown label="Projectiles">
-          <button>Create</button>
-        </collapsible-dropdown>
+      <div class="content-container">
+        <div class="side-bar window">
+          <collapsible-dropdown label="Projectiles">
+            <button>Create</button>
+          </collapsible-dropdown>
 
-        <collapsible-dropdown label="Constraints">
+          <collapsible-dropdown label="Constraints">
 
-        </collapsible-dropdown>
+          </collapsible-dropdown>
 
-        <collapsible-dropdown label="Obstacles">
+          <collapsible-dropdown label="Obstacles">
 
-        </collapsible-dropdown>
+          </collapsible-dropdown>
 
-        <collapsible-dropdown label="Materials">
+          <collapsible-dropdown label="Materials">
 
-        </collapsible-dropdown>
+          </collapsible-dropdown>
 
-        <collapsible-dropdown label="Fields & Constraints">
-          <quantity-input id="grav-constant-input" label="Gravitational Constant" unit="m^3 * kg^-1 * s^-2" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
-          <quantity-input id="coloumb-constant-input" label="Coloumb Constant" unit="N * m^2 * C^-2" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
-          <quantity-input id="air-density-input" label="Air Density" unit="kg * m^-3" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
-        </collapsible-dropdown>
+          <collapsible-dropdown label="Fields & Constraints">
+            <quantity-input id="grav-constant-input" label="Gravitational Constant" unit="m^3 * kg^-1 * s^-2" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
+            <quantity-input id="coloumb-constant-input" label="Coloumb Constant" unit="N * m^2 * C^-2" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
+            <quantity-input id="air-density-input" label="Air Density" unit="kg * m^-3" min="0" max="10" sig-figs="2" fill-from="0"></quantity-input>
+          </collapsible-dropdown>
 
-    <label for="graphLabel">Select Y-Axis Label:</label>
-    <select name="graphLabel" id="graphLabel">
-      <option value="v Magnitude">Velocity Magnitude</option>
-      <option value="v x">Velocity x</option>
-      <option value="v y">Velocity y</option>
-      <option value="a Magnitude">Acceleration Magnitude</option>
-      <option value="a x">Acceleration x</option>
-      <option value="a y">Acceleration y</option>
-      <option value="d x">Displacement x</option>
-      <option value="d y">Displacement y</option>
-      <option value="d Magnitude">Displacement Magnitude</option>
-    </select>
+          <label for="graphLabel">Select Y-Axis Label:</label>
+          <select name="graphLabel" id="graphLabel">
+            <option value="v Magnitude">Velocity Magnitude</option>
+            <option value="v x">Velocity x</option>
+            <option value="v y">Velocity y</option>
+            <option value="a Magnitude">Acceleration Magnitude</option>
+            <option value="a x">Acceleration x</option>
+            <option value="a y">Acceleration y</option>
+            <option value="d x">Displacement x</option>
+            <option value="d y">Displacement y</option>
+            <option value="d Magnitude">Displacement Magnitude</option>
+          </select>
 
 
           <div id="graphDiv" style="height: 30vh">
-
-
           </div>
-        <collapsible-dropdown label="Graphs">
-        </collapsible-dropdown>
+          <button type="button" id="graphExport">Export Graph</button>
+          <collapsible-dropdown label="Graphs">
+          </collapsible-dropdown>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script type="module" src="dist/core/simulation.js"></script>
-</body>
+    <script type="module" src="dist/core/simulation.js"></script>
+  </body>
 
 </html>
