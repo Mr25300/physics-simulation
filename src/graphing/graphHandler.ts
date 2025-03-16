@@ -4,7 +4,13 @@ import { Projectile } from "../objects/projectile.js";
 export class GraphHandler {
   private _activatedProjectile: {Projectile: Projectile, graph: Graph, index: number};
   private graphDiv: HTMLDivElement = document.getElementById("graphDiv") as HTMLDivElement;
-  private infoDiv: HTMLDivElement = document.getElementById("activeProjectileDiv") as HTMLDivElement;
+  private dropdown: HTMLSelectElement = document.getElementById("graphLabel") as HTMLSelectElement;
+  private exportGraphButton: HTMLButtonElement = document.getElementById("graphExport") as HTMLButtonElement;
+
+  constructor (){
+    this.dropdown.addEventListener("change", this.changeY.bind(this));
+    this.exportGraphButton.addEventListener("click", this.exportGraph.bind(this));
+  }
 
   /**
    * @returns Every projectile and it's graph
@@ -55,11 +61,17 @@ export class GraphHandler {
     } else if (this._activatedProjectile.graph.yLabel === "d Magnitude") {
       this._activatedProjectile.graph.addPoint(time, +this._activatedProjectile.Projectile.position.magnitude.toFixed(2));
     }
-    this.updateInfo()
   }
 
-  public updateInfo() {
-    // nothing here yet
+  private exportGraph = (): void => {
+    this._activatedProjectile.graph.startDownload();
   }
-
+  private changeY = (): void => {
+    const selectedValue = this.dropdown.value;
+    this._activatedProjectile.graph.yLabel = selectedValue;
+    this._activatedProjectile.graph.reset();
+  }
 }
+
+
+
