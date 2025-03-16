@@ -1,64 +1,64 @@
 export class Collapsible extends HTMLElement {
-    private selector: HTMLDivElement;
-    private content: HTMLDivElement;
-    private contentWrapper: HTMLDivElement;
+  private selector: HTMLDivElement;
+  private content: HTMLDivElement;
+  private contentWrapper: HTMLDivElement;
 
-    constructor() {
-        super();
+  constructor() {
+    super();
 
-        const label: string = this.getAttribute("label") || "";
-        const content: string = this.innerHTML;
+    const label: string = this.getAttribute("label") || "";
+    const content: string = this.innerHTML;
 
-        this.selector = document.createElement("div");
-        this.selector.innerText = label;
-        this.selector.className = "collapsible-select";
+    this.selector = document.createElement("div");
+    this.selector.innerText = label;
+    this.selector.className = "collapsible-select";
 
-        this.contentWrapper = document.createElement("div");
-        this.contentWrapper.innerHTML = content;
-        this.contentWrapper.className = "collapsible-content-wrapper";
+    this.contentWrapper = document.createElement("div");
+    this.contentWrapper.innerHTML = content;
+    this.contentWrapper.className = "collapsible-content-wrapper";
 
-        this.content = document.createElement("div");
-        this.content.className = "collapsible-content";
-        this.content.appendChild(this.contentWrapper);
+    this.content = document.createElement("div");
+    this.content.className = "collapsible-content";
+    this.content.appendChild(this.contentWrapper);
 
-        this.innerHTML = "";
+    this.innerHTML = "";
 
-        this.appendChild(this.selector);
-        this.appendChild(this.content);
+    this.appendChild(this.selector);
+    this.appendChild(this.content);
 
-        this.selector.addEventListener("click", () => {
-            this.toggleCollapse();
-        });
+    this.selector.addEventListener("click", () => {
+      this.toggleCollapse();
+    });
 
-        const resizeObserver: ResizeObserver = new ResizeObserver(() => {
-            this.updateHeight();
-        });
+    const resizeObserver: ResizeObserver = new ResizeObserver(() => {
+      this.updateHeight();
+    });
 
-        new MutationObserver((mutationList: MutationRecord[]) => {
-            for (const mutation of mutationList) {
-                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                    mutation.addedNodes.forEach((node: Node) => {
-                        if (node.nodeType === Node.ELEMENT_NODE) resizeObserver.observe(node as Element);
-                    });
-                }
-            }
-            
-            this.updateHeight();
-
-        }).observe(this.content, { childList: true, subtree: true, characterData: true });
-
-        for (let i = 0; i < this.content.children.length; i++) {
-            resizeObserver.observe(this.content.children[i]);
+    new MutationObserver((mutationList: MutationRecord[]) => {
+      for (const mutation of mutationList) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node: Node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) resizeObserver.observe(node as Element);
+          });
         }
-    }
+      }
 
-    private updateHeight(): void {
-        if (this.classList.contains("expanded")) this.content.style.height = this.contentWrapper.offsetHeight + 1 + "px";
-        else this.content.style.height = "0";
-    }
+      this.updateHeight();
 
-    private toggleCollapse(): void {
-        this.classList.toggle("expanded");
-        this.updateHeight();
+    }).observe(this.content, { childList: true, subtree: true, characterData: true });
+
+    for (let i = 0; i < this.content.children.length; i++) {
+      resizeObserver.observe(this.content.children[i]);
     }
+  }
+
+  private updateHeight(): void {
+    if (this.classList.contains("expanded")) this.content.style.height = this.contentWrapper.offsetHeight + 1 + "px";
+    else this.content.style.height = "0";
+  }
+
+  private toggleCollapse(): void {
+    this.classList.toggle("expanded");
+    this.updateHeight();
+  }
 }

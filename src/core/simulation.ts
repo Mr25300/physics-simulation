@@ -63,8 +63,8 @@ export class Simulation extends Loop {
     const proj = new Projectile(projProperties, new Vector2(-8, 10));
     this.projectiles.add(proj);
 
-        // const proj2 = new Projectile(properties2, new Vector2(10, 8));
-        // this.projectiles.add(proj2);
+    const proj2 = new Projectile(properties2, new Vector2(10, 8));
+    this.projectiles.add(proj2);
 
     this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(20, 0)], 1, false, material));
     this.obstacles.add(new Obstacle([new Vector2(-10, 10), new Vector2(-10, 0), new Vector2(0, 0)], 1, false, material));
@@ -96,7 +96,7 @@ export class Simulation extends Loop {
         let type: ForceType | undefined;
 
         if (field.type === FieldType.gravitational) type = ForceType.gravity;
-          else if (field.type === FieldType.electric) type = ForceType.electrostatic;
+        else if (field.type === FieldType.electric) type = ForceType.electrostatic;
 
         projectile.applyForce(force, false, type);
       }

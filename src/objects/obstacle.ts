@@ -4,122 +4,122 @@ import { Projectile } from "./projectile.js";
 import { PhysicsMaterial } from "./physicsMaterial.js";
 
 interface AxisInfo {
-    normal: Vector2;
-    axisRange: [number, number];
+  normal: Vector2;
+  axisRange: [number, number];
 }
 
 export class Obstacle {
-    private axes: AxisInfo[] = [];
+  private axes: AxisInfo[] = [];
 
-    constructor(
-        public readonly vertices: Vector2[],
-        public readonly radius: number = 0,
-        public readonly inverse: boolean = false,
-        public readonly material: PhysicsMaterial
-    ) {
-        for (let i = 0; i < vertices.length; i++) {
-            if (vertices.length === 2 && i > 1) break;
+  constructor(
+    public readonly vertices: Vector2[],
+    public readonly radius: number = 0,
+    public readonly inverse: boolean = false,
+    public readonly material: PhysicsMaterial
+  ) {
+    for (let i = 0; i < vertices.length; i++) {
+      if (vertices.length === 2 && i > 1) break;
 
-            const vertex1: Vector2 = vertices[i];
-            const vertex2: Vector2 = vertices[(i + 1) % vertices.length];
-            const normal: Vector2 = vertex2.subtract(vertex1).unit.orthogonal;
+      const vertex1: Vector2 = vertices[i];
+      const vertex2: Vector2 = vertices[(i + 1) % vertices.length];
+      const normal: Vector2 = vertex2.subtract(vertex1).unit.orthogonal;
 
-            const exists: boolean = this.axes.some((existing: AxisInfo) => {
-                return Math.abs(normal.dot(existing.normal)) > 0.999;
-            });
+      const exists: boolean = this.axes.some((existing: AxisInfo) => {
+        return Math.abs(normal.dot(existing.normal)) > 0.999;
+      });
 
-            if (exists) continue;
+      if (exists) continue;
 
-            this.axes.push({
-                normal: normal,
-                axisRange: this.getProjectedRange(normal)
-            });
-        }
+      this.axes.push({
+        normal: normal,
+        axisRange: this.getProjectedRange(normal)
+      });
+    }
+  }
+
+  private getProjectedRange(axis: Vector2): [number, number] {
+    let min: number = Infinity;
+    let max: number = -Infinity;
+
+    for (const vertex of this.vertices) {
+      const projection: number = axis.dot(vertex);
+
+      if (projection < min) min = projection;
+      if (projection > max) max = projection;
     }
 
-    private getProjectedRange(axis: Vector2): [number, number] {
-        let min: number = Infinity;
-        let max: number = -Infinity;
+    return [min - this.radius, max + this.radius];
+  }
 
-        for (const vertex of this.vertices) {
-            const projection: number = axis.dot(vertex);
+  public getClosestVertex(position: Vector2): Vector2 {
+    let minDistance: number = Infinity;
+    let closestVertex: Vector2 = Vector2.zero;
 
-            if (projection < min) min = projection;
-            if (projection > max) max = projection;
-        }
+    for (const vertex of this.vertices) {
+      const distance: number = vertex.subtract(position).magnitude;
 
-        return [min - this.radius, max + this.radius];
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestVertex = vertex;
+      }
     }
 
-    public getClosestVertex(position: Vector2): Vector2 {
-        let minDistance: number = Infinity;
-        let closestVertex: Vector2 = Vector2.zero;
+    return closestVertex;
+  }
 
-        for (const vertex of this.vertices) {
-            const distance: number = vertex.subtract(position).magnitude;
+  public getCollision(projectile: Projectile): CollisionInfo | undefined {
+    let intersection: boolean = false;
+    let minOverlap: number = this.inverse ? -Infinity : Infinity;
+    let minNormal: Vector2 = Vector2.zero;
 
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestVertex = vertex;
-            }
-        }
+    const closestVert: Vector2 = this.getClosestVertex(projectile.position);
+    const vertNormal = projectile.position.subtract(closestVert).unit;
 
-        return closestVertex;
+    const projVertAxis: AxisInfo = {
+      normal: vertNormal,
+      axisRange: this.getProjectedRange(vertNormal)
     }
 
-    public getCollision(projectile: Projectile): CollisionInfo | undefined {
-        let intersection: boolean = false;
-        let minOverlap: number = this.inverse ? -Infinity : Infinity;
-        let minNormal: Vector2 = Vector2.zero;
+    for (const info of [...this.axes, projVertAxis]) {
+      const projProjection: number = info.normal.dot(projectile.position);
+      const [projMin, projMax]: [number, number] = [projProjection - projectile.properties.radius, projProjection + projectile.properties.radius];
+      const [obsMin, obsMax]: [number, number] = info.axisRange;
 
-        const closestVert: Vector2 = this.getClosestVertex(projectile.position);
-        const vertNormal = projectile.position.subtract(closestVert).unit;
-        
-        const projVertAxis: AxisInfo = {
-            normal: vertNormal,
-            axisRange: this.getProjectedRange(vertNormal)
-        }
+      // let overlap: number | undefined;
+      // if (overlap !== undefined) // DO MINOVERLAP COMPARISON STUFF
 
-        for (const info of [...this.axes, projVertAxis]) {
-            const projProjection: number = info.normal.dot(projectile.position);
-            const [projMin, projMax]: [number, number] = [projProjection - projectile.properties.radius, projProjection + projectile.properties.radius];
-            const [obsMin, obsMax]: [number, number] = info.axisRange;
+      // if (!this.inverse && (projMin >= obsMax + 1e-8 || obsMin >= projMax + 1e-8)) return;
+      // else if (this.inverse && (projMin > obsMin && projMax < obsMin)) continue;
 
-            // let overlap: number | undefined;
-            // if (overlap !== undefined) // DO MINOVERLAP COMPARISON STUFF
+      const overlap: number = this.inverse ? Math.max(obsMin - projMin, projMax - obsMax) : Math.min(projMax - obsMin, obsMax - projMin);
 
-            // if (!this.inverse && (projMin >= obsMax + 1e-8 || obsMin >= projMax + 1e-8)) return;
-            // else if (this.inverse && (projMin > obsMin && projMax < obsMin)) continue;
+      // if (overlap < -1e-8) {
+      //     if (this.inverse) continue;
+      //     else return;
+      // }
 
-            const overlap: number = this.inverse ? Math.max(obsMin - projMin, projMax - obsMax) : Math.min(projMax - obsMin, obsMax - projMin);
+      if (overlap < -1e-8) {
+        if (this.inverse) continue;
+        else return;
+      }
 
-            // if (overlap < -1e-8) {
-            //     if (this.inverse) continue;
-            //     else return;
-            // }
+      if ((!this.inverse && overlap < minOverlap) || (this.inverse && overlap > minOverlap)) {
+        const projCenter: number = (projMin + projMax) / 2;
+        const obsCenter: number = (obsMin + obsMax) / 2;
 
-            if (overlap < -1e-8) {
-                if (this.inverse) continue;
-                else return;
-            }
+        let normalDir: number = this.inverse ? -1 : 1;
+        if (projCenter - obsCenter < 0) normalDir *= -1;
 
-            if ((!this.inverse && overlap < minOverlap) || (this.inverse && overlap > minOverlap)) {
-                const projCenter: number = (projMin + projMax) / 2;
-                const obsCenter: number = (obsMin + obsMax) / 2;
-
-                let normalDir: number = this.inverse ? -1 : 1;
-                if (projCenter - obsCenter < 0) normalDir *= -1;
-
-                intersection = true;
-                minOverlap = overlap;
-                minNormal = info.normal.multiply(normalDir);
-            }
-        }
-
-        if (intersection) return {
-            object: this,
-            overlap: minOverlap,
-            normal: minNormal
-        };
+        intersection = true;
+        minOverlap = overlap;
+        minNormal = info.normal.multiply(normalDir);
+      }
     }
+
+    if (intersection) return {
+      object: this,
+      overlap: minOverlap,
+      normal: minNormal
+    };
+  }
 }

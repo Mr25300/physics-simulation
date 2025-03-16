@@ -4,25 +4,25 @@ import { Obstacle } from "../objects/obstacle.js";
 import { Projectile } from "../objects/projectile.js";
 
 export interface CollisionInfo {
-    object: Projectile | Obstacle,
-    overlap: number,
-    normal: Vector2
+  object: Projectile | Obstacle,
+  overlap: number,
+  normal: Vector2
 }
 
 export class CollisionManager {
-    public static queryCollision(projectile: Projectile): CollisionInfo | undefined {
-        let maxInfo: CollisionInfo | undefined
+  public static queryCollision(projectile: Projectile): CollisionInfo | undefined {
+    let maxInfo: CollisionInfo | undefined
 
-        for (const object of [...Simulation.instance.projectiles, ...Simulation.instance.obstacles]) {
-            if (object == projectile) continue;
+    for (const object of [...Simulation.instance.projectiles, ...Simulation.instance.obstacles]) {
+      if (object == projectile) continue;
 
-            const info: CollisionInfo | undefined = object instanceof Projectile ? projectile.getCollision(object) : object.getCollision(projectile);
+      const info: CollisionInfo | undefined = object instanceof Projectile ? projectile.getCollision(object) : object.getCollision(projectile);
 
-            if (info && (!maxInfo || info.overlap > maxInfo.overlap)) {
-                maxInfo = info;
-            }
-        }
-
-        return maxInfo;
+      if (info && (!maxInfo || info.overlap > maxInfo.overlap)) {
+        maxInfo = info;
+      }
     }
+
+    return maxInfo;
+  }
 }
