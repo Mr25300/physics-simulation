@@ -34,22 +34,22 @@ export class Graph {
     this.reset();
   }
 
-public updateCanvasSize() {
-  const parent = this._canvas.parentElement;
-  if (!parent) return;
+  public updateCanvasSize() {
+    const parent = this._canvas.parentElement;
+    if (!parent) return;
 
-  // Get dimensions from PARENT container
-  const parentRect = parent.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
+    // Get dimensions from PARENT container
+    const parentRect = parent.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
 
-  // Set canvas buffer size to match parent
-  this._canvas.width = parentRect.width * dpr;
-  this._canvas.height = parentRect.height * dpr;
+    // Set canvas buffer size to match parent
+    this._canvas.width = parentRect.width * dpr;
+    this._canvas.height = parentRect.height * dpr;
 
-  // Scale context for DPI
-  this.ctx.scale(dpr, dpr);
-  this.draw(); // Force redraw
-}
+    // Scale context for DPI
+    this.ctx.scale(dpr, dpr);
+    this.draw(); // Force redraw
+  }
 
   reset() {
     this._points = [];
@@ -62,6 +62,9 @@ public updateCanvasSize() {
     this._points.push({ x, y });
     this._points.sort((a, b) => a.x - b.x);
     this.draw();
+    if (this._points.length > 1000) {
+      console.log("DOWNLOAD");
+    }
   }
 
   private draw() {
@@ -272,8 +275,8 @@ public updateCanvasSize() {
   ): number {
     return (
       padding.left +
-      ((x - effectiveMinX) / (effectiveMaxX - effectiveMinX)) *
-        (cssWidth - padding.left - padding.right)
+        ((x - effectiveMinX) / (effectiveMaxX - effectiveMinX)) *
+          (cssWidth - padding.left - padding.right)
     );
   }
 
@@ -286,9 +289,9 @@ public updateCanvasSize() {
   ): number {
     return (
       cssHeight -
-      padding.bottom -
-      ((y - effectiveMinY) / (effectiveMaxY - effectiveMinY)) *
-        (cssHeight - padding.top - padding.bottom)
+        padding.bottom -
+        ((y - effectiveMinY) / (effectiveMaxY - effectiveMinY)) *
+          (cssHeight - padding.top - padding.bottom)
     );
   }
 
@@ -313,9 +316,9 @@ public updateCanvasSize() {
     let niceFraction = 1;
 
     if (fraction <= 1) niceFraction = 1;
-    else if (fraction <= 2) niceFraction = 2;
-    else if (fraction <= 5) niceFraction = 5;
-    else niceFraction = 10;
+      else if (fraction <= 2) niceFraction = 2;
+        else if (fraction <= 5) niceFraction = 5;
+          else niceFraction = 10;
 
     return niceFraction * Math.pow(10, exponent);
   }
@@ -327,17 +330,60 @@ public updateCanvasSize() {
     return absValue >= 1000
       ? value.toExponential(0)
       : absValue >= 10
-      ? value.toFixed(0)
-      : absValue >= 1
-      ? value.toFixed(1)
-      : value.toFixed(2);
+        ? value.toFixed(0)
+        : absValue >= 1
+          ? value.toFixed(1)
+          : value.toFixed(2);
   }
 
-  private convertToCSV(delimiter: string = ","): string {
+  private convertToCSV(
+    delimiter: string = ",",
+    maxPoints: number = 5000
+  ): string {
+    // Start with header
     let csv = `${this.xLabel}${delimiter}${this.yLabel}\n`;
-    this._points.forEach((point) => {
+    const totalPoints = this._points.length;
+
+    if (totalPoints === 0) return csv; // Handle empty dataset
+
+    if (totalPoints <= maxPoints) {
+      // Simple case: use all points
+      this._points.forEach(point => {
+        csv += `${point.x}${delimiter}${point.y}\n`;
+      });
+      return csv;
+    }
+
+    // Reservoir Sampling with order preservation
+    const reservoir: {x: number, y: number}[] = [];
+    for (let i = 0; i < totalPoints; i++) {
+      const point = this._points[i];
+
+      // Fill reservoir first
+      if (i < maxPoints) {
+        reservoir.push(point);
+      }
+      // Randomly replace elements in reservoir
+      else {
+        const j = Math.floor(Math.random() * (i + 1));
+        if (j < maxPoints) {
+          reservoir[j] = point;
+        }
+      }
+    }
+
+    // Force include first and last original points
+    reservoir[0] = this._points[0];  // Guarantee first point
+    reservoir[maxPoints - 1] = this._points[totalPoints - 1];  // Guarantee last point
+
+    // Sort reservoir by x-value to preserve order
+    reservoir.sort((a, b) => a.x - b.x);
+
+    // Add sampled points after header
+    reservoir.forEach(point => {
       csv += `${point.x}${delimiter}${point.y}\n`;
     });
+
     return csv;
   }
 
