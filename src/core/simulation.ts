@@ -35,10 +35,10 @@ export class Simulation extends Loop {
   };
 
   public renderer: Renderer;
+  private graphHandler: GraphHandler;
   public camera: Camera = new Camera();
   public controller: Controller = new Controller();
   public uiManager: UIManager = new UIManager();
-  private graphHandler: GraphHandler = new GraphHandler();
 
   private static _instance: Simulation;
 
@@ -54,6 +54,7 @@ export class Simulation extends Loop {
 
     this.renderer = new Renderer(canvas);
     this.uiManager.init();
+    this.graphHandler = new GraphHandler();
 
     const material: PhysicsMaterial = new PhysicsMaterial(0.8, 0, 0, 0.1, "grey");
     const ballMaterial: PhysicsMaterial = new PhysicsMaterial(1, 0, 0, 0.1, "grey");

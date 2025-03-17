@@ -337,6 +337,8 @@ button:hover {
 }
 /* #endregion */
 
+/* MAKE LABEL CLASS STUFF (label content centered with limited width) */
+
 /* #region Quantity Input */
 quantity-input {
   display: flex;

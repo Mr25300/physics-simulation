@@ -21,7 +21,7 @@ export class QuantityInput extends HTMLElement {
 
   private callback: (value: number) => void;
 
-  constructor(label?: string, unit?: string, min?: number, max?: number, fillFrom?: number, precision?: number, snapDist?: number, markerCount?: number, sigFigs?: number, value?: number) {
+  constructor(label?: string, unit?: string, min?: number, max?: number, fillFrom?: number, precision?: number, snapDist?: number, markerCount?: number, sigFigs?: number, logBase?: number, value?: number) {
     super();
 
     if (label === undefined) label = this.getAttribute("label") || "";
@@ -47,7 +47,7 @@ export class QuantityInput extends HTMLElement {
 
     if (sigFigs !== undefined) this.sigFigs = sigFigs;
 
-    this.logBase = this.getFloatAttribute("logarithmic");
+    this.logBase = logBase || this.getFloatAttribute("logarithmic");
     this.value = value !== undefined ? value : this.fillFrom;
 
     this.initElements(label, unit);

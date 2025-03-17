@@ -2,12 +2,12 @@ import { Graph } from "./graph.js";
 import { Projectile } from "../objects/projectile.js";
 
 export class GraphHandler {
-  private _activatedProjectile: {Projectile: Projectile, graph: Graph, index: number};
+  private _activatedProjectile: { Projectile: Projectile, graph: Graph, index: number };
   private graphDiv: HTMLDivElement = document.getElementById("graphDiv") as HTMLDivElement;
   private dropdown: HTMLSelectElement = document.getElementById("graphLabel") as HTMLSelectElement;
   private exportGraphButton: HTMLButtonElement = document.getElementById("graphExport") as HTMLButtonElement;
 
-  constructor (){
+  constructor() {
     this.dropdown.addEventListener("change", this.changeY.bind(this));
     this.exportGraphButton.addEventListener("click", this.exportGraph.bind(this));
   }
@@ -16,7 +16,7 @@ export class GraphHandler {
    * @returns Every projectile and it's graph
    * We can uuse this to display the active pronectiles in the gui
   **/
-  public get activeProjectiles(): {Projectile: Projectile, graph: Graph} {
+  public get activeProjectiles(): { Projectile: Projectile, graph: Graph } {
     return this._activatedProjectile;
   }
 
@@ -29,7 +29,7 @@ export class GraphHandler {
     this.graphDiv.innerHTML = "";
     this.graphDiv.appendChild(canvas);
     let graph: Graph = new Graph(canvas, "t", "v Magnitude");
-    this._activatedProjectile = {Projectile: projectile, graph: graph, index};
+    this._activatedProjectile = { Projectile: projectile, graph: graph, index };
     // Initalize all the values in the property viewer
   }
 

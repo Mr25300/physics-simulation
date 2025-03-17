@@ -63,7 +63,7 @@ export class Graph {
     this._points.sort((a, b) => a.x - b.x);
     this.draw();
     if (this._points.length > 1000) {
-      console.log("DOWNLOAD");
+      // console.log("DOWNLOAD");
     }
   }
 

@@ -10,6 +10,13 @@ export class Util {
   }
 
   public static numberSigFigs(n: number, sigFigs: number): string {
+    let sign: string = "";
+
+    if (n < 0) {
+      sign = "-";
+      n = -n;
+    }
+
     const digChange: number = n === 0 ? 0 : Math.floor(Math.log10(n));
     const divisorExpo: number = digChange - sigFigs + 1;
     const divisor: number = Math.pow(10, divisorExpo);
@@ -18,12 +25,12 @@ export class Util {
     if (digChange > sigFigs + 1 || digChange <= -2) {
       const digitsForm: number = rounded / Math.pow(10, digChange);
 
-      return digitsForm.toFixed(sigFigs - 1) + "e" + digChange;
+      return sign + digitsForm.toFixed(sigFigs - 1) + "e" + digChange;
 
     } else {
       const decimalPlaces: number = Math.max(sigFigs - digChange - 1, 0);
 
-      return rounded.toFixed(decimalPlaces);
+      return sign + rounded.toFixed(decimalPlaces);
     }
   }
 }

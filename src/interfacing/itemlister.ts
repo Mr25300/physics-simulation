@@ -48,12 +48,20 @@ export class FieldItem extends ListedItem {
   }
 
   private initControls(): void {
+    const typeLabel: HTMLLabelElement = document.createElement("label");
+    typeLabel.innerText = "Field Type: ";
+    typeLabel.style.fontSize = "0.9em";
+
     const typeButton: HTMLButtonElement = document.createElement("button");
     typeButton.innerText = this.field.type;
 
-    const strengthInput: QuantityInput = new QuantityInput("Strength", "", 0, 1000, 0, 0.01, 0.1, 11, 3, this.field.strength);
+    const typeContainer: HTMLDivElement = document.createElement("div");
+    typeContainer.appendChild(typeLabel);
+    typeContainer.appendChild(typeButton);
 
-    this.appendChild(typeButton);
+    const strengthInput: QuantityInput = new QuantityInput("Strength", "", -100, 100, 0, 0.01, 0.1, 11, 3, undefined, this.field.strength);
+
+    this.appendChild(typeContainer);
     this.appendChild(strengthInput);
     
     typeButton.addEventListener("click", () => {
