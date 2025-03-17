@@ -1,7 +1,8 @@
 import { Simulation } from "../core/simulation.js";
 import { Collapsible } from "./collapsible.js";
+import { DisplayLabel } from "./displaylabel.js";
 import { FieldItem, ItemLister } from "./itemlister.js";
-import { QuantityInput } from "./quantityinput.js";
+import { QuantityInput, TextInput } from "./quantityinput.js";
 
 export class UIManager {
   private pauseButton: HTMLButtonElement;
@@ -11,8 +12,10 @@ export class UIManager {
     document.addEventListener("contextmenu", (event) => {
       event.preventDefault();
     });
-
+    
     customElements.define("collapsible-dropdown", Collapsible);
+    customElements.define("display-label", DisplayLabel);
+    customElements.define("text-input", TextInput);
     customElements.define("quantity-input", QuantityInput);
     customElements.define("item-lister", ItemLister);
     customElements.define("field-item", FieldItem);

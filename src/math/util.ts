@@ -9,7 +9,7 @@ export class Util {
     else return 0;
   }
 
-  public static numberSigFigs(n: number, sigFigs: number): string {
+  public static formatSigFigs(n: number, sigFigs: number): string {
     let sign: string = "";
 
     if (n < 0) {
@@ -32,5 +32,23 @@ export class Util {
 
       return sign + rounded.toFixed(decimalPlaces);
     }
+  }
+
+  public static formatTime(t: number): string {
+    const timeUnits: number[] = [
+      t / 3600, // hours
+      (t / 60) % 60, // minutes
+      t % 60, // seconds
+      (t % 1) * 100 // milliseconds
+    ];
+
+    let timeString: string = "";
+
+    for (let i = 0; i < 4; i++) {
+      if (i > 0) timeString += ":";
+      timeString += timeUnits[i].toFixed(0).padStart(2, "0");
+    }
+
+    return timeString;
   }
 }

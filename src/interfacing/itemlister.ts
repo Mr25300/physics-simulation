@@ -1,7 +1,8 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { Field, FieldType } from "../objects/field.js";
-import { QuantityInput } from "./quantityinput.js";
+import { DisplayLabel } from "./displaylabel.js";
+import { QuantityInput, TextInput } from "./quantityinput.js";
 
 export abstract class ListedItem extends HTMLElement {
   private callback: () => void | undefined;
@@ -35,7 +36,7 @@ export class FieldItem extends ListedItem {
   constructor(field?: Field) {
     super();
 
-    if (!field) field = new Field(new Vector2(0, -1), false, FieldType.gravitational, 0);
+    if (!field) field = new Field(`Field #${Simulation.instance.fields.size + 1}`, new Vector2(0, -1), false, FieldType.gravitational, 0);
     this.field = field;
 
     Simulation.instance.fields.add(field);
@@ -48,19 +49,22 @@ export class FieldItem extends ListedItem {
   }
 
   private initControls(): void {
-    const typeLabel: HTMLLabelElement = document.createElement("label");
-    typeLabel.innerText = "Field Type: ";
-    typeLabel.style.fontSize = "0.9em";
+    const fieldName: TextInput<string> = new TextInput();
+    fieldName.value = this.field.name;
 
     const typeButton: HTMLButtonElement = document.createElement("button");
     typeButton.innerText = this.field.type;
+
+    const typeLabel: DisplayLabel = new DisplayLabel("Field Type");
+    typeLabel.display(typeButton);
 
     const typeContainer: HTMLDivElement = document.createElement("div");
     typeContainer.appendChild(typeLabel);
     typeContainer.appendChild(typeButton);
 
     const strengthInput: QuantityInput = new QuantityInput("Strength", "", -100, 100, 0, 0.01, 0.1, 11, 3, undefined, this.field.strength);
-
+    
+    this.appendChild(fieldName);
     this.appendChild(typeContainer);
     this.appendChild(strengthInput);
     

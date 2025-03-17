@@ -1,7 +1,90 @@
 import { Util } from "../math/util.js";
+import { DisplayLabel } from "./displaylabel.js";
 
-export class QuantityInput extends HTMLElement {
-  private text: HTMLSpanElement;
+export class TextInput<V extends number | string> extends HTMLElement {
+  private textSpan: HTMLSpanElement;
+
+  private _value: V;
+  private inputCallback: (value: V) => void | undefined;
+
+  constructor(private numberInput?: boolean, private sigFigs: number = 2) {
+    super();
+
+    this.className = "text-input-container";
+
+    this.textSpan = document.createElement("span");
+    this.textSpan.className = "text-input";
+    this.textSpan.contentEditable = "true";
+    this.textSpan.spellcheck = false;
+    this.appendChild(this.textSpan);
+
+    if (numberInput || this.getAttribute("number-input") === "true") this.numberInput = true;
+
+    this.initListeners();
+  }
+
+  private initListeners(): void {
+    this.textSpan.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+
+        this.textSpan.blur();
+
+      } else if (this.numberInput && event.key !== "." && event.key !== "-" && event.key !== "e" && event.key !== "Backspace" && event.key !== "ArrowLeft" && event.key !== "ArrowRight" && isNaN(parseFloat(event.key))) {
+        event.preventDefault();
+      }
+    });
+
+    this.textSpan.addEventListener("input", () => {
+      while (this.textSpan.firstElementChild) {
+        this.textSpan.firstElementChild.remove();
+      }
+    });
+
+    this.textSpan.addEventListener("blur", () => {
+      const input: string = this.textSpan.innerText;
+
+      if (this.numberInput) {
+        const input: string = this.textSpan.innerText;
+        const parts: string[] = input.split("e");
+    
+        let value: number = parseFloat(parts[0]);
+        if (parts.length > 1) value *= Math.pow(10, parseInt(parts[1]));
+
+        this.value = value as V;
+
+      } else if (input.replaceAll(" ", "").length > 0) {
+        this.value = input as V;
+      }
+    });
+  }
+
+  public get value(): V {
+    return this._value;
+  }
+
+  public set value(newVal: V) {
+    const prevVal: V = this._value;
+
+    this._value = newVal;
+
+    if (newVal !== prevVal) {
+      this.updateDisplay();
+      if (this.inputCallback) this.inputCallback(newVal);
+    }
+  }
+
+  public listenToInput(callback: (value: V) => void): void {
+    this.inputCallback = callback;
+  }
+
+  private updateDisplay(): void {
+    this.textSpan.innerText = this.numberInput ? Util.formatSigFigs(this._value as number, this.sigFigs) : this._value as string;
+  }
+}
+
+export class QuantityInput extends DisplayLabel {
+  private textInput: TextInput<number>;
   private slider: HTMLInputElement;
   private progress: HTMLDivElement;
   private markers: HTMLDivElement[] = [];
@@ -22,9 +105,8 @@ export class QuantityInput extends HTMLElement {
   private callback: (value: number) => void;
 
   constructor(label?: string, unit?: string, min?: number, max?: number, fillFrom?: number, precision?: number, snapDist?: number, markerCount?: number, sigFigs?: number, logBase?: number, value?: number) {
-    super();
+    super(label);
 
-    if (label === undefined) label = this.getAttribute("label") || "";
     if (unit === undefined) unit = this.getAttribute("unit") || "";
     if (min === undefined) min = this.getFloatAttribute("min");
     if (max === undefined) max = this.getFloatAttribute("max");
@@ -50,7 +132,7 @@ export class QuantityInput extends HTMLElement {
     this.logBase = logBase || this.getFloatAttribute("logarithmic");
     this.value = value !== undefined ? value : this.fillFrom;
 
-    this.initElements(label, unit);
+    this.initElements(unit);
     this.initListeners();
     this.updateSlider();
   }
@@ -65,11 +147,7 @@ export class QuantityInput extends HTMLElement {
     else return defaultVal;
   }
 
-  private initElements(label: string, unit: string): void {
-    const inputLabel: HTMLSpanElement = document.createElement("span");
-    inputLabel.className = "qi-label";
-    inputLabel.innerText = `${label}: `;
-
+  private initElements(unit: string): void {
     const inputContainer: HTMLDivElement = document.createElement("div");
     inputContainer.className = "qi-input-container";
 
@@ -79,18 +157,11 @@ export class QuantityInput extends HTMLElement {
     const textInputContainer: HTMLSpanElement = document.createElement("span");
     textInputContainer.className = "qi-text-input-container";
 
-    this.text = document.createElement("span");
-    this.text.className = "qi-text-input";
-    this.text.contentEditable = "true";
-    this.text.spellcheck = false;
+    this.textInput = new TextInput(true, this.sigFigs);
 
-    textInputContainer.appendChild(this.text);
+    textInputContainer.appendChild(this.textInput);
     textInputContainer.appendChild(unitContainer);
     inputContainer.appendChild(textInputContainer);
-    this.appendChild(inputLabel);
-    this.appendChild(inputContainer);
-
-    textInputContainer.style.width = `calc(${this.sigFigs + 4}ch + ${unitContainer.clientWidth}px`;
 
     const sliderContainer: HTMLDivElement = document.createElement("div");
     sliderContainer.className = "qi-slider-container";
@@ -123,6 +194,10 @@ export class QuantityInput extends HTMLElement {
     sliderContainer.appendChild(this.progress);
     sliderContainer.appendChild(markerContainer);
     inputContainer.appendChild(sliderContainer);
+
+    this.display(inputContainer);
+
+    textInputContainer.style.width = `calc(${this.sigFigs + 4}ch + ${unitContainer.clientWidth}px`;
   }
 
   private parseUnit(unit: string): string {
@@ -162,35 +237,14 @@ export class QuantityInput extends HTMLElement {
   }
 
   private initListeners(): void {
-    this.text.addEventListener("keydown", (event: KeyboardEvent) => {
-      if (event.key === "Backspace") {
-        if (this.text.innerText.length === 1) {
-          event.preventDefault();
-
-          this.text.innerText = "";
-        }
-
-      } else if (event.key === "Enter") {
-        event.preventDefault();
-
-        this.text.blur();
-
-      } else if (event.key !== "." && event.key !== "-" && event.key !== "e" && event.key !== "ArrowLeft" && event.key !== "ArrowRight" && isNaN(parseFloat(event.key))) {
-        event.preventDefault();
-      }
-    });
-
-    this.text.addEventListener("blur", () => {
-      const prevVal: number = this.value;
-
-      this.setValue(this.parseTextInput());
-
-      if (this.value !== prevVal) this.fireListener();
+    this.textInput.listenToInput((value: number) => {
+      this.setValue(value);
+      this.fireListener();
     });
 
     this.slider.addEventListener("input", () => {
       this.setValue(parseFloat(this.slider.value), true);
-
+      
       // const rounded: number = Math.round(this.value);
 
       // if (Math.abs(this.value - rounded) <= this.snapDist) {
@@ -199,16 +253,6 @@ export class QuantityInput extends HTMLElement {
 
       this.fireListener();
     });
-  }
-
-  private parseTextInput(): number {
-    const input: string = this.text.innerText;
-    const parts: string[] = input.split("e");
-
-    let value: number = parseFloat(parts[0]);
-    if (parts.length > 1) value *= Math.pow(10, parseInt(parts[1]));
-
-    return value;
   }
 
   public setValue(newVal: number, linear?: boolean): void {
@@ -238,7 +282,7 @@ export class QuantityInput extends HTMLElement {
     if (progress >= fillProgress) maxHighlight = progress;
     else minHiglight = progress;
 
-    this.text.innerText = Util.numberSigFigs(value, this.sigFigs);
+    this.textInput.value = value;
     this.slider.value = this.value.toString();
     this.progress.style.left = minHiglight * 100 + "%";
     this.progress.style.right = (1 - maxHighlight) * 100 + "%";

@@ -8,11 +8,12 @@ export enum FieldType {
 
 export class Field {
   constructor(
+    public name: string,
     public vector: Vector2,
     public positionBased: boolean,
     public type: FieldType,
     public strength: number
-  ) { }
+  ) {}
 
   public getVector(position: Vector2): Vector2 {
     let vector: Vector2;

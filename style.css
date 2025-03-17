@@ -153,6 +153,7 @@ collapsible-dropdown.expanded .collapsible-content {
   gap: 4px;
   border: 2px solid var(--detail);
 }
+
 /* #endregion */
 
 /* #region Buttons */
@@ -335,12 +336,11 @@ button:hover {
 .reverse-button.reversed {
   transform: rotate(180deg);
 }
+
 /* #endregion */
 
-/* MAKE LABEL CLASS STUFF (label content centered with limited width) */
-
-/* #region Quantity Input */
-quantity-input {
+/* #region Label */
+.display-label {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -349,7 +349,7 @@ quantity-input {
   gap: 6px;
 }
 
-.qi-label {
+.display-label .label {
   display: inline-block;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -357,12 +357,52 @@ quantity-input {
   height: auto;
 }
 
-.qi-input-container {
+.display-label .display {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
 }
+/* #endregion */
 
+/* #region Text Input */
+.text-input-container {
+  width: auto;
+  height: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.text-input {
+  position: relative;
+  outline: none;
+  white-space: nowrap;
+  overflow: visible;
+  transition: color var(--highlight-time);
+  min-width: 1ch;
+}
+
+.text-input::after {
+  position: absolute;
+  content: "";
+  left: 0;
+  height: 100%;
+  width: 100%;
+  border-bottom: 2px solid var(--highlight);
+  transform: scaleX(0);
+  transition: transform var(--highlight-time) ease;
+  pointer-events: none;
+}
+
+.text-input:focus {
+  color: var(--detail-highlight);
+}
+
+.text-input:focus::after {
+  transform: scaleX(1);
+}
+/* #endregion */
+
+/* #region Quantity Input */
 .qi-text-input-container {
   display: flex;
   flex-direction: row;
@@ -377,33 +417,6 @@ quantity-input {
   display: flex;
   align-items: center;
   height: 100%;
-}
-
-.qi-text-input {
-  position: relative;
-  outline: none;
-  white-space: nowrap;
-  overflow: visible;
-  transition: color var(--highlight-time);
-}
-
-.qi-text-input::after {
-  position: absolute;
-  content: "";
-  height: 100%;
-  width: 100%;
-  border-bottom: 2px solid var(--highlight);
-  transform: scaleX(0);
-  transition: transform var(--highlight-time) ease;
-  pointer-events: none;
-}
-
-.qi-text-input:focus {
-  color: var(--detail-highlight);
-}
-
-.qi-text-input:focus::after {
-  transform: scaleX(1);
 }
 
 .qi-slider-container {
@@ -491,6 +504,7 @@ quantity-input {
 .qi-slider-marker-container div.highlighted {
   background-color: var(--highlight) !important;
 }
+
 /* #endregion */
 
 /* #region Item Lister */
@@ -514,6 +528,7 @@ item-lister {
 .item-delete {
   order: 1000;
 }
+
 /* #endregion */
 
 
@@ -552,7 +567,7 @@ item-lister {
     z-index: 999;
     transition: left 0.3s ease;
     background: var(--window);
-    box-shadow: 4px 0 12px rgba(0,0,0,0.2);
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
   }
 
   .content-container.active {
@@ -575,18 +590,19 @@ item-lister {
   }
 
   .horizontal-bar {
-    margin-top: 48px; /* Make space for toggle button */
+    margin-top: 48px;
+    /* Make space for toggle button */
   }
 
   /* Overlay when sidebar is open */
-  .content-container.active ~ .main-container::after {
+  .content-container.active~.main-container::after {
     content: "";
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.4);
     z-index: 998;
   }
 }
@@ -655,7 +671,7 @@ item-lister {
   }
 
   /* Scale down time display text */
-  .horizontal-bar-segment > div {
+  .horizontal-bar-segment>div {
     font-size: 0.9em;
   }
 

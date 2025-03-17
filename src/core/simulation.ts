@@ -11,6 +11,7 @@ import { Controller } from "../interfacing/controller.js";
 import { UIManager } from "../interfacing/uimanager.js";
 import { PhysicsMaterial } from "../objects/physicsMaterial.js";
 import { Field, FieldType } from "../objects/field.js";
+import { Util } from "../math/util.js";
 
 export interface Constants {
   gravitationalConstant: number;
@@ -25,7 +26,7 @@ export class Simulation extends Loop {
   public readonly obstacles: Set<Obstacle> = new Set();
 
   public readonly fields: Set<Field> = new Set([
-    new Field(new Vector2(0, -1).unit, false, FieldType.gravitational, 9.81)
+    new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.81)
   ]);
 
   public readonly constants: Constants = {
@@ -56,7 +57,7 @@ export class Simulation extends Loop {
     this.uiManager.init();
     this.graphHandler = new GraphHandler();
 
-    const material: PhysicsMaterial = new PhysicsMaterial(0.8, 0, 0, 0.1, "grey");
+    const material: PhysicsMaterial = new PhysicsMaterial(0.9, 0, 0, 0.1, "grey");
     const ballMaterial: PhysicsMaterial = new PhysicsMaterial(1, 0, 0, 0.1, "grey");
     const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 3, 0, ballMaterial);
     const properties2: ProjectileProperties = new ProjectileProperties(0.5, 2, 0, ballMaterial);
@@ -74,43 +75,33 @@ export class Simulation extends Loop {
     // this.camera.setFrameOfReference(proj);
 
     this.start();
-    this.graphHandler.activateProjectile(proj, 0);
-    this.graphHandler.activateProjectile(proj2, 0);
+    // this.graphHandler.activateProjectile(proj, 0);
+    // this.graphHandler.activateProjectile(proj2, 0);
 
-    // ################Where do I put this?????????################
-    // Its for the hamburger icon on mobile
-    document.addEventListener('DOMContentLoaded', () => {
-      const toggle = document.createElement('button');
-      toggle.className = 'sidebar-toggle';
-      document.body.appendChild(toggle);
+    // // ################Where do I put this?????????################
+    // // Its for the hamburger icon on mobile
+    // document.addEventListener('DOMContentLoaded', () => {
+    //   const toggle = document.createElement('button');
+    //   toggle.className = 'sidebar-toggle';
+    //   document.body.appendChild(toggle);
 
-      const sidebar = document.querySelector('.content-container');
+    //   const sidebar = document.querySelector('.content-container');
 
-      toggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-        toggle.classList.toggle('active');
-      });
+    //   toggle.addEventListener('click', () => {
+    //     sidebar.classList.toggle('active');
+    //     toggle.classList.toggle('active');
+    //   });
 
-      // Close sidebar when clicking outside
-      document.addEventListener('click', (e) => {
-        if (sidebar.classList.contains('active') &&
-          !sidebar.contains(e.target) &&
-          e.target !== toggle) {
-          sidebar.classList.remove('active');
-          toggle.classList.remove('active');
-        }
-      });
-    });
-
-
-    // const graphCanvas = document.getElementById("posGraph") as HTMLCanvasElement;
-    // this.posGraph = new Graph(graphCanvas, "t", "dy");
-
-    // const magCanvas = document.getElementById("magGraph") as HTMLCanvasElement;
-    // this.magGraph = new Graph(magCanvas, "t", "v");
-
-    // const accCanvas = document.getElementById("accGraph") as HTMLCanvasElement;
-    // this.accGraph = new Graph(accCanvas, "t", "a");
+    //   // Close sidebar when clicking outside
+    //   document.addEventListener('click', (e) => {
+    //     if (sidebar.classList.contains('active') &&
+    //       !sidebar.contains(e.target) &&
+    //       e.target !== toggle) {
+    //       sidebar.classList.remove('active');
+    //       toggle.classList.remove('active');
+    //     }
+    //   });
+    // });
   }
 
   public update(deltaTime: number): void {
@@ -141,11 +132,10 @@ export class Simulation extends Loop {
     for (const rope of this.ropes) {
       rope.updateKinematics();
     }
-
   }
 
   public render(): void {
-    this.graphHandler.updateGraph(Simulation.instance.elapsedTime);
+    // this.graphHandler.updateGraph(Simulation.instance.elapsedTime);
     this.camera.update();
     this.renderer.render();
     this.uiManager.update();
