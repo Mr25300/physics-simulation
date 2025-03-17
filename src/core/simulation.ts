@@ -77,6 +77,31 @@ export class Simulation extends Loop {
     this.graphHandler.activateProjectile(proj, 0);
     this.graphHandler.activateProjectile(proj2, 0);
 
+    // ################Where do I put this?????????################
+    // Its for the hamburger icon on mobile
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.createElement('button');
+      toggle.className = 'sidebar-toggle';
+      document.body.appendChild(toggle);
+
+      const sidebar = document.querySelector('.content-container');
+
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        toggle.classList.toggle('active');
+      });
+
+      // Close sidebar when clicking outside
+      document.addEventListener('click', (e) => {
+        if (sidebar.classList.contains('active') &&
+          !sidebar.contains(e.target) &&
+          e.target !== toggle) {
+          sidebar.classList.remove('active');
+          toggle.classList.remove('active');
+        }
+      });
+    });
+
 
     // const graphCanvas = document.getElementById("posGraph") as HTMLCanvasElement;
     // this.posGraph = new Graph(graphCanvas, "t", "dy");
