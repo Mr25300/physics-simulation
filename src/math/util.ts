@@ -36,10 +36,10 @@ export class Util {
 
   public static formatTime(t: number): string {
     const timeUnits: number[] = [
-      t / 3600, // hours
-      (t / 60) % 60, // minutes
-      t % 60, // seconds
-      (t % 1) * 100 // milliseconds
+      Math.floor(t / 3600), // hours
+      Math.floor(t / 60) % 60, // minutes
+      Math.floor(t % 60), // seconds
+      Math.floor((t % 1) * 100) // milliseconds
     ];
 
     let timeString: string = "";

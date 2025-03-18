@@ -30,7 +30,7 @@ export class TextInput<V extends number | string> extends HTMLElement {
 
         this.textSpan.blur();
 
-      } else if (this.numberInput && event.key !== "." && event.key !== "-" && event.key !== "e" && event.key !== "Backspace" && event.key !== "ArrowLeft" && event.key !== "ArrowRight" && isNaN(parseFloat(event.key))) {
+      } else if (this.numberInput && event.key !== "." && event.key !== "-" && event.key.toLowerCase() !== "e" && event.key !== "Backspace" && event.key !== "ArrowLeft" && event.key !== "ArrowRight" && isNaN(parseFloat(event.key))) {
         event.preventDefault();
       }
     });
@@ -46,7 +46,9 @@ export class TextInput<V extends number | string> extends HTMLElement {
 
       if (this.numberInput) {
         const input: string = this.textSpan.innerText;
-        const parts: string[] = input.split("e");
+
+        let parts: string[] = input.split("e");
+        if (parts.length === 1) parts = input.split("E");
     
         let value: number = parseFloat(parts[0]);
         if (parts.length > 1) value *= Math.pow(10, parseInt(parts[1]));
@@ -64,6 +66,12 @@ export class TextInput<V extends number | string> extends HTMLElement {
   }
 
   public set value(newVal: V) {
+    if (this.numberInput && isNaN(newVal as number)) {
+      this.updateDisplay();
+
+      return;
+    }
+
     const prevVal: V = this._value;
 
     this._value = newVal;

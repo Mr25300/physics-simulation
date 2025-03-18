@@ -37,6 +37,7 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column-reverse;
+  pointer-events: none;
 }
 
 .horizontal-bar {
@@ -73,16 +74,18 @@ body {
   display: flex;
   padding: 8px;
   flex: 1;
+  min-height: 0;
 }
 
 .side-bar {
   height: 100%;
-  width: 320px;
+  width: 360px;
   display: flex;
   flex-direction: column;
   padding: 4px;
   gap: 4px;
-  overflow: auto;
+  box-sizing: border-box;
+  overflow: overlay;
 }
 
 .window {
@@ -90,6 +93,7 @@ body {
   border-radius: 5px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  pointer-events: all;
 }
 
 /* #region Collapsible */
@@ -152,6 +156,7 @@ collapsible-dropdown.expanded .collapsible-content {
   flex-direction: column;
   gap: 4px;
   border: 2px solid var(--detail);
+  overflow: hidden;
 }
 
 /* #endregion */
@@ -343,17 +348,18 @@ button:hover {
 .display-label {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   font-size: 0.9em;
   height: auto;
-  gap: 6px;
+  gap: 4px;
 }
 
 .display-label .label {
   display: inline-block;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  white-space: normal;
+  white-space: nowrap;
   height: auto;
 }
 
@@ -361,6 +367,8 @@ button:hover {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  width: auto;
+  height: auto;
 }
 /* #endregion */
 
@@ -403,6 +411,12 @@ button:hover {
 /* #endregion */
 
 /* #region Quantity Input */
+.qi-input-container {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
 .qi-text-input-container {
   display: flex;
   flex-direction: row;
@@ -514,7 +528,10 @@ item-lister {
   gap: 8px;
   width: 100%;
   height: auto;
-  margin-top: 8px;
+}
+
+.item-create {
+  order: 1000;
 }
 
 .listed-item {
@@ -528,12 +545,9 @@ item-lister {
 .item-delete {
   order: 1000;
 }
-
 /* #endregion */
 
-
-/* Responsive CSS Terrible formatting, sorry :( */
-.sidebar-toggle {
+/* .sidebar-toggle {
   display: none;
   position: fixed;
   top: 12px;
@@ -591,10 +605,8 @@ item-lister {
 
   .horizontal-bar {
     margin-top: 48px;
-    /* Make space for toggle button */
   }
 
-  /* Overlay when sidebar is open */
   .content-container.active~.main-container::after {
     content: "";
     position: fixed;
@@ -606,7 +618,6 @@ item-lister {
     z-index: 998;
   }
 }
-
 
 @media screen and (max-width: 768px) {
   .horizontal-bar {
@@ -633,7 +644,6 @@ item-lister {
     transition: transform 0.2s;
   }
 
-  /* Dynamic scaling based on viewport width */
   @media screen and (max-width: 480px) {
     .horizontal-bar-inner {
       transform: scale(0.9);
@@ -658,30 +668,25 @@ item-lister {
     }
   }
 
-  /* Adjust spacing for scaled content */
   .horizontal-bar-segment {
     gap: 8px;
     padding: 0 4px;
   }
 
-  /* Ensure buttons remain tappable */
   button {
     min-width: 36px;
     min-height: 36px;
   }
 
-  /* Scale down time display text */
   .horizontal-bar-segment>div {
     font-size: 0.9em;
   }
 
-  /* Adjust slider widths */
   .qi-slider-container {
     width: 80px;
   }
 
-  /* Prevent scaling from making text unreadable */
   quantity-input {
     min-width: 120px;
   }
-}
+} */

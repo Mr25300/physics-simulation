@@ -7,8 +7,8 @@ export class Controller {
   private scrollAmount: number = 0;
   private _clicked: boolean = false;
 
-  constructor() {
-    document.addEventListener("mousedown", (event: MouseEvent) => {
+  constructor(canvas: HTMLCanvasElement) {
+    canvas.addEventListener("mousedown", (event: MouseEvent) => {
       if (event.button === 2) this.rightMouseDown = true;
       this.mousePos = new Vector2(event.clientX, event.clientY);
 
@@ -26,7 +26,7 @@ export class Controller {
       this.mousePos = mousePos;
     });
 
-    document.addEventListener("wheel", (event: WheelEvent) => {
+    canvas.addEventListener("wheel", (event: WheelEvent) => {
       this.scrollAmount = event.deltaY;
     });
   }

@@ -1,4 +1,5 @@
 import { Simulation } from "../core/simulation.js";
+import { Util } from "../math/util.js";
 import { Collapsible } from "./collapsible.js";
 import { DisplayLabel } from "./displaylabel.js";
 import { FieldItem, ItemLister } from "./itemlister.js";
@@ -85,12 +86,12 @@ export class UIManager {
 
   private initConstantsControls(): void {
     const gInput: QuantityInput = document.getElementById("grav-constant-input") as QuantityInput;
-    const couloumbInput: QuantityInput = document.getElementById("coloumb-constant-input") as QuantityInput;
+    const couloumbInput: QuantityInput = document.getElementById("coulomb-constant-input") as QuantityInput;
     const airInput: QuantityInput = document.getElementById("air-density-input") as QuantityInput;
     const fieldList: ItemLister = document.getElementById("field-list") as ItemLister;
 
     gInput.setValue(Simulation.instance.constants.gravitationalConstant);
-    couloumbInput.setValue(Simulation.instance.constants.coloumbConstant);
+    couloumbInput.setValue(Simulation.instance.constants.coulombConstant);
     airInput.setValue(Simulation.instance.constants.airDensity);
 
     gInput.addListener((value: number) => {
@@ -98,7 +99,7 @@ export class UIManager {
     });
 
     couloumbInput.addListener((value: number) => {
-      Simulation.instance.constants.coloumbConstant = value;
+      Simulation.instance.constants.coulombConstant = value;
     });
 
     airInput.addListener((value: number) => {
@@ -118,6 +119,6 @@ export class UIManager {
   }
 
   public update(): void {
-    document.getElementById("sim-time-elapsed")!.innerText = Simulation.instance.elapsedTime.toFixed(2);
+    document.getElementById("sim-time-elapsed")!.innerText = Util.formatTime(Simulation.instance.elapsedTime);
   }
 }

@@ -26,14 +26,11 @@
         </div>
 
         <div class="horizontal-bar-segment">
-          <quantity-input id="sim-time-slider" label="Time Scale" unit="×" min="-7" max="7" logarithmic="2" sig-figs="3"
-            fill-from="0" value="0"></quantity-input>
-
           <button id="sim-reverse" class="reverse-button">
             <div class="arrow"></div>
           </button>
-
-          <div>Time Elapsed: <span id="sim-time-elapsed"></span>s</div>
+          <quantity-input id="sim-time-slider" label="Time Scale" unit="×" min="-7" max="7" logarithmic="2" sig-figs="3" fill-from="0" value="0"></quantity-input>
+          <div id="sim-time-elapsed"></div>
         </div>
       </div>
     </div>
@@ -56,14 +53,13 @@
 
         </collapsible-dropdown>
 
-        <collapsible-dropdown label="Fields & Constraints">
-          <quantity-input id="grav-constant-input" label="Gravitational Constant" unit="m^3 * kg^-1 * s^-2" min="0"
-            max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
-          <quantity-input id="coloumb-constant-input" label="Coloumb Constant" unit="N * m^2 * C^-2" min="0" max="10"
-            sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
-          <quantity-input id="air-density-input" label="Air Density" unit="kg * m^-3" min="0" max="10" sig-figs="3"
-            fill-from="0" precision="0.01"></quantity-input>
+        <collapsible-dropdown label="Fields & Constants">
+          <h1>Constants</h1>
+          <quantity-input id="grav-constant-input" label="Gravitational Constant" unit="m^3 * kg^-1 * s^-2" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
+          <quantity-input id="coulomb-constant-input" label="Coulomb Constant" unit="N * m^2 * C^-2" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
+          <quantity-input id="air-density-input" label="Air Density" unit="kg * m^-3" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
 
+          <h1>Fields</h1>
           <item-lister id="field-list" item-name="Field" item-type="field-item"></item-lister>
         </collapsible-dropdown>
 

@@ -58,14 +58,10 @@ export class FieldItem extends ListedItem {
     const typeLabel: DisplayLabel = new DisplayLabel("Field Type");
     typeLabel.display(typeButton);
 
-    const typeContainer: HTMLDivElement = document.createElement("div");
-    typeContainer.appendChild(typeLabel);
-    typeContainer.appendChild(typeButton);
-
     const strengthInput: QuantityInput = new QuantityInput("Strength", "", -100, 100, 0, 0.01, 0.1, 11, 3, undefined, this.field.strength);
     
     this.appendChild(fieldName);
-    this.appendChild(typeContainer);
+    this.appendChild(typeLabel);
     this.appendChild(strengthInput);
     
     typeButton.addEventListener("click", () => {
@@ -93,7 +89,7 @@ export class ItemLister extends HTMLElement {
 
   private initEvents(): void {
     const createButton: HTMLButtonElement = document.createElement("button");
-    createButton.className = "list-creator";
+    createButton.className = "item-create";
     createButton.innerText = `Create ${this.getAttribute("item-name") || ""}`;
 
     this.appendChild(createButton);

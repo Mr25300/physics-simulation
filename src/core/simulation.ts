@@ -15,7 +15,7 @@ import { Util } from "../math/util.js";
 
 export interface Constants {
   gravitationalConstant: number;
-  coloumbConstant: number;
+  coulombConstant: number;
   airDensity: number;
 }
 
@@ -31,14 +31,14 @@ export class Simulation extends Loop {
 
   public readonly constants: Constants = {
     gravitationalConstant: 1,
-    coloumbConstant: 1,
+    coulombConstant: 1,
     airDensity: 1.225
   };
 
   public renderer: Renderer;
   private graphHandler: GraphHandler;
   public camera: Camera = new Camera();
-  public controller: Controller = new Controller();
+  public controller: Controller;
   public uiManager: UIManager = new UIManager();
 
   private static _instance: Simulation;
@@ -54,6 +54,7 @@ export class Simulation extends Loop {
     if (!canvas) throw new Error("Failed to get canvas.");
 
     this.renderer = new Renderer(canvas);
+    this.controller = new Controller(canvas);
     this.uiManager.init();
     this.graphHandler = new GraphHandler();
 
