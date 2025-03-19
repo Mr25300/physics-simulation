@@ -168,6 +168,7 @@ button {
   border-radius: 2px;
   color: var(--detail-contrast);
   transition: background-color var(--highlight-time) ease;
+  padding: 2px;
 }
 
 button:hover {

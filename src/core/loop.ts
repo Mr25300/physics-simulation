@@ -47,7 +47,7 @@ export abstract class Loop {
 
     while (Math.abs(this.deltaTime) >= this.minTimestep) {
       const timeStep: number = Util.sign(this.deltaTime) * this.minTimestep;
-
+      
       this.deltaTime -= timeStep;
       this.update(timeStep);
     }

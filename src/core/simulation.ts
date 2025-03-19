@@ -11,7 +11,6 @@ import { Controller } from "../interfacing/controller.js";
 import { UIManager } from "../interfacing/uimanager.js";
 import { PhysicsMaterial } from "../objects/physicsMaterial.js";
 import { Field, FieldType } from "../objects/field.js";
-import { Util } from "../math/util.js";
 
 export interface Constants {
   gravitationalConstant: number;
@@ -30,8 +29,8 @@ export class Simulation extends Loop {
   ]);
 
   public readonly constants: Constants = {
-    gravitationalConstant: 1,
-    coulombConstant: 1,
+    gravitationalConstant: 0,
+    coulombConstant: 0,
     airDensity: 1.225
   };
 

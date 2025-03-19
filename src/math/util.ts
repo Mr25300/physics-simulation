@@ -35,20 +35,27 @@ export class Util {
   }
 
   public static formatTime(t: number): string {
-    const timeUnits: number[] = [
-      Math.floor(t / 3600), // hours
-      Math.floor(t / 60) % 60, // minutes
-      Math.floor(t % 60), // seconds
-      Math.floor((t % 1) * 100) // milliseconds
+    let backwards: boolean = false;
+
+    if (t < 0) {
+      backwards = true;
+      t = -t;
+    }
+
+    const timeUnits: string[] = [
+      Math.floor(t / 3600).toFixed(0).padStart(2, "0"), // hours
+      (Math.floor(t / 60) % 60).toFixed(0).padStart(2, "0"), // minutes
+      Math.floor(t % 60).toFixed(0).padStart(2, "0"), // seconds
+      Math.floor((t % 1) * 1000).toFixed(0).padStart(3, "0") // milliseconds
     ];
 
     let timeString: string = "";
 
     for (let i = 0; i < 4; i++) {
       if (i > 0) timeString += ":";
-      timeString += timeUnits[i].toFixed(0).padStart(2, "0");
+      timeString += timeUnits[i];
     }
 
-    return timeString;
+    return (backwards ? "-" : "+") + timeString;
   }
 }
