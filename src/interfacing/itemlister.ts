@@ -55,20 +55,29 @@ export class FieldItem extends ListedItem {
     const typeButton: HTMLButtonElement = document.createElement("button");
     typeButton.innerText = this.field.type;
 
-    const typeLabel: DisplayLabel = new DisplayLabel("Field Type");
-    typeLabel.display(typeButton);
+    const typeLabel: DisplayLabel = new DisplayLabel("Field Type", typeButton);
 
-    const strengthInput: QuantityInput = new QuantityInput("Strength", "", -100, 100, 0, 0.01, 0.1, 11, 3, undefined, this.field.strength);
-    
+    const strengthInput: QuantityInput = new QuantityInput(undefined, -100, 100, 0, 0.01, 0.1, 11, 3, undefined, this.field.strength);
+    const strengthLabel: DisplayLabel = new DisplayLabel("Strength", strengthInput);
+
     this.appendChild(fieldName);
     this.appendChild(typeLabel);
-    this.appendChild(strengthInput);
+    this.appendChild(strengthLabel);
+
+    const updateType: () => void = () => {
+      if (this.field.type === FieldType.gravitational) strengthInput.unit = "m^3 * kg^-1 * s^-2";
+      else strengthInput.unit = "N * m^2 * C^-2";
+
+      typeButton.innerText = this.field.type;
+    }
+
+    updateType();
     
     typeButton.addEventListener("click", () => {
       if (this.field.type === FieldType.gravitational) this.field.type = FieldType.electric;
       else this.field.type = FieldType.gravitational;
 
-      typeButton.innerText = this.field.type;
+      updateType();
     });
 
     strengthInput.addListener((value: number) => {

@@ -91,11 +91,13 @@ export class TextInput<V extends number | string> extends HTMLElement {
   }
 }
 
-export class QuantityInput extends DisplayLabel {
+export class QuantityInput extends HTMLElement {
   private textInput: TextInput<number>;
   private slider: HTMLInputElement;
   private progress: HTMLDivElement;
   private markers: HTMLDivElement[] = [];
+  private unitContainer: HTMLSpanElement;
+  private textInputContainer: HTMLSpanElement;
 
   private readonly min: number = 0;
   private readonly max: number = 1;
@@ -112,10 +114,9 @@ export class QuantityInput extends DisplayLabel {
 
   private callback: (value: number) => void;
 
-  constructor(label?: string, unit?: string, min?: number, max?: number, fillFrom?: number, precision?: number, snapDist?: number, markerCount?: number, sigFigs?: number, logBase?: number, value?: number) {
-    super(label);
+  constructor(unit?: string, min?: number, max?: number, fillFrom?: number, precision?: number, snapDist?: number, markerCount?: number, sigFigs?: number, logBase?: number, value?: number) {
+    super();
 
-    if (unit === undefined) unit = this.getAttribute("unit") || "";
     if (min === undefined) min = this.getFloatAttribute("min");
     if (max === undefined) max = this.getFloatAttribute("max");
     if (fillFrom === undefined) fillFrom = this.getFloatAttribute("fill-from")
@@ -140,9 +141,16 @@ export class QuantityInput extends DisplayLabel {
     this.logBase = logBase || this.getFloatAttribute("logarithmic");
     this.value = value !== undefined ? value : this.fillFrom;
 
-    this.initElements(unit);
+    this.initElements();
     this.initListeners();
     this.updateSlider();
+
+    this.unit = unit || this.getAttribute("unit") || "";
+  }
+
+  public set unit(newUnit: string) {
+    this.unitContainer.innerHTML = this.parseUnit(newUnit);
+    this.textInputContainer.style.width = `calc(${this.sigFigs + 4}ch + ${this.unitContainer.clientWidth}px`;
   }
 
   private getIntAttribute(name: string, defaultVal?: number): number | undefined {
@@ -155,21 +163,18 @@ export class QuantityInput extends DisplayLabel {
     else return defaultVal;
   }
 
-  private initElements(unit: string): void {
-    const inputContainer: HTMLDivElement = document.createElement("div");
-    inputContainer.className = "qi-input-container";
+  private initElements(): void {
+    this.className = "qi-input-container";
 
-    const unitContainer: HTMLSpanElement = document.createElement("span");
-    unitContainer.innerHTML = this.parseUnit(unit);
+    this.unitContainer = document.createElement("span");
 
-    const textInputContainer: HTMLSpanElement = document.createElement("span");
-    textInputContainer.className = "qi-text-input-container";
+    this.textInputContainer = document.createElement("span");
+    this.textInputContainer.className = "qi-text-input-container";
 
     this.textInput = new TextInput(true, this.sigFigs);
 
-    textInputContainer.appendChild(this.textInput);
-    textInputContainer.appendChild(unitContainer);
-    inputContainer.appendChild(textInputContainer);
+    this.textInputContainer.appendChild(this.textInput);
+    this.textInputContainer.appendChild(this.unitContainer);
 
     const sliderContainer: HTMLDivElement = document.createElement("div");
     sliderContainer.className = "qi-slider-container";
@@ -201,11 +206,9 @@ export class QuantityInput extends DisplayLabel {
     sliderContainer.appendChild(sliderBackground);
     sliderContainer.appendChild(this.progress);
     sliderContainer.appendChild(markerContainer);
-    inputContainer.appendChild(sliderContainer);
 
-    this.display(inputContainer);
-
-    textInputContainer.style.width = `calc(${this.sigFigs + 4}ch + ${unitContainer.clientWidth}px`;
+    this.appendChild(this.textInputContainer);
+    this.appendChild(sliderContainer);
   }
 
   private parseUnit(unit: string): string {

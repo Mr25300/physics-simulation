@@ -1,7 +1,7 @@
 export class DisplayLabel extends HTMLElement {
   private displayElement: HTMLDivElement;
 
-  constructor(label?: string) {
+  constructor(label?: string, contents?: string | HTMLElement) {
     super();
 
     this.className = "display-label";
@@ -14,14 +14,14 @@ export class DisplayLabel extends HTMLElement {
     this.displayElement.className = "display";
     this.displayElement.innerText = this.innerText;
 
+    const displayContents: string | HTMLElement = contents || this.innerHTML;
+    
+    if (typeof(displayContents) === "string") this.displayElement.innerHTML = displayContents;
+    else this.displayElement.appendChild(displayContents);
+
     this.innerText = "";
 
     this.appendChild(labelElement);
     this.appendChild(this.displayElement);
-  }
-
-  public display(contents: HTMLElement | string): void {
-    if (typeof(contents) === "string") this.displayElement.innerText = contents;
-    else this.displayElement.appendChild(contents);
   }
 }

@@ -55,7 +55,11 @@
 
         <collapsible-dropdown label="Fields & Constants">
           <h1>Constants</h1>
-          <quantity-input id="grav-constant-input" label="Gravitational Constant" unit="m^3 * kg^-1 * s^-2" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
+
+          <display-label label="Gravitational Constant">
+            <quantity-input id="grav-constant-input" unit="m^3 * kg^-1 * s^-2" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
+          </display-label>
+          
           <quantity-input id="coulomb-constant-input" label="Coulomb Constant" unit="N * m^2 * C^-2" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
           <quantity-input id="air-density-input" label="Air Density" unit="kg * m^-3" min="0" max="10" sig-figs="3" fill-from="0" precision="0.01"></quantity-input>
 
