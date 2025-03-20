@@ -1,14 +1,24 @@
 import { Util } from "../math/util.js";
-import { DisplayLabel } from "./displaylabel.js";
+import { Vector2 } from "../math/vector2.js";
 
 export class TextInput<V extends number | string> extends HTMLElement {
+  public static readonly commonUnits: Record<string, string> = {
+    "gravitationalConstant": "m^3 * kg^-1 * s^-2",
+    "coulombConstant": "N * m^2 * C^-2"
+  };
+
   private textSpan: HTMLSpanElement;
+  private unitSpan: HTMLSpanElement;
 
   private _value: V;
+  private unitLength: number = 0;
+
   private inputCallback: (value: V) => void | undefined;
 
-  constructor(private numberInput?: boolean, private sigFigs: number = 2) {
+  constructor(private numberInput?: boolean, private sigFigs: number = 2, value?: V, unit: string = "") {
     super();
+
+    if (numberInput || this.getAttribute("number-input") === "true") this.numberInput = true;
 
     this.className = "text-input-container";
 
@@ -16,11 +26,92 @@ export class TextInput<V extends number | string> extends HTMLElement {
     this.textSpan.className = "text-input";
     this.textSpan.contentEditable = "true";
     this.textSpan.spellcheck = false;
-    this.appendChild(this.textSpan);
 
-    if (numberInput || this.getAttribute("number-input") === "true") this.numberInput = true;
+    this.unitSpan = document.createElement("span");
+    this.unitSpan.className = "text-input-unit";
 
+    if (value !== undefined) this.value = value;
+    this.unit = unit;
     this.initListeners();
+
+    this.appendChild(this.textSpan);
+    this.appendChild(this.unitSpan);
+  }
+
+  public get value(): V {
+    return this._value;
+  }
+
+  public set value(newVal: V) {
+    if (this.numberInput && isNaN(newVal as number)) {
+      this.updateTextDisplay();
+
+      return;
+    }
+
+    const prevVal: V = this._value;
+
+    this._value = newVal;
+
+    if (newVal !== prevVal) {
+      this.updateTextDisplay();
+
+      if (this.inputCallback) this.inputCallback(newVal);
+    }
+  }
+
+  public set unit(newUnit: string) {
+    const commonUnit: string = TextInput.commonUnits[newUnit];
+    if (commonUnit) newUnit = commonUnit;
+
+    const unitTerms: string[] = newUnit.replaceAll(" ", "").split("*");
+
+    this.unitLength = 0;
+
+    let unitNumeratorText: string = "";
+    let unitDenominatorText: string = "";
+
+    for (const term of unitTerms) {
+      const termParts: string[] = term.split("^");
+      let exponent = termParts[1] || "";
+      let reciprocal: boolean = false;
+
+      if (exponent !== "") {
+        if (exponent.charAt(0) === "-") {
+          reciprocal = true;
+          exponent = exponent.substring(1);
+        }
+
+        if (exponent !== "1") exponent = `<sup>${exponent}</sup>`;
+        else exponent = "";
+      }
+
+      const unitText: string = termParts[0];
+      const finalTermText: string = unitText + exponent;
+
+      this.unitLength += unitText.length;
+      if (exponent.length > 0) this.unitLength++;
+
+      if (reciprocal) {
+        if (unitDenominatorText.length > 0) unitDenominatorText += "⋅";
+        unitDenominatorText += finalTermText;
+
+      } else {
+        if (unitNumeratorText.length > 0) unitNumeratorText += "⋅";
+        unitNumeratorText += finalTermText;
+      }
+    }
+
+    this.unitSpan.innerHTML = unitNumeratorText;
+
+    if (unitDenominatorText.length > 0) {
+      this.unitSpan.innerHTML += "/";
+      this.unitLength++;
+    }
+
+    this.unitSpan.innerHTML += unitDenominatorText;
+
+    this.updateSizeDisplay();
   }
 
   private initListeners(): void {
@@ -58,123 +149,85 @@ export class TextInput<V extends number | string> extends HTMLElement {
       } else if (input.replaceAll(" ", "").length > 0) {
         this.value = input as V;
       }
+
+      this.updateTextDisplay();
     });
   }
 
-  public get value(): V {
-    return this._value;
-  }
-
-  public set value(newVal: V) {
-    if (this.numberInput && isNaN(newVal as number)) {
-      this.updateDisplay();
-
-      return;
-    }
-
-    const prevVal: V = this._value;
-
-    this._value = newVal;
-
-    if (newVal !== prevVal) {
-      this.updateDisplay();
-      if (this.inputCallback) this.inputCallback(newVal);
-    }
-  }
-
-  public listenToInput(callback: (value: V) => void): void {
-    this.inputCallback = callback;
-  }
-
-  private updateDisplay(): void {
+  private updateTextDisplay(): void {
     this.textSpan.innerText = this.numberInput ? Util.formatSigFigs(this._value as number, this.sigFigs) : this._value as string;
+  }
+
+  private updateSizeDisplay(): void {
+    if (this.numberInput) this.style.width = `${this.sigFigs + 4 + this.unitLength}ch`
+  }
+
+  public addInputListener(callback: (value: V) => void): void {
+    this.inputCallback = callback;
   }
 }
 
 export class QuantityInput extends HTMLElement {
-  private textInput: TextInput<number>;
+  public textInput: TextInput<number>;
   private slider: HTMLInputElement;
   private progress: HTMLDivElement;
   private markers: HTMLDivElement[] = [];
-  private unitContainer: HTMLSpanElement;
-  private textInputContainer: HTMLSpanElement;
 
-  private readonly min: number = 0;
-  private readonly max: number = 1;
-  private readonly fillFrom: number;
-
-  private readonly precision: number = 0.01;
-  private readonly snapDist: number = 0;
-  private readonly markerCount: number = 0;
-
-  private readonly logBase: number | undefined;
-  private readonly sigFigs: number = 2;
-
+  private fillFrom: number;
   private value: number;
 
   private callback: (value: number) => void;
 
-  constructor(unit?: string, min?: number, max?: number, fillFrom?: number, precision?: number, snapDist?: number, markerCount?: number, sigFigs?: number, logBase?: number, value?: number) {
+  constructor(
+    private min: number = 0,
+    private max: number = 1,
+    fillFrom?: number,
+    private precision: number = 0.01,
+    private snapDist: number = 0,
+    markerCount: number = 0,
+    sigFigs: number = 2,
+    unit: string = "",
+    private logBase?: number,
+    value?: number
+  ) {
     super();
 
-    if (min === undefined) min = this.getFloatAttribute("min");
-    if (max === undefined) max = this.getFloatAttribute("max");
-    if (fillFrom === undefined) fillFrom = this.getFloatAttribute("fill-from")
-    if (precision === undefined) precision = this.getFloatAttribute("precision");
-    if (snapDist === undefined) snapDist = this.getFloatAttribute("snap-distance");
-    if (markerCount === undefined) markerCount = this.getFloatAttribute("marker-count");
-    if (sigFigs === undefined) sigFigs = this.getIntAttribute("sig-figs");
-    if (value === undefined) value = this.getFloatAttribute("value");
+    this.min = this.getNumberAttrib("min") ?? this.min;
+    this.max = this.getNumberAttrib("max") ?? this.max;
+    this.fillFrom = this.getNumberAttrib("fill-from") ?? fillFrom ?? this.min;
+    this.precision = this.getNumberAttrib("precision") ?? this.precision;
+    this.snapDist = this.getNumberAttrib("snap-distance") ?? this.snapDist;
 
-    if (min !== undefined) this.min = min;
-    if (max !== undefined) this.max = max;
+    markerCount = this.getNumberAttrib("marker-count", true) ?? markerCount;
+    sigFigs = this.getNumberAttrib("sig-figs") ?? sigFigs;
+    unit = this.getAttribute("unit") ?? unit ?? "";
+
+    this.logBase = this.getNumberAttrib("logarithmic") ?? this.logBase;
+    this.value = this.getNumberAttrib("value") ?? value ?? this.min + (this.max - this.min) * this.fillFrom;
+
     if (this.min > this.max) this.min = this.max;
 
-    this.fillFrom = fillFrom !== undefined ? fillFrom : this.min;
-
-    if (precision !== undefined) this.precision = precision;
-    if (snapDist !== undefined) this.snapDist = snapDist;
-    if (markerCount !== undefined) this.markerCount = markerCount;
-
-    if (sigFigs !== undefined) this.sigFigs = sigFigs;
-
-    this.logBase = logBase || this.getFloatAttribute("logarithmic");
-    this.value = value !== undefined ? value : this.fillFrom;
-
-    this.initElements();
-    this.initListeners();
+    this.initElements(markerCount, sigFigs, unit);
     this.updateSlider();
-
-    this.unit = unit || this.getAttribute("unit") || "";
   }
 
-  public set unit(newUnit: string) {
-    this.unitContainer.innerHTML = this.parseUnit(newUnit);
-    this.textInputContainer.style.width = `calc(${this.sigFigs + 4}ch + ${this.unitContainer.clientWidth}px`;
+  private getNumberAttrib(name: string, intOnly: boolean = false): number | undefined {
+    const attrib: string | null = this.getAttribute(name);
+
+    if (attrib !== null) {
+      let parsedValue: number;
+
+      if (intOnly) parsedValue = parseInt(attrib);
+      else parsedValue = parseFloat(attrib);
+
+      if (!isNaN(parsedValue)) return parsedValue;
+    }
   }
 
-  private getIntAttribute(name: string, defaultVal?: number): number | undefined {
-    if (this.hasAttribute(name)) return parseInt(this.getAttribute(name)!);
-    else return defaultVal;
-  }
+  private initElements(markerCount: number, sigFigs: number, unit: string): void {
+    this.className = "qi-container";
 
-  private getFloatAttribute(name: string, defaultVal?: number): number | undefined {
-    if (this.hasAttribute(name)) return parseFloat(this.getAttribute(name)!);
-    else return defaultVal;
-  }
-
-  private initElements(): void {
-    this.className = "qi-input-container";
-
-    this.unitContainer = document.createElement("span");
-
-    this.textInputContainer = document.createElement("span");
-    this.textInputContainer.className = "qi-text-input-container";
-
-    this.textInput = new TextInput(true, this.sigFigs);
-
-    this.textInputContainer.appendChild(this.textInput);
-    this.textInputContainer.appendChild(this.unitContainer);
+    this.textInput = new TextInput(true, sigFigs, this.value, unit);
 
     const sliderContainer: HTMLDivElement = document.createElement("div");
     sliderContainer.className = "qi-slider-container";
@@ -195,7 +248,7 @@ export class QuantityInput extends HTMLElement {
     const markerContainer = document.createElement("div");
     markerContainer.className = "qi-slider-marker-container";
 
-    for (let i = 0; i < this.markerCount; i++) {
+    for (let i = 0; i < markerCount; i++) {
       const marker: HTMLDivElement = document.createElement("div");
 
       markerContainer.appendChild(marker);
@@ -207,48 +260,14 @@ export class QuantityInput extends HTMLElement {
     sliderContainer.appendChild(this.progress);
     sliderContainer.appendChild(markerContainer);
 
-    this.appendChild(this.textInputContainer);
+    this.initListeners();
+
+    this.appendChild(this.textInput);
     this.appendChild(sliderContainer);
   }
 
-  private parseUnit(unit: string): string {
-    const unitTerms: string[] = unit.replaceAll(" ", "").split("*");
-
-    let unitNumeratorText: string = "";
-    let unitDenominatorText: string = "";
-
-    for (const term of unitTerms) {
-      const termParts: string[] = term.split("^");
-      let exponent: string = termParts[1] || "";
-      let reciprocal: boolean = false;
-
-      if (exponent.length > 0) {
-        if (exponent.charAt(0) === "-") {
-          reciprocal = true;
-          exponent = exponent.substring(1);
-        }
-
-        if (exponent !== "1") exponent = `<sup>${exponent}</sup>`;
-        else exponent = "";
-      }
-
-      const finalTermText: string = termParts[0] + exponent;
-
-      if (reciprocal) {
-        if (unitDenominatorText.length > 0) unitDenominatorText += "⋅";
-        unitDenominatorText += finalTermText;
-
-      } else {
-        if (unitNumeratorText.length > 0) unitNumeratorText += "⋅";
-        unitNumeratorText += finalTermText;
-      }
-    }
-
-    return unitNumeratorText + (unitDenominatorText.length > 0 ? "/" : "") + unitDenominatorText;
-  }
-
   private initListeners(): void {
-    this.textInput.listenToInput((value: number) => {
+    this.textInput.addInputListener((value: number) => {
       this.setValue(value);
       this.fireListener();
     });
@@ -307,10 +326,6 @@ export class QuantityInput extends HTMLElement {
     }
   }
 
-  public addListener(callback: (value: number) => void): void {
-    this.callback = callback;
-  }
-
   private fireListener(): void {
     if (!this.callback) return;
 
@@ -318,5 +333,19 @@ export class QuantityInput extends HTMLElement {
     if (this.logBase !== undefined) value = Math.pow(this.logBase, value);
 
     this.callback(value);
+  }
+
+  public addInputListener(callback: (value: number) => void): void {
+    this.callback = callback;
+  }
+}
+
+export class VectorInput extends HTMLElement {
+  private value: Vector2;
+
+  constructor() {
+    super();
+
+
   }
 }

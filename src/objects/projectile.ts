@@ -156,7 +156,7 @@ export class Projectile {
           const normalAccel: number = info.normal.dot(this._acceleration);
 
           normalImpulse -= normalVel;
-
+          
           if (Math.abs(normalVel) > Math.abs(normalAccel * (deltaTime + 0.02))) { // small error term added to delta time due to limited timestep
             let restitution: number = this.properties.material.combineElasticity(info.object.material);
             if (deltaTime < 0 && restitution !== 0) restitution = 1 / restitution;

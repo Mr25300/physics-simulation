@@ -168,7 +168,6 @@ button {
   border-radius: 2px;
   color: var(--detail-contrast);
   transition: background-color var(--highlight-time) ease;
-  padding: 2px;
 }
 
 button:hover {
@@ -375,19 +374,22 @@ button:hover {
 
 /* #region Text Input */
 .text-input-container {
-  width: auto;
-  height: auto;
   display: flex;
+  flex-direction: row;
   justify-content: center;
+  height: auto;
+  overflow: hidden;
+  align-items: center;
+  padding: 2px;
 }
 
 .text-input {
   position: relative;
   outline: none;
   white-space: nowrap;
-  overflow: visible;
   transition: color var(--highlight-time);
   min-width: 1ch;
+  flex-shrink: 0;
 }
 
 .text-input::after {
@@ -409,29 +411,19 @@ button:hover {
 .text-input:focus::after {
   transform: scaleX(1);
 }
+
+.text-input-unit {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
 /* #endregion */
 
 /* #region Quantity Input */
-.qi-input-container {
+.qi-container {
   display: flex;
   flex-direction: row;
   gap: 4px;
-}
-
-.qi-text-input-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  width: 80px;
-  height: 24px;
-  overflow: hidden;
-  align-items: center;
-}
-
-.qi-text-input-container span {
-  display: flex;
-  align-items: center;
-  height: 100%;
 }
 
 .qi-slider-container {

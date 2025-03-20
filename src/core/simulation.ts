@@ -25,7 +25,8 @@ export class Simulation extends Loop {
   public readonly obstacles: Set<Obstacle> = new Set();
 
   public readonly fields: Set<Field> = new Set([
-    new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.81)
+    new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.81),
+    new Field("Electric Field", new Vector2(1, 0), false, FieldType.electric, 5)
   ]);
 
   public readonly constants: Constants = {
@@ -57,20 +58,20 @@ export class Simulation extends Loop {
     this.uiManager.init();
     this.graphHandler = new GraphHandler();
 
-    const material: PhysicsMaterial = new PhysicsMaterial(0.9, 0, 0, 0.1, "grey");
+    const material: PhysicsMaterial = new PhysicsMaterial(0.5, 0, 0, 0.1, "grey");
     const ballMaterial: PhysicsMaterial = new PhysicsMaterial(1, 0, 0, 0.1, "grey");
-    const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 3, 0, ballMaterial);
-    const properties2: ProjectileProperties = new ProjectileProperties(0.5, 2, 0, ballMaterial);
+    const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 3, 1, ballMaterial);
+    const properties2: ProjectileProperties = new ProjectileProperties(1, 8, 1, ballMaterial);
 
     const proj = new Projectile(projProperties, new Vector2(-8, 10));
     this.projectiles.add(proj);
 
-    const proj2 = new Projectile(properties2, new Vector2(10, 8));
+    const proj2 = new Projectile(properties2, new Vector2(6, 8));
     this.projectiles.add(proj2);
 
-    this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(20, 0)], 1, false, material));
+    this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(10, 0)], 1, false, material));
     this.obstacles.add(new Obstacle([new Vector2(-10, 10), new Vector2(-10, 0), new Vector2(0, 0)], 1, false, material));
-    this.obstacles.add(new Obstacle([new Vector2(20, 0), new Vector2(20, 10)], 1, false, material));
+    this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(10, 10)], 1, false, material));
 
     // this.camera.setFrameOfReference(proj);
 

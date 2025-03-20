@@ -59,7 +59,7 @@ export class UIManager {
 
     // timeSlider.setValue(Simulation.instance.timeScale);
 
-    timeSlider.addListener((value: number) => {
+    timeSlider.addInputListener((value: number) => {
       Simulation.instance.timeScale = value;
     });
 
@@ -94,15 +94,15 @@ export class UIManager {
     couloumbInput.setValue(Simulation.instance.constants.coulombConstant);
     airInput.setValue(Simulation.instance.constants.airDensity);
 
-    gInput.addListener((value: number) => {
+    gInput.addInputListener((value: number) => {
       Simulation.instance.constants.gravitationalConstant = value;
     });
 
-    couloumbInput.addListener((value: number) => {
+    couloumbInput.addInputListener((value: number) => {
       Simulation.instance.constants.coulombConstant = value;
     });
 
-    airInput.addListener((value: number) => {
+    airInput.addInputListener((value: number) => {
       Simulation.instance.constants.airDensity = value;
     });
 

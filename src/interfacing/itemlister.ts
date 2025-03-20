@@ -57,7 +57,7 @@ export class FieldItem extends ListedItem {
 
     const typeLabel: DisplayLabel = new DisplayLabel("Field Type", typeButton);
 
-    const strengthInput: QuantityInput = new QuantityInput(undefined, -100, 100, 0, 0.01, 0.1, 11, 3, undefined, this.field.strength);
+    const strengthInput: QuantityInput = new QuantityInput(-100, 100, 0, 0.01, 1, 11, 3, undefined, undefined, this.field.strength);
     const strengthLabel: DisplayLabel = new DisplayLabel("Strength", strengthInput);
 
     this.appendChild(fieldName);
@@ -65,8 +65,8 @@ export class FieldItem extends ListedItem {
     this.appendChild(strengthLabel);
 
     const updateType: () => void = () => {
-      if (this.field.type === FieldType.gravitational) strengthInput.unit = "m^3 * kg^-1 * s^-2";
-      else strengthInput.unit = "N * m^2 * C^-2";
+      if (this.field.type === FieldType.gravitational) strengthInput.textInput.unit = "gravitationalConstant";
+      else strengthInput.textInput.unit = "coulombConstant";
 
       typeButton.innerText = this.field.type;
     }
@@ -80,7 +80,7 @@ export class FieldItem extends ListedItem {
       updateType();
     });
 
-    strengthInput.addListener((value: number) => {
+    strengthInput.addInputListener((value: number) => {
       this.field.strength = value
     });
   }
