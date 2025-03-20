@@ -346,6 +346,6 @@ export class VectorInput extends HTMLElement {
   constructor() {
     super();
 
-
+    
   }
 }
