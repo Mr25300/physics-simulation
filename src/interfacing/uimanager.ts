@@ -3,7 +3,7 @@ import { Util } from "../math/util.js";
 import { Collapsible } from "./collapsible.js";
 import { DisplayLabel } from "./displaylabel.js";
 import { FieldItem, ItemLister } from "./itemlister.js";
-import { QuantityInput, TextInput } from "./quantityinput.js";
+import { QuantityInput, TextInput, AngleInput } from "./quantityinput.js";
 
 export class UIManager {
   private pauseButton: HTMLButtonElement;
@@ -18,6 +18,7 @@ export class UIManager {
     customElements.define("display-label", DisplayLabel);
     customElements.define("text-input", TextInput);
     customElements.define("quantity-input", QuantityInput);
+    customElements.define("vector-input", AngleInput);
     customElements.define("item-lister", ItemLister);
     customElements.define("field-item", FieldItem);
 

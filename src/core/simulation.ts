@@ -11,6 +11,7 @@ import { Controller } from "../interfacing/controller.js";
 import { UIManager } from "../interfacing/uimanager.js";
 import { PhysicsMaterial } from "../objects/physicsMaterial.js";
 import { Field, FieldType } from "../objects/field.js";
+import { TextInput } from "../interfacing/quantityinput.js";
 
 export interface Constants {
   gravitationalConstant: number;
@@ -26,7 +27,7 @@ export class Simulation extends Loop {
 
   public readonly fields: Set<Field> = new Set([
     new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.81),
-    new Field("Electric Field", new Vector2(1, 0), false, FieldType.electric, 5)
+    // new Field("Electric Field", new Vector2(1, 0), false, FieldType.electric, 5)
   ]);
 
   public readonly constants: Constants = {

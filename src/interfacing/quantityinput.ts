@@ -1,5 +1,4 @@
 import { Util } from "../math/util.js";
-import { Vector2 } from "../math/vector2.js";
 
 export class TextInput<V extends number | string> extends HTMLElement {
   public static readonly commonUnits: Record<string, string> = {
@@ -15,7 +14,7 @@ export class TextInput<V extends number | string> extends HTMLElement {
 
   private inputCallback: (value: V) => void | undefined;
 
-  constructor(private numberInput?: boolean, private sigFigs: number = 2, value?: V, unit: string = "") {
+  constructor(private numberInput?: boolean, private sigFigs: number = 2, value?: V, unit: string = "", private maxLength?: number) {
     super();
 
     if (numberInput || this.getAttribute("number-input") === "true") this.numberInput = true;
@@ -159,7 +158,8 @@ export class TextInput<V extends number | string> extends HTMLElement {
   }
 
   private updateSizeDisplay(): void {
-    if (this.numberInput) this.style.width = `${this.sigFigs + 4 + this.unitLength}ch`
+    if (this.numberInput) this.style.width = `${this.sigFigs + 4 + this.unitLength}ch`;
+    else if (this.maxLength !== undefined) this.style.width = `calc(${this.maxLength}ch + 1px)`;
   }
 
   public addInputListener(callback: (value: V) => void): void {
@@ -340,12 +340,116 @@ export class QuantityInput extends HTMLElement {
   }
 }
 
-export class VectorInput extends HTMLElement {
-  private value: Vector2;
+export class AngleInput extends HTMLElement {
+  private static readonly ANGLE_AXES: string[] = ["R", "U", "L", "D"];
 
-  constructor() {
+  private angle: number = 0;
+  private angleAxis: number = 0;
+  private angleDir: number = 1;
+
+  private axis1: TextInput<string>;
+  private axis2: TextInput<string>;
+  private angleInput: TextInput<number>;
+
+  private inputCallback: (angle: number) => void;
+
+  constructor(angle?: number) {
     super();
 
+    this.className = "vi-container";
+
+    const bracket1: HTMLSpanElement = document.createElement("span");
+    bracket1.innerText = "[";
+
+    const bracket2: HTMLSpanElement = document.createElement("span");
+    bracket2.innerText = "]";
+
+    this.angleInput = new TextInput(true, 2, 0 as number, "°");
+    this.axis1 = new TextInput(false, undefined, "" as string, undefined, 1);
+    this.axis2 = new TextInput(false, undefined, "" as string, undefined, 1);
+
+    if (angle !== undefined) this.angle = angle;
+
+    this.angleInput.addInputListener((value: number) => {
+      let newAngle: number = value * Math.PI / 180 % (2 * Math.PI);
+
+      if (this.angle !== newAngle) {
+        if (newAngle < 0) {
+          newAngle = -newAngle;
+          this.angleDir *= -1;
+        }
+
+        this.angle = newAngle;
+
+        this.fireListener();
+      }
+
+      this.updateDisplay();
+    });
+
+    this.axis1.addInputListener((value: string) => {
+      const axis: number = AngleInput.ANGLE_AXES.indexOf(value);
+
+      if (axis !== -1 && this.angleAxis !== axis) {
+        this.angleAxis = axis;
+
+        this.fireListener();
+      }
+
+      this.updateDisplay();
+    });
+
+    this.axis2.addInputListener((value: string) => {
+      const axis: number = AngleInput.ANGLE_AXES.indexOf(value);
+
+      if (axis !== -1) {
+        let difference: number = axis - this.angleAxis;
+        if (difference >= 3) difference -= 4;
+        if (difference <= -3) difference += 4;
+
+        const direction: number = difference % 2;
+
+        if (direction !== 0 && this.angleDir !== direction) {
+          this.angleDir = direction;
+
+          this.fireListener();
+        }
+      }
+
+      this.updateDisplay();
+    });
+
+    if (angle !== undefined) this.setAngle(angle);
+    this.updateDisplay();
+
+    this.appendChild(bracket1);
+    this.appendChild(this.axis1);
+    this.appendChild(this.angleInput);
+    this.appendChild(this.axis2);
+    this.appendChild(bracket2);
+  }
+
+  public setAngle(newAngle: number): void {
+    const angleSegment: number = (newAngle - newAngle % (Math.PI / 4)) / (Math.PI / 4);
+    const axis: number = Math.ceil(angleSegment / 2) % 4;
+    const axisAngleOffset: number = newAngle - axis * Math.PI / 2;
     
+    this.angle = axisAngleOffset;
+    this.angleAxis = axis;
+    this.angleDir = axisAngleOffset > 0 ? Util.sign(axisAngleOffset) : 1;
+  }
+
+  private updateDisplay(): void {
+    this.axis1.value = `${AngleInput.ANGLE_AXES[this.angleAxis]}`;
+    this.axis2.value = `${AngleInput.ANGLE_AXES[Util.circleMod(this.angleAxis + this.angleDir, 4)]}`;
+    this.angleInput.value = this.angle / Math.PI * 180;
+  }
+
+  public addInputListener(callback: (angle: number) => void): void {
+    this.inputCallback = callback;
+  }
+
+  private fireListener(): void {
+    if (this.inputCallback) this.inputCallback(this.angleAxis * Math.PI / 2 + this.angle * this.angleDir);
   }
 }

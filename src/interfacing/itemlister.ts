@@ -2,7 +2,7 @@ import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { Field, FieldType } from "../objects/field.js";
 import { DisplayLabel } from "./displaylabel.js";
-import { QuantityInput, TextInput } from "./quantityinput.js";
+import { QuantityInput, TextInput, AngleInput } from "./quantityinput.js";
 
 export abstract class ListedItem extends HTMLElement {
   private callback: () => void | undefined;
@@ -53,6 +53,7 @@ export class FieldItem extends ListedItem {
     fieldName.value = this.field.name;
 
     const typeButton: HTMLButtonElement = document.createElement("button");
+    typeButton.type = "button";
     typeButton.innerText = this.field.type;
 
     const typeLabel: DisplayLabel = new DisplayLabel("Field Type", typeButton);
@@ -60,9 +61,8 @@ export class FieldItem extends ListedItem {
     const strengthInput: QuantityInput = new QuantityInput(-100, 100, 0, 0.01, 1, 11, 3, undefined, undefined, this.field.strength);
     const strengthLabel: DisplayLabel = new DisplayLabel("Strength", strengthInput);
 
-    this.appendChild(fieldName);
-    this.appendChild(typeLabel);
-    this.appendChild(strengthLabel);
+    const directionInput: AngleInput = new AngleInput();
+    const directionLabel: DisplayLabel = new DisplayLabel("Direction", directionInput);
 
     const updateType: () => void = () => {
       if (this.field.type === FieldType.gravitational) strengthInput.textInput.unit = "gravitationalConstant";
@@ -83,6 +83,15 @@ export class FieldItem extends ListedItem {
     strengthInput.addInputListener((value: number) => {
       this.field.strength = value
     });
+
+    directionInput.addInputListener((angle: number) => {
+      this.field.vector = Vector2.fromAngle(angle);
+    });
+
+    this.appendChild(fieldName);
+    this.appendChild(typeLabel);
+    this.appendChild(strengthLabel);
+    this.appendChild(directionLabel);
   }
 }
 

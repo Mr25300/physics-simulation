@@ -9,6 +9,13 @@ export class Util {
     else return 0;
   }
 
+  public static circleMod(n: number, b: number): number {
+    let mod: number = n % b;
+    if (mod < 0) mod += b;
+
+    return mod;
+  }
+
   public static formatSigFigs(n: number, sigFigs: number): string {
     let sign: string = "";
 

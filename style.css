@@ -540,6 +540,14 @@ item-lister {
 }
 /* #endregion */
 
+/* #region Vector Input */
+.vi-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+/* #endregion */
+
 /* .sidebar-toggle {
   display: none;
   position: fixed;
