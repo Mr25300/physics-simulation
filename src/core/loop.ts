@@ -23,6 +23,10 @@ export abstract class Loop {
     return this._fps;
   }
 
+  public get timeScale(): number {
+    return this._timeScale;
+  }
+
   public set timeScale(scale: number) {
     this._timeScale = Math.max(scale, 0);
   }

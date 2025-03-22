@@ -1,6 +1,18 @@
 import { Util } from "../math/util.js";
 
-export class TextInput<V extends number | string> extends HTMLElement {
+export class InputElement<Output> extends HTMLElement {
+  private listenerCallback: (value: Output) => void;
+
+  public addInputListener(callback: (value: Output) => void): void {
+    this.listenerCallback = callback;
+  }
+
+  protected fireInputListener(value: Output): void {
+    if (this.listenerCallback) this.listenerCallback(value);
+  }
+}
+
+export class TextInput<V extends number | string> extends InputElement<V> {
   public static readonly commonUnits: Record<string, string> = {
     "gravitationalConstant": "m^3 * kg^-1 * s^-2",
     "coulombConstant": "N * m^2 * C^-2"
@@ -11,8 +23,6 @@ export class TextInput<V extends number | string> extends HTMLElement {
 
   private _value: V;
   private unitLength: number = 0;
-
-  private inputCallback: (value: V) => void | undefined;
 
   constructor(private numberInput?: boolean, private sigFigs: number = 2, value?: V, unit: string = "", private maxLength?: number) {
     super();
@@ -48,14 +58,11 @@ export class TextInput<V extends number | string> extends HTMLElement {
       return;
     }
 
-    const prevVal: V = this._value;
+    if (newVal !== this._value) {
+      this._value = newVal;
 
-    this._value = newVal;
-
-    if (newVal !== prevVal) {
       this.updateTextDisplay();
-
-      if (this.inputCallback) this.inputCallback(newVal);
+      this.fireInputListener(newVal);
     }
   }
 
@@ -161,28 +168,23 @@ export class TextInput<V extends number | string> extends HTMLElement {
     if (this.numberInput) this.style.width = `${this.sigFigs + 4 + this.unitLength}ch`;
     else if (this.maxLength !== undefined) this.style.width = `calc(${this.maxLength}ch + 1px)`;
   }
-
-  public addInputListener(callback: (value: V) => void): void {
-    this.inputCallback = callback;
-  }
 }
 
-export class QuantityInput extends HTMLElement {
-  public textInput: TextInput<number>;
+export class QuantityInput extends InputElement<number> {
+  private textInput: TextInput<number>;
   private slider: HTMLInputElement;
   private progress: HTMLDivElement;
   private markers: HTMLDivElement[] = [];
 
   private fillFrom: number;
-  private value: number;
-
-  private callback: (value: number) => void;
+  private _value: number;
+  private _logVal: number;
 
   constructor(
     private min: number = 0,
     private max: number = 1,
     fillFrom?: number,
-    private precision: number = 0.01,
+    private precision: number = 0.01, // maybe remove as property if not needed for rounding
     private snapDist: number = 0,
     markerCount: number = 0,
     sigFigs: number = 2,
@@ -203,12 +205,30 @@ export class QuantityInput extends HTMLElement {
     unit = this.getAttribute("unit") ?? unit ?? "";
 
     this.logBase = this.getNumberAttrib("logarithmic") ?? this.logBase;
-    this.value = this.getNumberAttrib("value") ?? value ?? this.min + (this.max - this.min) * this.fillFrom;
+
+    const assignedValue: number | undefined = this.getNumberAttrib("value") ?? value;
+
+    if (assignedValue !== undefined) this.value = assignedValue;
+    else this.logVal = this.min + (this.max - this.min) * this.fillFrom;
 
     if (this.min > this.max) this.min = this.max;
 
     this.initElements(markerCount, sigFigs, unit);
-    this.updateSlider();
+    this.updateDisplay();
+  }
+
+  public set value(newVal: number) {
+    this._value = newVal;
+    this._logVal = this.logBase !== undefined ? Math.log(newVal) / Math.log(this.logBase) : newVal;
+  }
+
+  public set logVal(newVal: number) {
+    this._value = this.logBase !== undefined ? Math.pow(this.logBase, newVal) : newVal;
+    this._logVal = newVal;
+  }
+
+  public set unit(newUnit: string) {
+    this.textInput.unit = newUnit;
   }
 
   private getNumberAttrib(name: string, intOnly: boolean = false): number | undefined {
@@ -227,7 +247,7 @@ export class QuantityInput extends HTMLElement {
   private initElements(markerCount: number, sigFigs: number, unit: string): void {
     this.className = "qi-container";
 
-    this.textInput = new TextInput(true, sigFigs, this.value, unit);
+    this.textInput = new TextInput(true, sigFigs, this._value, unit);
 
     const sliderContainer: HTMLDivElement = document.createElement("div");
     sliderContainer.className = "qi-slider-container";
@@ -268,12 +288,16 @@ export class QuantityInput extends HTMLElement {
 
   private initListeners(): void {
     this.textInput.addInputListener((value: number) => {
-      this.setValue(value);
-      this.fireListener();
+      this.value = value;
+
+      this.updateDisplay();
+      this.fireInputListener(this._value);
     });
 
     this.slider.addEventListener("input", () => {
-      this.setValue(parseFloat(this.slider.value), true);
+      const sliderVal: number = parseFloat(this.slider.value);
+
+      if (!isNaN(sliderVal)) this.logVal = Util.clamp(sliderVal, this.min, this.max);
       
       // const rounded: number = Math.round(this.value);
 
@@ -281,29 +305,17 @@ export class QuantityInput extends HTMLElement {
       //     this.value = rounded;
       // }
 
-      this.fireListener();
+      this.updateDisplay();
+      this.fireInputListener(this._value);
     });
-  }
-
-  public setValue(newVal: number, linear?: boolean): void {
-    if (isNaN(newVal)) return;
-
-    if (!linear && this.logBase !== undefined) newVal = Math.log(newVal) / Math.log(this.logBase);
-
-    newVal = Util.clamp(newVal, this.min, this.max);
-    newVal = Math.round(newVal / this.precision) * this.precision;
-
-    this.value = newVal;
-    this.updateSlider();
   }
 
   private getProgress(value: number): number {
     return (value - this.min) / (this.max - this.min);
   }
 
-  private updateSlider(): void {
-    const value: number = this.logBase !== undefined ? Math.pow(this.logBase, this.value) : this.value;
-    const progress: number = this.getProgress(this.value);
+  private updateDisplay(): void {
+    const progress: number = this.getProgress(this._logVal);
     const fillProgress: number = this.getProgress(this.fillFrom);
 
     let minHiglight: number = fillProgress;
@@ -312,8 +324,8 @@ export class QuantityInput extends HTMLElement {
     if (progress >= fillProgress) maxHighlight = progress;
     else minHiglight = progress;
 
-    this.textInput.value = value;
-    this.slider.value = this.value.toString();
+    this.textInput.value = this._value;
+    this.slider.value = this._logVal.toString();
     this.progress.style.left = minHiglight * 100 + "%";
     this.progress.style.right = (1 - maxHighlight) * 100 + "%";
 
@@ -325,33 +337,18 @@ export class QuantityInput extends HTMLElement {
       else child.classList.remove("highlighted");
     }
   }
-
-  private fireListener(): void {
-    if (!this.callback) return;
-
-    let value: number = this.value;
-    if (this.logBase !== undefined) value = Math.pow(this.logBase, value);
-
-    this.callback(value);
-  }
-
-  public addInputListener(callback: (value: number) => void): void {
-    this.callback = callback;
-  }
 }
 
-export class AngleInput extends HTMLElement {
+export class AngleInput extends InputElement<number> {
   private static readonly ANGLE_AXES: string[] = ["R", "U", "L", "D"];
 
-  private angle: number = 0;
-  private angleAxis: number = 0;
+  private axis: number = 0;
   private angleDir: number = 1;
+  private angleOffset: number = 0;
 
   private axis1: TextInput<string>;
   private axis2: TextInput<string>;
   private angleInput: TextInput<number>;
-
-  private inputCallback: (angle: number) => void;
 
   constructor(angle?: number) {
     super();
@@ -364,24 +361,40 @@ export class AngleInput extends HTMLElement {
     const bracket2: HTMLSpanElement = document.createElement("span");
     bracket2.innerText = "]";
 
-    this.angleInput = new TextInput(true, 2, 0 as number, "°");
+    this.angleInput = new TextInput(true, 3, 0 as number, "°");
     this.axis1 = new TextInput(false, undefined, "" as string, undefined, 1);
     this.axis2 = new TextInput(false, undefined, "" as string, undefined, 1);
 
-    if (angle !== undefined) this.angle = angle;
+    if (angle !== undefined) this.setAngle(angle);
+    this.updateDisplay();
 
+    this.initListeners();
+
+    this.appendChild(bracket1);
+    this.appendChild(this.axis1);
+    this.appendChild(this.angleInput);
+    this.appendChild(this.axis2);
+    this.appendChild(bracket2);
+  }
+
+  public get actualAngle(): number {
+    return this.axis * Math.PI / 2 + this.angleDir * this.angleOffset;
+  }
+
+  private initListeners(): void {
     this.angleInput.addInputListener((value: number) => {
       let newAngle: number = value * Math.PI / 180 % (2 * Math.PI);
 
-      if (this.angle !== newAngle) {
+      if (this.angleOffset !== newAngle) {
         if (newAngle < 0) {
           newAngle = -newAngle;
+          
           this.angleDir *= -1;
         }
 
-        this.angle = newAngle;
+        this.angleOffset = newAngle;
 
-        this.fireListener();
+        this.fireInputListener(this.actualAngle);
       }
 
       this.updateDisplay();
@@ -390,10 +403,10 @@ export class AngleInput extends HTMLElement {
     this.axis1.addInputListener((value: string) => {
       const axis: number = AngleInput.ANGLE_AXES.indexOf(value);
 
-      if (axis !== -1 && this.angleAxis !== axis) {
-        this.angleAxis = axis;
+      if (axis !== -1 && this.axis !== axis) {
+        this.axis = axis;
 
-        this.fireListener();
+        this.fireInputListener(this.actualAngle);
       }
 
       this.updateDisplay();
@@ -403,7 +416,7 @@ export class AngleInput extends HTMLElement {
       const axis: number = AngleInput.ANGLE_AXES.indexOf(value);
 
       if (axis !== -1) {
-        let difference: number = axis - this.angleAxis;
+        let difference: number = axis - this.axis;
         if (difference >= 3) difference -= 4;
         if (difference <= -3) difference += 4;
 
@@ -412,44 +425,27 @@ export class AngleInput extends HTMLElement {
         if (direction !== 0 && this.angleDir !== direction) {
           this.angleDir = direction;
 
-          this.fireListener();
+          this.fireInputListener(this.actualAngle);
         }
       }
 
       this.updateDisplay();
     });
-
-    if (angle !== undefined) this.setAngle(angle);
-    this.updateDisplay();
-
-    this.appendChild(bracket1);
-    this.appendChild(this.axis1);
-    this.appendChild(this.angleInput);
-    this.appendChild(this.axis2);
-    this.appendChild(bracket2);
   }
 
   public setAngle(newAngle: number): void {
     const angleSegment: number = (newAngle - newAngle % (Math.PI / 4)) / (Math.PI / 4);
-    const axis: number = Math.ceil(angleSegment / 2) % 4;
-    const axisAngleOffset: number = newAngle - axis * Math.PI / 2;
+    const axis: number = Util.circleMod(Math.ceil(angleSegment / 2), 4);
+    const axisAngleOffset: number = (newAngle - axis * Math.PI / 2) % (2 * Math.PI);
     
-    this.angle = axisAngleOffset;
-    this.angleAxis = axis;
+    this.angleOffset = Math.abs(axisAngleOffset);
+    this.axis = axis;
     this.angleDir = axisAngleOffset > 0 ? Util.sign(axisAngleOffset) : 1;
   }
 
   private updateDisplay(): void {
-    this.axis1.value = `${AngleInput.ANGLE_AXES[this.angleAxis]}`;
-    this.axis2.value = `${AngleInput.ANGLE_AXES[Util.circleMod(this.angleAxis + this.angleDir, 4)]}`;
-    this.angleInput.value = this.angle / Math.PI * 180;
-  }
-
-  public addInputListener(callback: (angle: number) => void): void {
-    this.inputCallback = callback;
-  }
-
-  private fireListener(): void {
-    if (this.inputCallback) this.inputCallback(this.angleAxis * Math.PI / 2 + this.angle * this.angleDir);
+    this.axis1.value = `${AngleInput.ANGLE_AXES[this.axis]}`;
+    this.axis2.value = `${AngleInput.ANGLE_AXES[Util.circleMod(this.axis + this.angleDir, 4)]}`;
+    this.angleInput.value = this.angleOffset / Math.PI * 180;
   }
 }

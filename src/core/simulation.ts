@@ -11,7 +11,6 @@ import { Controller } from "../interfacing/controller.js";
 import { UIManager } from "../interfacing/uimanager.js";
 import { PhysicsMaterial } from "../objects/physicsMaterial.js";
 import { Field, FieldType } from "../objects/field.js";
-import { TextInput } from "../interfacing/quantityinput.js";
 
 export interface Constants {
   gravitationalConstant: number;

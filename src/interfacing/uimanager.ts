@@ -58,7 +58,7 @@ export class UIManager {
 
     const timeSlider: QuantityInput = document.getElementById("sim-time-slider") as QuantityInput;
 
-    // timeSlider.setValue(Simulation.instance.timeScale);
+    timeSlider.value = Simulation.instance.timeScale;
 
     timeSlider.addInputListener((value: number) => {
       Simulation.instance.timeScale = value;
@@ -91,9 +91,9 @@ export class UIManager {
     const airInput: QuantityInput = document.getElementById("air-density-input") as QuantityInput;
     const fieldList: ItemLister = document.getElementById("field-list") as ItemLister;
 
-    gInput.setValue(Simulation.instance.constants.gravitationalConstant);
-    couloumbInput.setValue(Simulation.instance.constants.coulombConstant);
-    airInput.setValue(Simulation.instance.constants.airDensity);
+    gInput.value = Simulation.instance.constants.gravitationalConstant;
+    couloumbInput.value = Simulation.instance.constants.coulombConstant;
+    airInput.value = Simulation.instance.constants.airDensity;
 
     gInput.addInputListener((value: number) => {
       Simulation.instance.constants.gravitationalConstant = value;

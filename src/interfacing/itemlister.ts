@@ -61,12 +61,12 @@ export class FieldItem extends ListedItem {
     const strengthInput: QuantityInput = new QuantityInput(-100, 100, 0, 0.01, 1, 11, 3, undefined, undefined, this.field.strength);
     const strengthLabel: DisplayLabel = new DisplayLabel("Strength", strengthInput);
 
-    const directionInput: AngleInput = new AngleInput();
+    const directionInput: AngleInput = new AngleInput(this.field.vector.angle);
     const directionLabel: DisplayLabel = new DisplayLabel("Direction", directionInput);
 
     const updateType: () => void = () => {
-      if (this.field.type === FieldType.gravitational) strengthInput.textInput.unit = "gravitationalConstant";
-      else strengthInput.textInput.unit = "coulombConstant";
+      if (this.field.type === FieldType.gravitational) strengthInput.unit = "gravitationalConstant";
+      else strengthInput.unit = "coulombConstant";
 
       typeButton.innerText = this.field.type;
     }
