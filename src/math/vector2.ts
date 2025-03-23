@@ -10,11 +10,16 @@ export class Vector2 {
 
   public static readonly zero: Vector2 = new Vector2();
 
-  public static fromAngle(angle: number): Vector2 {
-    return new Vector2(
-      Math.cos(angle),
-      Math.sin(angle)
-    )
+  public static fromPolarForm(magnitude: number, angle: number): Vector2 {
+    const newVector: Vector2 = new Vector2(
+      magnitude * Math.cos(angle),
+      magnitude * Math.sin(angle)
+    );
+
+    newVector._magnitude = magnitude;
+    newVector._angle = angle;
+    
+    return newVector;
   }
 
   public add(vector: Vector2): Vector2 {

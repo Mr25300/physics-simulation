@@ -16,7 +16,7 @@ export class RenderLayer {
   public readonly element: HTMLCanvasElement;
   public readonly context: CanvasRenderingContext2D;
 
-  constructor(private renderer: Renderer) {
+  constructor(private renderer: Canvas) {
     this.element = document.createElement("canvas");
     this.context = this.element.getContext("2d")!;
     if (!this.context) throw new Error("Failed to get mask canvas 2d context.");
@@ -77,6 +77,7 @@ export class RenderLayer {
     if (drawStyle.fill && drawStyle.fillInvert) {
       this.context.fillRect(0, 0, this.element.width, this.element.height);
       this.context.globalCompositeOperation = "destination-out";
+      this.context.fillStyle = "rgb(0, 0, 0)";
     }
 
     if (drawStyle.fill) this.context.fill();
@@ -118,7 +119,7 @@ export class RenderLayer {
   }
 }
 
-export class Renderer {
+export class Canvas {
   private readonly ARROW_HEIGHT: number = 0.2;
   private readonly ARROW_WIDTH: number = 0.2;
   private readonly ARROW_THICKNESS: number = 0.03;
@@ -130,13 +131,13 @@ export class Renderer {
   private gridScale: number;
 
   private readonly FORCE_COLORS: Record<ForceType, string> = {
-    [ForceType.unspecified]: "purple",
+    [ForceType.unspecified]: "green",
     [ForceType.gravity]: "blue",
     [ForceType.normal]: "red",
     [ForceType.tension]: "orange",
     [ForceType.friction]: "yellow",
     [ForceType.drag]: "white",
-    [ForceType.electrostatic]: "black"
+    [ForceType.electrostatic]: "purple"
   }
 
   private context: CanvasRenderingContext2D;
@@ -146,7 +147,7 @@ export class Renderer {
 
   private inverseObstacleLayer: RenderLayer = new RenderLayer(this);
   private mainLayer: RenderLayer = new RenderLayer(this);
-  private vectorLayer: RenderLayer = new RenderLayer(this);
+  private highlightVectorLayer: RenderLayer = new RenderLayer(this);
 
   constructor(private canvas: HTMLCanvasElement) {
     this.context = canvas.getContext("2d")!;
@@ -167,7 +168,7 @@ export class Renderer {
 
     this.inverseObstacleLayer.updateDimensions(this.width, this.height);
     this.mainLayer.updateDimensions(this.width, this.height);
-    this.vectorLayer.updateDimensions(this.width, this.height);
+    this.highlightVectorLayer.updateDimensions(this.width, this.height);
   }
 
   public scaleToPixels(scale: number): number {
@@ -204,14 +205,14 @@ export class Renderer {
     this.context.clearRect(0, 0, this.width, this.height);
     this.inverseObstacleLayer.context.clearRect(0, 0, this.width, this.height);
     this.mainLayer.context.clearRect(0, 0, this.width, this.height);
-    this.vectorLayer.context.clearRect(0, 0, this.width, this.height);
+    this.highlightVectorLayer.context.clearRect(0, 0, this.width, this.height);
 
     let minX: number = camera.position.x - camera.range * this.aspectRatio;
     let maxX: number = camera.position.x + camera.range * this.aspectRatio;
     let minY: number = camera.position.y - camera.range;
     let maxY: number = camera.position.y + camera.range;
 
-    this.gridScale = 10 ** Math.floor(Math.log10(camera.range));
+    this.gridScale = 10 ** Math.floor(Math.log10(camera.range / 3));
 
     for (let x: number = Math.ceil(minX / this.gridScale); x <= Math.floor(maxX / this.gridScale); x++) {
       const start: Vector2 = new Vector2(x * this.gridScale, minY);
@@ -243,6 +244,16 @@ export class Renderer {
         fillInvert: obstacle.inverse,
         fillStyle: obstacle.material.color
       });
+
+      if (obstacle === Simulation.instance.controller.hovering) {
+        this.highlightVectorLayer.drawShape(obstacle.vertices, obstacle.radius, {
+          fill: true,
+          stroke: true,
+          fillInvert: obstacle.inverse,
+          fillStyle: "rgba(255, 255, 255, 0.5)", // FIX TRANSPARENCY HIGHLIGHT FOR INVERSE OBSTACLES
+          strokeStyle: "rgb(255, 255, 255)"
+        });
+      }
     }
 
     for (const projectile of Simulation.instance.projectiles) {
@@ -250,6 +261,15 @@ export class Renderer {
         fill: true,
         fillStyle: projectile.properties.material.color
       });
+
+      if (projectile === Simulation.instance.controller.hovering) {
+        this.highlightVectorLayer.drawShape([projectile.position], projectile.properties.radius, {
+          fill: true,
+          stroke: true,
+          fillStyle: "rgba(255, 255, 255, 0.5)",
+          strokeStyle: "rgb(255, 255, 255)"
+        });
+      }
 
       for (const force of projectile.forces) {
         let relativeForce: Vector2 = force.vector;
@@ -262,7 +282,7 @@ export class Renderer {
           }
         }
 
-        this.vectorLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+        this.highlightVectorLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
           fill: true,
           fillStyle: this.FORCE_COLORS[force.type]
         });
@@ -283,7 +303,7 @@ export class Renderer {
           if (!forceFound) {
             const relativeForce = camForce.vector.multiply(-projectile.properties.mass / camera.frameOfReference.properties.mass);
 
-            this.vectorLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+            this.highlightVectorLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
               fill: true,
               fillStyle: this.FORCE_COLORS[camForce.type]
             });
@@ -297,7 +317,7 @@ export class Renderer {
         relativeVel = relativeVel.subtract(camera.frameOfReference.velocity);
       }
 
-      this.vectorLayer.drawArrow(projectile.position, relativeVel, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+      this.highlightVectorLayer.drawArrow(projectile.position, relativeVel, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
         fill: true,
         fillStyle: "green"
       });
@@ -319,8 +339,8 @@ export class Renderer {
       });
     }
 
-    this.context.drawImage(this.inverseObstacleLayer.element, 0, 0);
     this.context.drawImage(this.mainLayer.element, 0, 0);
-    this.context.drawImage(this.vectorLayer.element, 0, 0);
+    this.context.drawImage(this.inverseObstacleLayer.element, 0, 0);
+    this.context.drawImage(this.highlightVectorLayer.element, 0, 0);
   }
 }

@@ -122,4 +122,28 @@ export class Obstacle {
       normal: minNormal
     };
   }
+
+  public isPointInside(point: Vector2): boolean {
+    const closestVert: Vector2 = this.getClosestVertex(point);
+    const vertNormal = point.subtract(closestVert).unit;
+
+    const projVertAxis: AxisInfo = {
+      normal: vertNormal,
+      axisRange: this.getProjectedRange(vertNormal)
+    }
+
+    for (const info of [projVertAxis, ...this.axes]) {
+      const pointProjection: number = info.normal.dot(point);
+      const [min, max] = info.axisRange;
+      const inside: boolean = pointProjection >= min && pointProjection <= max;
+
+      if (!inside) {
+        if (this.inverse) return true;
+        else return false;
+      }
+    }
+
+    if (this.inverse) return false;
+    else return true;
+  }
 }

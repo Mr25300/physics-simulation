@@ -29,7 +29,7 @@
           <button id="sim-reverse" class="reverse-button">
             <div class="arrow"></div>
           </button>
-          <quantity-input id="sim-time-slider" label="Time Scale" unit="×" min="-7" max="7" logarithmic="2" sig-figs="3" fill-from="0" value="0"></quantity-input>
+          <quantity-input id="sim-time-slider" label="Time Scale" unit="×" min="-7" max="7" logarithmic="2" sig-figs="3" fill-from="0" marker-count="15"></quantity-input>
           <div id="sim-time-elapsed"></div>
         </div>
       </div>
@@ -38,11 +38,21 @@
     <div class="content-container">
       <div class="side-bar window">
         <collapsible-dropdown label="Projectiles">
-          <button>Create</button>
-        </collapsible-dropdown>
+          <h1>Create</h1>
 
-        <collapsible-dropdown label="Constraints">
+          <display-label label="Position">
+            <vector-input id="proj-spawn-pos" unit="m"></vector-input>
+          </display-label>
 
+          <display-label label="Velocity">
+            <vector-input id="proj-spawn-vel" unit="m * s^-1"></vector-input>
+          </display-label>
+
+          <display-label label="Radius">
+            <quantity-input id="proj-radius" min="0.1" max="10"></quantity-input>
+          </display-label>
+
+          <button id="proj-spawn">Spawn</button>
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Obstacles">
@@ -50,6 +60,10 @@
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Materials">
+          <item-lister id="material-list" item-name="Physics Material", item-type="material-item"></item-lister>
+        </collapsible-dropdown>
+
+        <collapsible-dropdown label="Constraints">
 
         </collapsible-dropdown>
 

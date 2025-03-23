@@ -94,7 +94,9 @@ export class Projectile {
   }
 
   public updateForces(): void {
-    const dragMagnitude: number = this.properties.material.drag * Simulation.instance.constants.airDensity * this.properties.crossSectionArea * this._velocity.magnitude ** 2 / 2;
+    let dragMagnitude: number = this.properties.material.drag * Simulation.instance.constants.airDensity * this.properties.crossSectionArea * this._velocity.magnitude ** 2 / 2;
+    if (dragMagnitude === Infinity || isNaN(dragMagnitude)) dragMagnitude = 0;
+
     this.applyForce(this._velocity.unit.multiply(-dragMagnitude), false, ForceType.drag);
 
     if (this.lastCollision) {
@@ -201,5 +203,9 @@ export class Projectile {
       overlap: radiiSum - difference.magnitude,
       normal: difference.unit
     }
+  }
+
+  public isPointInside(point: Vector2): boolean {
+    return this._position.subtract(point).magnitude <= this.properties.radius;
   }
 }

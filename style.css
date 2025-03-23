@@ -19,6 +19,13 @@
   color: var(--detail);
 }
 
+h1 {
+  text-align: center;
+  font-size: large;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
 body {
   background-color: var(--background);
   overflow: hidden;
@@ -27,6 +34,10 @@ body {
 #simulation-screen {
   width: 100%;
   height: 100%;
+}
+
+#simulation-screen.hovering {
+  cursor: pointer;
 }
 
 .main-container {
@@ -165,7 +176,8 @@ collapsible-dropdown.expanded .collapsible-content {
 button {
   border: none;
   background: var(--button);
-  border-radius: 2px;
+  border-radius: 4px;
+  padding: 2px;
   color: var(--detail-contrast);
   transition: background-color var(--highlight-time) ease;
 }
@@ -181,6 +193,7 @@ button:hover {
 .skip-button.double::before {
   background: transparent !important;
   border-radius: 0 !important;
+  padding: 0 !important;
   box-sizing: border-box;
   width: 0;
   height: 24px;
@@ -277,6 +290,7 @@ button:hover {
   height: 24px;
   border: none;
   border-radius: 0 !important;
+  padding: 0 !important;
   background: transparent !important;
   display: flex;
   justify-content: center;
@@ -350,7 +364,7 @@ button:hover {
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  font-size: 0.9em;
+  font-size: small;
   height: auto;
   gap: 4px;
 }
@@ -373,6 +387,12 @@ button:hover {
 /* #endregion */
 
 /* #region Text Input */
+.unit-container {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 .text-input-container {
   display: flex;
   flex-direction: row;
@@ -410,12 +430,6 @@ button:hover {
 
 .text-input:focus::after {
   transform: scaleX(1);
-}
-
-.text-input-unit {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
 }
 /* #endregion */
 
@@ -541,10 +555,18 @@ item-lister {
 /* #endregion */
 
 /* #region Vector Input */
-.vi-container {
+.ai-container, .vi-container, .vi-format-container, .vi-component-container {
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+
+.vi-container {
+  gap: 6px;
+}
+
+.vi-format-container.hidden {
+  display: none;
 }
 /* #endregion */
 

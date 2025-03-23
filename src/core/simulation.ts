@@ -1,12 +1,12 @@
 import { Vector2 } from "../math/vector2.js";
 import { ForceType, Projectile, ProjectileProperties } from "../objects/projectile.js";
-import { Renderer } from "../rendering/canvas.js";
+import { Canvas } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { Obstacle } from "../objects/obstacle.js";
 import { Rope } from "../objects/constraint.js";
 import { GraphHandler } from "../graphing/graphHandler.js";
 import { Camera } from "../rendering/camera.js";
-import { Controller } from "../interfacing/controller.js";
+import { DisplayControl } from "../interfacing/controller.js";
 
 import { UIManager } from "../interfacing/uimanager.js";
 import { PhysicsMaterial } from "../objects/physicsMaterial.js";
@@ -21,6 +21,7 @@ export interface Constants {
 export class Simulation extends Loop {
   public readonly materials: Set<PhysicsMaterial> = new Set();
   public readonly projectiles: Set<Projectile> = new Set();
+  public readonly projectileProperties: Set<ProjectileProperties> = new Set();
   public readonly ropes: Set<Rope> = new Set();
   public readonly obstacles: Set<Obstacle> = new Set();
 
@@ -35,10 +36,10 @@ export class Simulation extends Loop {
     airDensity: 1.225
   };
 
-  public renderer: Renderer;
+  public canvas: Canvas;
   private graphHandler: GraphHandler;
   public camera: Camera = new Camera();
-  public controller: Controller;
+  public controller: DisplayControl;
   public uiManager: UIManager = new UIManager();
 
   private static _instance: Simulation;
@@ -53,15 +54,15 @@ export class Simulation extends Loop {
     const canvas: HTMLCanvasElement | null = document.querySelector("#simulation-screen");
     if (!canvas) throw new Error("Failed to get canvas.");
 
-    this.renderer = new Renderer(canvas);
-    this.controller = new Controller(canvas);
+    this.canvas = new Canvas(canvas);
+    this.controller = new DisplayControl(canvas);
     this.uiManager.init();
     this.graphHandler = new GraphHandler();
 
-    const material: PhysicsMaterial = new PhysicsMaterial(0.5, 0, 0, 0.1, "grey");
-    const ballMaterial: PhysicsMaterial = new PhysicsMaterial(1, 0, 0, 0.1, "grey");
-    const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 3, 1, ballMaterial);
-    const properties2: ProjectileProperties = new ProjectileProperties(1, 8, 1, ballMaterial);
+    const material: PhysicsMaterial = new PhysicsMaterial("TEST", 1, 0, 0, 0.1, "grey");
+    const ballMaterial: PhysicsMaterial = new PhysicsMaterial("TEST2", 1, 0, 0, 0.1, "red");
+    const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 3, -1, ballMaterial);
+    const properties2: ProjectileProperties = new ProjectileProperties(0.5, 8, 1, ballMaterial);
 
     const proj = new Projectile(projProperties, new Vector2(-8, 10));
     this.projectiles.add(proj);
@@ -72,6 +73,8 @@ export class Simulation extends Loop {
     this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(10, 0)], 1, false, material));
     this.obstacles.add(new Obstacle([new Vector2(-10, 10), new Vector2(-10, 0), new Vector2(0, 0)], 1, false, material));
     this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(10, 10)], 1, false, material));
+
+    this.obstacles.add(new Obstacle([new Vector2(-100, -100), new Vector2(100, -100), new Vector2(100, 100), new Vector2(-100, 100)], 0, true, material));
 
     // this.camera.setFrameOfReference(proj);
 
@@ -106,8 +109,14 @@ export class Simulation extends Loop {
   }
 
   public update(deltaTime: number): void {
-    for (const projectile of this.projectiles) {
+    const projectiles: Projectile[] = Array.from(this.projectiles);
+
+    for (const projectile of projectiles) {
       projectile.clearForces();
+    }
+
+    for (let i = 0; i < projectiles.length; i++) {
+      const projectile: Projectile = projectiles[i];
 
       for (const field of this.fields) {
         let force = field.getForce(projectile);
@@ -117,6 +126,20 @@ export class Simulation extends Loop {
         else if (field.type === FieldType.electric) type = ForceType.electrostatic;
 
         projectile.applyForce(force, false, type);
+      }
+
+      for (let j = i + 1; j < projectiles.length; j++) {
+        const otherProj: Projectile = projectiles[j];
+
+        const difference: Vector2 = otherProj.position.subtract(projectile.position);
+        const gravMag: number = this.constants.gravitationalConstant * projectile.properties.mass * otherProj.properties.mass / difference.magnitude;
+        const electricMag: number = -this.constants.coulombConstant * projectile.properties.charge * otherProj.properties.charge / difference.magnitude;
+
+        projectile.applyForce(difference.unit.multiply(gravMag), false, ForceType.gravity);
+        otherProj.applyForce(difference.unit.multiply(-gravMag), false, ForceType.gravity);
+
+        projectile.applyForce(difference.unit.multiply(electricMag), false, ForceType.electrostatic);
+        otherProj.applyForce(difference.unit.multiply(-electricMag), false, ForceType.electrostatic);
       }
 
       projectile.updateForces();
@@ -138,7 +161,7 @@ export class Simulation extends Loop {
   public render(): void {
     // this.graphHandler.updateGraph(Simulation.instance.elapsedTime);
     this.camera.update();
-    this.renderer.render();
+    this.canvas.render();
     this.uiManager.update();
   }
 }

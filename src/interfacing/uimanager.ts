@@ -1,13 +1,13 @@
 import { Simulation } from "../core/simulation.js";
 import { Util } from "../math/util.js";
-import { Collapsible } from "./collapsible.js";
-import { DisplayLabel } from "./displaylabel.js";
-import { FieldItem, ItemLister } from "./itemlister.js";
-import { QuantityInput, TextInput, AngleInput } from "./quantityinput.js";
+import { Collapsible } from "./displaycomponents.js";
+import { DisplayLabel } from "./displaycomponents.js";
+import { FieldItem, ItemLister, MaterialItem } from "./listcomponents.js";
+import { QuantityInput, TextInput, AngleInput, VectorInput, UnitContainer } from "./inputcomponents.js";
+import { Projectile } from "../objects/projectile.js";
 
 export class UIManager {
-  private pauseButton: HTMLButtonElement;
-  private reverseButton: HTMLButtonElement;
+  private selectedProjectile: Projectile;
 
   public init(): void {
     document.addEventListener("contextmenu", (event) => {
@@ -16,41 +16,36 @@ export class UIManager {
     
     customElements.define("collapsible-dropdown", Collapsible);
     customElements.define("display-label", DisplayLabel);
+
     customElements.define("text-input", TextInput);
+    customElements.define("unit-container", UnitContainer);
     customElements.define("quantity-input", QuantityInput);
-    customElements.define("vector-input", AngleInput);
+    customElements.define("angle-input", AngleInput);
+    customElements.define("vector-input", VectorInput);
+
     customElements.define("item-lister", ItemLister);
+    customElements.define("material-item", MaterialItem);
     customElements.define("field-item", FieldItem);
 
-    this.initSimulationControls();
-    this.initConstantsControls();
-  }
+    // Promise.all([
+    //   customElements.whenDefined("collapsible-dropdown"),
+    //   customElements.whenDefined("display-label"),
+    //   customElements.whenDefined("text-input"),
+    //   customElements.whenDefined("quantity-input"),
+    //   customElements.whenDefined("vector-input"),
+    //   customElements.whenDefined("item-lister"),
+    //   customElements.whenDefined("field-item")
 
-  private togglePause(): void {
-    if (Simulation.instance.running) {
-      Simulation.instance.pause();
-      this.pauseButton.classList.add("paused");
-
-    } else {
-      Simulation.instance.resume();
-      this.pauseButton.classList.remove("paused");
-    }
-  }
-
-  private setupSkipButton(button: HTMLButtonElement, skipAmount: number): void {
-    button.addEventListener("click", () => {
-      button.classList.remove("skipped");
-      void button.offsetWidth;
-      button.classList.add("skipped");
-
-      Simulation.instance.advance(skipAmount);
-    });
+    // ]).then(() => {
+      this.initSimulationControls();
+      this.initMaterialControls();
+      this.initConstantsControls();
+    // });
   }
 
   private initSimulationControls(): void {
-    this.pauseButton = document.querySelector("button#sim-pause")!;
-    this.reverseButton = document.querySelector("button#sim-reverse")!;
-
+    const pauseButton = document.querySelector("button#sim-pause")!;
+    const reverseButton = document.querySelector("button#sim-reverse")!;
     const skipButton: HTMLButtonElement = document.querySelector("button#sim-skip")!;
     const doubleSkipButton: HTMLButtonElement = document.querySelector("button#sim-double-skip")!;
     const backButton: HTMLButtonElement = document.querySelector("button#sim-back")!;
@@ -64,25 +59,62 @@ export class UIManager {
       Simulation.instance.timeScale = value;
     });
 
-    this.pauseButton.addEventListener("click", () => {
-      this.togglePause();
+    const displayPause = () => {
+      if (Simulation.instance.running) {
+        pauseButton.classList.remove("paused");
+  
+      } else {
+        pauseButton.classList.add("paused");
+      }
+    };
+
+    const displayReverse = () => {
+      if (Simulation.instance.timeReverse) reverseButton.classList.add("reversed");
+      else reverseButton.classList.remove("reversed");
+    };
+
+    pauseButton.addEventListener("click", () => {
+      if (Simulation.instance.running) Simulation.instance.pause();
+      else Simulation.instance.resume();
+
+      displayPause();
     });
 
     document.addEventListener("visibilitychange", () => {
-      if (Simulation.instance.running) this.togglePause();
+      Simulation.instance.pause();
+      displayPause();
     });
 
-    this.reverseButton.addEventListener("click", () => {
+    reverseButton.addEventListener("click", () => {
       Simulation.instance.timeReverse = !Simulation.instance.timeReverse;
-
-      if (Simulation.instance.timeReverse) this.reverseButton.classList.add("reversed");
-      else this.reverseButton.classList.remove("reversed");
+      displayReverse();
     });
 
-    this.setupSkipButton(skipButton, 0.1);
-    this.setupSkipButton(doubleSkipButton, 1);
-    this.setupSkipButton(backButton, -0.1);
-    this.setupSkipButton(doubleBackButton, -1);
+    const handleSkipButton = (button: HTMLButtonElement, amount: number) => {
+      button.addEventListener("click", () => {
+        button.classList.remove("skipped");
+        void button.offsetWidth;
+        button.classList.add("skipped");
+  
+        Simulation.instance.advance(amount);
+      });
+    }
+
+    handleSkipButton(skipButton, 0.1);
+    handleSkipButton(doubleSkipButton, 1);
+    handleSkipButton(backButton, -0.1);
+    handleSkipButton(doubleBackButton, -1);
+
+    displayPause();
+    displayReverse();
+  }
+
+  private initMaterialControls(): void {
+    const materialList: ItemLister = document.getElementById("material-list") as ItemLister;
+
+    for (const material of Simulation.instance.materials) {
+      materialList.createItem(material);
+    }
   }
 
   private initConstantsControls(): void {
@@ -110,16 +142,15 @@ export class UIManager {
     for (const field of Simulation.instance.fields) {
       fieldList.createItem(field);
     }
-
-    // const airDensityInput: QuantityInput = document.querySelector("quantity-input#air-density-input")!;
-
-    // airDensityInput.addListener(() => {
-    //     console.log(airDensityInput.value);
-    //     Simulation.instance.constants.airDensity = airDensityInput.value;
-    // });
   }
 
   public update(): void {
     document.getElementById("sim-time-elapsed")!.innerText = Util.formatTime(Simulation.instance.elapsedTime);
+
+    const selected = Simulation.instance.controller.selected;
+
+    if (selected) {
+      
+    }
   }
 }

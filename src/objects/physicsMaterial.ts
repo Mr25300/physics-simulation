@@ -1,5 +1,6 @@
 export class PhysicsMaterial {
   constructor(
+    public name: string,
     public elasticity: number,
     public staticFriction: number,
     public kineticFriction: number,
