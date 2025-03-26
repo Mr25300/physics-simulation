@@ -58,7 +58,7 @@ export class UIManager {
     timeSlider.addInputListener((value: number) => {
       Simulation.instance.timeScale = value;
     });
-
+    
     const displayPause = () => {
       if (Simulation.instance.running) {
         pauseButton.classList.remove("paused");

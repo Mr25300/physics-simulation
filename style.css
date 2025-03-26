@@ -99,6 +99,10 @@ body {
   overflow: overlay;
 }
 
+.side-bar::-webkit-scrollbar {
+  background-color: red;
+}
+
 .window {
   background-color: var(--window);
   border-radius: 5px;
@@ -370,11 +374,11 @@ button:hover {
 }
 
 .display-label .label {
-  display: inline-block;
-  word-wrap: break-word;
+  display: flex;
+  align-items: center;
+  /* word-wrap: break-word;
   overflow-wrap: break-word;
-  white-space: nowrap;
-  height: auto;
+  white-space: nowrap; */
 }
 
 .display-label .display {
@@ -401,6 +405,7 @@ button:hover {
   overflow: hidden;
   align-items: center;
   padding: 2px;
+  height: 24px;
 }
 
 .text-input {
@@ -438,6 +443,7 @@ button:hover {
   display: flex;
   flex-direction: row;
   gap: 4px;
+  height: 24px;
 }
 
 .qi-slider-container {
@@ -525,7 +531,6 @@ button:hover {
 .qi-slider-marker-container div.highlighted {
   background-color: var(--highlight) !important;
 }
-
 /* #endregion */
 
 /* #region Item Lister */
@@ -559,6 +564,7 @@ item-lister {
   display: flex;
   flex-direction: row;
   align-items: center;
+  height: 24px;
 }
 
 .vi-container {

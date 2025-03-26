@@ -1,4 +1,5 @@
 import { Simulation } from "../core/simulation.js";
+import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
 import { ForceType } from "../objects/projectile.js";
 import { Camera } from "./camera.js";
@@ -117,6 +118,24 @@ export class RenderLayer {
 
     ], 0, drawStyle);
   }
+
+  public drawText(text: string, position: Vector2, padScale: number, fontStyle: string, fontSize: number, drawStyle: DrawStyle): void {
+    if (drawStyle.fillStyle) this.context.fillStyle = drawStyle.fillStyle;
+    if (drawStyle.strokeStyle) this.context.strokeStyle = drawStyle.strokeStyle;
+    if (drawStyle.strokeWidth) this.context.lineWidth = drawStyle.strokeWidth;
+
+    this.context.font = `${fontSize}px "${fontStyle}"`;
+
+    const metrics: TextMetrics = this.context.measureText(text);
+    const width: number = metrics.width + metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
+    const height: number = fontSize + metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+    const x: number = position.x + width / 2 * padScale;
+    const y: number = position.y - height / 2 * padScale;
+
+    if (drawStyle.fill) this.context.fillText(text, x, y);
+    if (drawStyle.stroke) this.context.strokeText(text, x, y);
+  }
 }
 
 export class Canvas {
@@ -126,9 +145,9 @@ export class Canvas {
   private readonly ROPE_MIN_WIDTH: number = 0.05;
   private readonly ROPE_MAX_WIDTH: number = 0.2;
 
-  private readonly GRID_COLOR: string = "#49403F";
-
-  private gridScale: number;
+  private readonly GRID_COLOR: string = "rgb(50, 50, 50)";
+  private readonly GRID_TEXT_SIZE: number = 16;
+  private readonly GRID_TEXT_COLOR: string = "rgb(100, 100, 100)";
 
   private readonly FORCE_COLORS: Record<ForceType, string> = {
     [ForceType.unspecified]: "green",
@@ -147,7 +166,7 @@ export class Canvas {
 
   private inverseObstacleLayer: RenderLayer = new RenderLayer(this);
   private mainLayer: RenderLayer = new RenderLayer(this);
-  private highlightVectorLayer: RenderLayer = new RenderLayer(this);
+  private detailLayer: RenderLayer = new RenderLayer(this);
 
   constructor(private canvas: HTMLCanvasElement) {
     this.context = canvas.getContext("2d")!;
@@ -168,7 +187,7 @@ export class Canvas {
 
     this.inverseObstacleLayer.updateDimensions(this.width, this.height);
     this.mainLayer.updateDimensions(this.width, this.height);
-    this.highlightVectorLayer.updateDimensions(this.width, this.height);
+    this.detailLayer.updateDimensions(this.width, this.height);
   }
 
   public scaleToPixels(scale: number): number {
@@ -205,18 +224,29 @@ export class Canvas {
     this.context.clearRect(0, 0, this.width, this.height);
     this.inverseObstacleLayer.context.clearRect(0, 0, this.width, this.height);
     this.mainLayer.context.clearRect(0, 0, this.width, this.height);
-    this.highlightVectorLayer.context.clearRect(0, 0, this.width, this.height);
+    this.detailLayer.context.clearRect(0, 0, this.width, this.height);
 
     let minX: number = camera.position.x - camera.range * this.aspectRatio;
     let maxX: number = camera.position.x + camera.range * this.aspectRatio;
     let minY: number = camera.position.y - camera.range;
     let maxY: number = camera.position.y + camera.range;
 
-    this.gridScale = 10 ** Math.floor(Math.log10(camera.range / 3));
+    let gridScale: number = 10 ** Math.floor(Math.log10(camera.range / 3));
 
-    for (let x: number = Math.ceil(minX / this.gridScale); x <= Math.floor(maxX / this.gridScale); x++) {
-      const start: Vector2 = new Vector2(x * this.gridScale, minY);
-      const end: Vector2 = new Vector2(x * this.gridScale, maxY);
+    for (let x: number = Math.ceil(minX / gridScale); x <= Math.floor(maxX / gridScale); x++) {
+      const start: Vector2 = new Vector2(x * gridScale, minY);
+      const end: Vector2 = new Vector2(x * gridScale, maxY);
+
+      this.mainLayer.drawShape([start, end], 0, {
+        stroke: true,
+        strokeWidth: 1,
+        strokeStyle: this.GRID_COLOR
+      });
+    }
+
+    for (let y: number = Math.ceil(minY / gridScale); y <= Math.floor(maxY / gridScale); y++) {
+      const start: Vector2 = new Vector2(minX, y * gridScale);
+      const end: Vector2 = new Vector2(maxX, y * gridScale);
 
       this.mainLayer.drawShape([start, end], 0, {
         stroke: true,
@@ -225,16 +255,12 @@ export class Canvas {
       });
     }
 
-    for (let y: number = Math.ceil(minY / this.gridScale); y <= Math.floor(maxY / this.gridScale); y++) {
-      const start: Vector2 = new Vector2(minX, y * this.gridScale);
-      const end: Vector2 = new Vector2(maxX, y * this.gridScale);
+    const text: string = `${Util.formatSigFigs(gridScale, 1)}m`;
 
-      this.mainLayer.drawShape([start, end], 0, {
-        stroke: true,
-        strokeWidth: 1,
-        strokeStyle: this.GRID_COLOR
-      });
-    }
+    this.detailLayer.drawText(text, new Vector2(this.width - 10, 10), -1, "Courier New", this.GRID_TEXT_SIZE, {
+      fill: true,
+      fillStyle: this.GRID_TEXT_COLOR
+    });
 
     for (const obstacle of Simulation.instance.obstacles) {
       const drawLayer: RenderLayer = obstacle.inverse ? this.inverseObstacleLayer : this.mainLayer;
@@ -246,7 +272,7 @@ export class Canvas {
       });
 
       if (obstacle === Simulation.instance.controller.hovering) {
-        this.highlightVectorLayer.drawShape(obstacle.vertices, obstacle.radius, {
+        this.detailLayer.drawShape(obstacle.vertices, obstacle.radius, {
           fill: true,
           stroke: true,
           fillInvert: obstacle.inverse,
@@ -263,7 +289,7 @@ export class Canvas {
       });
 
       if (projectile === Simulation.instance.controller.hovering) {
-        this.highlightVectorLayer.drawShape([projectile.position], projectile.properties.radius, {
+        this.detailLayer.drawShape([projectile.position], projectile.properties.radius, {
           fill: true,
           stroke: true,
           fillStyle: "rgba(255, 255, 255, 0.5)",
@@ -282,7 +308,7 @@ export class Canvas {
           }
         }
 
-        this.highlightVectorLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+        this.detailLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
           fill: true,
           fillStyle: this.FORCE_COLORS[force.type]
         });
@@ -303,7 +329,7 @@ export class Canvas {
           if (!forceFound) {
             const relativeForce = camForce.vector.multiply(-projectile.properties.mass / camera.frameOfReference.properties.mass);
 
-            this.highlightVectorLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+            this.detailLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
               fill: true,
               fillStyle: this.FORCE_COLORS[camForce.type]
             });
@@ -317,7 +343,7 @@ export class Canvas {
         relativeVel = relativeVel.subtract(camera.frameOfReference.velocity);
       }
 
-      this.highlightVectorLayer.drawArrow(projectile.position, relativeVel, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
+      this.detailLayer.drawArrow(projectile.position, relativeVel, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
         fill: true,
         fillStyle: "green"
       });
@@ -341,6 +367,6 @@ export class Canvas {
 
     this.context.drawImage(this.mainLayer.element, 0, 0);
     this.context.drawImage(this.inverseObstacleLayer.element, 0, 0);
-    this.context.drawImage(this.highlightVectorLayer.element, 0, 0);
+    this.context.drawImage(this.detailLayer.element, 0, 0);
   }
 }
