@@ -31,7 +31,7 @@ export abstract class ListedItem extends HTMLElement {
   }
 }
 
-export class ItemLister extends HTMLElement {
+export class ItemList extends HTMLElement {
   private itemType: string;
 
   constructor() {
@@ -196,5 +196,27 @@ export class MaterialItem extends ListedItem {
     });
 
     this.append(nameInput, elasticityDisplay, staticDisplay, kineticDisplay, dragDisplay, colorDisplay);
+  }
+}
+
+type NamedOption = {
+  name: string
+};
+
+export class OptionList extends HTMLElement {
+  private options: Set<NamedOption>;
+
+  constructor(list?: Set<NamedOption>) {
+    super();
+
+    if (list) this.initList(list);
+  }
+
+  public initList(list: Set<NamedOption>): void {
+    this.options = list;
+  }
+
+  private displayOptions(): void {
+
   }
 }

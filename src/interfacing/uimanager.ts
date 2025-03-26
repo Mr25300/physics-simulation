@@ -2,7 +2,7 @@ import { Simulation } from "../core/simulation.js";
 import { Util } from "../math/util.js";
 import { Collapsible } from "./displaycomponents.js";
 import { DisplayLabel } from "./displaycomponents.js";
-import { FieldItem, ItemLister, MaterialItem } from "./listcomponents.js";
+import { FieldItem, ItemList, MaterialItem } from "./listcomponents.js";
 import { QuantityInput, TextInput, AngleInput, VectorInput, UnitContainer } from "./inputcomponents.js";
 import { Projectile } from "../objects/projectile.js";
 
@@ -23,7 +23,7 @@ export class UIManager {
     customElements.define("angle-input", AngleInput);
     customElements.define("vector-input", VectorInput);
 
-    customElements.define("item-lister", ItemLister);
+    customElements.define("item-list", ItemList);
     customElements.define("material-item", MaterialItem);
     customElements.define("field-item", FieldItem);
 
@@ -110,7 +110,7 @@ export class UIManager {
   }
 
   private initMaterialControls(): void {
-    const materialList: ItemLister = document.getElementById("material-list") as ItemLister;
+    const materialList: ItemList = document.getElementById("material-list") as ItemList;
 
     for (const material of Simulation.instance.materials) {
       materialList.createItem(material);
@@ -121,7 +121,7 @@ export class UIManager {
     const gInput: QuantityInput = document.getElementById("grav-constant-input") as QuantityInput;
     const couloumbInput: QuantityInput = document.getElementById("coulomb-constant-input") as QuantityInput;
     const airInput: QuantityInput = document.getElementById("air-density-input") as QuantityInput;
-    const fieldList: ItemLister = document.getElementById("field-list") as ItemLister;
+    const fieldList: ItemList = document.getElementById("field-list") as ItemList;
 
     gInput.value = Simulation.instance.constants.gravitationalConstant;
     couloumbInput.value = Simulation.instance.constants.coulombConstant;
@@ -150,7 +150,7 @@ export class UIManager {
     const selected = Simulation.instance.controller.selected;
 
     if (selected) {
-      
+
     }
   }
 }

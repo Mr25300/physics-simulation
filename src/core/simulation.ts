@@ -46,7 +46,7 @@ export class Simulation extends Loop {
 
   public static get instance(): Simulation {
     if (!this._instance) this._instance = new Simulation();
-
+    
     return this._instance;
   }
 
