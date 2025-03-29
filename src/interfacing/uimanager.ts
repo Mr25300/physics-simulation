@@ -2,7 +2,7 @@ import { Simulation } from "../core/simulation.js";
 import { Util } from "../math/util.js";
 import { Collapsible } from "./displaycomponents.js";
 import { DisplayLabel } from "./displaycomponents.js";
-import { FieldItem, ItemList, MaterialItem } from "./listcomponents.js";
+import { FieldItem, ItemList, MaterialItem, OptionItem, OptionList } from "./listcomponents.js";
 import { QuantityInput, TextInput, AngleInput, VectorInput, UnitContainer } from "./inputcomponents.js";
 import { Projectile } from "../objects/projectile.js";
 
@@ -18,7 +18,7 @@ export class UIManager {
     customElements.define("display-label", DisplayLabel);
 
     customElements.define("text-input", TextInput);
-    customElements.define("unit-container", UnitContainer);
+    customElements.define("unit-container", UnitContainer, { extends: "span" });
     customElements.define("quantity-input", QuantityInput);
     customElements.define("angle-input", AngleInput);
     customElements.define("vector-input", VectorInput);
@@ -26,6 +26,9 @@ export class UIManager {
     customElements.define("item-list", ItemList);
     customElements.define("material-item", MaterialItem);
     customElements.define("field-item", FieldItem);
+
+    customElements.define("option-list", OptionList, { extends: "select" });
+    customElements.define("option-item", OptionItem, { extends: "option" });
 
     // Promise.all([
     //   customElements.whenDefined("collapsible-dropdown"),
@@ -41,6 +44,8 @@ export class UIManager {
       this.initMaterialControls();
       this.initConstantsControls();
     // });
+
+    (document.getElementById("proj-material") as OptionList).optionObjects = Simulation.instance.materials;
   }
 
   private initSimulationControls(): void {

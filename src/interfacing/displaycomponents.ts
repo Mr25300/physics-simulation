@@ -23,9 +23,6 @@ export class Collapsible extends HTMLElement {
 
     this.innerHTML = "";
 
-    this.appendChild(this.selector);
-    this.appendChild(this.content);
-
     this.selector.addEventListener("click", () => {
       this.toggleCollapse();
     });
@@ -50,6 +47,8 @@ export class Collapsible extends HTMLElement {
     for (let i = 0; i < this.content.children.length; i++) {
       resizeObserver.observe(this.content.children[i]);
     }
+
+    this.append(this.selector, this.content);
   }
 
   private updateHeight(): void {
@@ -86,7 +85,6 @@ export class DisplayLabel extends HTMLElement {
 
     this.innerText = "";
 
-    this.appendChild(labelElement);
-    this.appendChild(this.displayElement);
+    this.append(labelElement, this.displayElement);
   }
 }

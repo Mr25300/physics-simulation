@@ -17,7 +17,7 @@ export abstract class ListedItem extends HTMLElement {
     destroyButton.className = "item-delete";
     destroyButton.innerText = "Delete";
 
-    this.appendChild(destroyButton);
+    this.append(destroyButton);
 
     destroyButton.addEventListener("click", () => {
       this.remove();
@@ -37,6 +37,8 @@ export class ItemList extends HTMLElement {
   constructor() {
     super();
 
+    this.className = "item-list-container";
+
     this.itemType = this.getAttribute("item-type") || "";
     this.initEvents();
   }
@@ -46,7 +48,7 @@ export class ItemList extends HTMLElement {
     createButton.className = "item-create";
     createButton.innerText = `Create ${this.getAttribute("item-name") || ""}`;
 
-    this.appendChild(createButton);
+    this.append(createButton);
 
     createButton.addEventListener("click", () => {
       this.createItem();
@@ -56,7 +58,7 @@ export class ItemList extends HTMLElement {
   public createItem(...args: any[]): void {
     const constructor: CustomElementConstructor | undefined = customElements.get(this.itemType);
 
-    if (constructor) this.appendChild(new constructor(...args));
+    if (constructor) this.append(new constructor(...args));
   }
 }
 
@@ -118,10 +120,7 @@ export class FieldItem extends ListedItem {
       this.field.vector = Vector2.fromPolarForm(1, angle);
     });
 
-    this.appendChild(fieldName);
-    this.appendChild(typeLabel);
-    this.appendChild(strengthLabel);
-    this.appendChild(directionLabel);
+    this.append(fieldName, typeLabel, strengthLabel, directionLabel);
   }
 }
 
@@ -199,24 +198,74 @@ export class MaterialItem extends ListedItem {
   }
 }
 
-type NamedOption = {
+type NamedObject = {
   name: string
 };
 
-export class OptionList extends HTMLElement {
-  private options: Set<NamedOption>;
+export class OptionList extends HTMLSelectElement {
+  private optionContainer: HTMLDivElement;
 
-  constructor(list?: Set<NamedOption>) {
+  private _optionObjects: Set<NamedObject>;
+  private _selected: NamedObject | undefined;
+
+  constructor() {
     super();
+    
+    const selector: HTMLDivElement = document.createElement("div");
+    selector.className = "option-selector";
 
-    if (list) this.initList(list);
+    this.optionContainer = document.createElement("div");
+    this.optionContainer.className = "option-container";
+
+    this.addEventListener("focus", () => {
+      console.log("TEST");
+      this.updateOptionsDisplay();
+    });
+
+    this.addEventListener("change", () => {
+      const selectedElement: OptionItem = this.options[this.selectedIndex] as OptionItem;
+
+      this._selected = selectedElement.item;
+    });
+
+    this.append(selector, this.optionContainer);
   }
 
-  public initList(list: Set<NamedOption>): void {
-    this.options = list;
+  public set optionObjects(objectList: Set<NamedObject>) {
+    this._optionObjects = objectList;
   }
 
-  private displayOptions(): void {
+  public get selected(): NamedObject | undefined {
+    return this._selected;
+  }
 
+  private updateOptionsDisplay(): void {
+    this.innerHTML = "";
+
+    if (this._optionObjects) {
+      for (const option of this._optionObjects) {
+        const element: OptionItem = document.createElement("option", { is: "option-item" }) as OptionItem;
+        element.item = option;
+        element.innerText = option.name;
+
+        this.append(element);
+      }
+    }
+  }
+}
+
+export class OptionItem extends HTMLOptionElement {
+  private _item: NamedObject;
+
+  constructor() {
+    super();
+  }
+
+  public get item(): NamedObject {
+    return this._item;
+  }
+
+  public set item(item: NamedObject) {
+    if (!this._item) this._item = item;
   }
 }

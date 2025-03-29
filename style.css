@@ -97,10 +97,17 @@ body {
   gap: 4px;
   box-sizing: border-box;
   overflow: overlay;
+  scrollbar-gutter: stable;
 }
 
 .side-bar::-webkit-scrollbar {
-  background-color: red;
+  width: 4px;
+  background: none;
+}
+
+.side-bar::-webkit-scrollbar-thumb {
+  background-color: var(--detail);
+  border-radius: 2px;
 }
 
 .window {
@@ -534,7 +541,7 @@ button:hover {
 /* #endregion */
 
 /* #region Item Lister */
-item-lister {
+.item-list-container {
   display: flex;
   flex-direction: column;
   gap: 8px;

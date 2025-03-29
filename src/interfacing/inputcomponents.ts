@@ -29,20 +29,15 @@ export abstract class InputElement<Output> extends HTMLElement {
   }
 }
 
-export class UnitContainer extends HTMLElement {
-  private unitSpan: HTMLSpanElement;
-
+export class UnitContainer extends HTMLSpanElement {
   private length: number = 0;
 
   constructor(unit?: string) {
     super();
 
-    this.unitSpan = document.createElement("span");
-    this.unitSpan.className = "unit-container";
+    this.className = "unit-container";
 
     if (unit !== undefined) this.unit = unit;
-
-    this.appendChild(this.unitSpan);
   }
 
   public get unitLength(): number {
@@ -91,14 +86,14 @@ export class UnitContainer extends HTMLElement {
       }
     }
 
-    this.unitSpan.innerHTML = unitNumeratorText;
+    this.innerHTML = unitNumeratorText;
 
     if (unitDenominatorText.length > 0) {
-      this.unitSpan.innerHTML += "/";
+      this.innerHTML += "/";
       this.length++;
     }
 
-    this.unitSpan.innerHTML += unitDenominatorText;
+    this.innerHTML += unitDenominatorText;
   }
 }
 
@@ -125,7 +120,7 @@ export class TextInput<V extends number | string> extends InputElement<V> {
     this.textSpan.contentEditable = "true";
     this.textSpan.spellcheck = false;
 
-    this.unitContainer = new UnitContainer(unit);
+    this.unitContainer = document.createElement("span", { is: "unit-container" }) as UnitContainer;
 
     if (value !== undefined) this._value = value;
 
@@ -133,8 +128,7 @@ export class TextInput<V extends number | string> extends InputElement<V> {
     this.updateSizeDisplay();
     this.initListeners();
 
-    this.appendChild(this.textSpan);
-    this.appendChild(this.unitContainer);
+    this.append(this.textSpan, this.unitContainer);
   }
 
   public get value(): V {
@@ -329,19 +323,15 @@ export class QuantityInput extends InputElement<number> {
     for (let i = 0; i < markerCount; i++) {
       const marker: HTMLDivElement = document.createElement("div");
 
-      markerContainer.appendChild(marker);
+      markerContainer.append(marker);
       this.markers.push(marker);
     }
 
-    sliderContainer.appendChild(this.slider);
-    sliderContainer.appendChild(sliderBackground);
-    sliderContainer.appendChild(this.progress);
-    sliderContainer.appendChild(markerContainer);
+    sliderContainer.append(this.slider, sliderBackground, this.progress, markerContainer);
 
     this.initListeners();
 
-    this.appendChild(this.textInput);
-    this.appendChild(sliderContainer);
+    this.append(this.textInput, sliderContainer);
   }
 
   private initListeners(): void {
@@ -427,11 +417,7 @@ export class AngleInput extends InputElement<number> {
 
     this.initListeners();
 
-    this.appendChild(bracket1);
-    this.appendChild(this.axis1);
-    this.appendChild(this.angleInput);
-    this.appendChild(this.axis2);
-    this.appendChild(bracket2);
+    this.append(bracket1, this.axis1, this.angleInput, this.axis2, bracket2);
   }
 
   private toRad(a: number): number {
@@ -553,19 +539,13 @@ export class VectorInput extends InputElement<Vector2> {
 
     this.magnitudeInput = new TextInput<number>(true, 3, undefined, unit);
     this.angleInput = new AngleInput();
-    this.polarContainer.appendChild(this.magnitudeInput);
-    this.polarContainer.appendChild(this.angleInput);
+    this.polarContainer.append(this.magnitudeInput, this.angleInput);
 
-    const componentUnit: UnitContainer = new UnitContainer(unit);
+    const componentUnit: UnitContainer = document.createElement("span", { is: "unit-container" }) as UnitContainer;;
 
     this.xInput = new TextInput(true, 3);
     this.yInput = new TextInput(true, 3);
-    this.componentContainer.append("[(");
-    this.componentContainer.appendChild(this.xInput);
-    this.componentContainer.append(")î + (");
-    this.componentContainer.appendChild(this.yInput);
-    this.componentContainer.append(")ĵ]");
-    this.componentContainer.appendChild(componentUnit);
+    this.componentContainer.append("[(", this.xInput, ")î + (", this.yInput, ")ĵ]", componentUnit);
 
     this.formatToggle = document.createElement("button");
     this.formatToggle.className = "vi-format-button";
@@ -614,9 +594,7 @@ export class VectorInput extends InputElement<Vector2> {
 
     if (value !== undefined) this.value = value;
 
-    this.appendChild(this.polarContainer);
-    this.appendChild(this.componentContainer);
-    this.appendChild(this.formatToggle);
+    this.append(this.polarContainer, this.componentContainer, this.formatToggle);
   }
 
   private updateDisplay(): void {

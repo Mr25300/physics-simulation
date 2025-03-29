@@ -52,6 +52,10 @@
             <quantity-input id="proj-radius" min="0.1" max="10"></quantity-input>
           </display-label>
 
+          <display-label label="Material">
+            <select id="proj-material" is="option-list"></select>
+          </display-label>
+
           <button id="proj-spawn">Spawn</button>
         </collapsible-dropdown>
 
@@ -60,7 +64,7 @@
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Materials">
-          <item-lister id="material-list" item-name="Physics Material", item-type="material-item"></item-lister>
+          <item-list id="material-list" item-name="Physics Material", item-type="material-item"></item-list>
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Constraints">
@@ -83,7 +87,7 @@
           </display-label>
 
           <h1>Fields</h1>
-          <item-lister id="field-list" item-name="Field" item-type="field-item"></item-lister>
+          <item-list id="field-list" item-name="Field" item-type="field-item"></item-list>
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Graphs">
