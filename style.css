@@ -180,7 +180,6 @@ collapsible-dropdown.expanded .collapsible-content {
   border: 2px solid var(--detail);
   overflow: hidden;
 }
-
 /* #endregion */
 
 /* #region Buttons */
@@ -367,6 +366,31 @@ button:hover {
   transform: rotate(180deg);
 }
 
+/* #endregion */
+
+/* #region Selects */
+select {
+  outline: none;
+  background-color: var(--button);
+  color: var(--detail-contrast);
+  border: none;
+  border-radius: 4px;
+  transition: background-color var(--highlight-time);
+}
+
+select:hover {
+  background-color: var(--highlight);
+}
+
+option {
+  color: var(--detail-contrast);
+  background-color: var(--button);
+  transition: background-color var(--highlight-time);
+}
+
+option:hover {
+  background-color: var(--highlight);
+}
 /* #endregion */
 
 /* #region Label */

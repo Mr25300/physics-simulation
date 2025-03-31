@@ -218,7 +218,6 @@ export class OptionList extends HTMLSelectElement {
     this.optionContainer.className = "option-container";
 
     this.addEventListener("focus", () => {
-      console.log("TEST");
       this.updateOptionsDisplay();
     });
 
