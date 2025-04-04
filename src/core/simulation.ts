@@ -21,7 +21,7 @@ export interface Constants {
 export class Simulation extends Loop {
   public readonly materials: Set<PhysicsMaterial> = new Set();
   public readonly projectiles: Set<Projectile> = new Set();
-  public readonly projectileProperties: Set<ProjectileProperties> = new Set();
+  public readonly properties: Set<ProjectileProperties> = new Set();
   public readonly ropes: Set<Rope> = new Set();
   public readonly obstacles: Set<Obstacle> = new Set();
 
@@ -61,8 +61,8 @@ export class Simulation extends Loop {
 
     const material: PhysicsMaterial = new PhysicsMaterial("TEST", 1, 0, 0, 0.1, "grey");
     const ballMaterial: PhysicsMaterial = new PhysicsMaterial("TEST2", 1, 0, 0, 0.1, "red");
-    const projProperties: ProjectileProperties = new ProjectileProperties(0.5, 3, -1, ballMaterial);
-    const properties2: ProjectileProperties = new ProjectileProperties(0.5, 8, 1, ballMaterial);
+    const projProperties: ProjectileProperties = new ProjectileProperties("Proton", 0.5, 3, -1, ballMaterial);
+    const properties2: ProjectileProperties = new ProjectileProperties("Electron", 0.5, 8, 1, ballMaterial);
 
     const proj = new Projectile(projProperties, new Vector2(-8, 10));
     this.projectiles.add(proj);

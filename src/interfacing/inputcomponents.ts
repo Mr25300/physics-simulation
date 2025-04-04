@@ -1,11 +1,13 @@
 import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
 
-export abstract class InputElement<Output> extends HTMLElement {
-  private listenerCallback: (value: Output) => void;
+type ListenerCallback = () => void;
 
-  public abstract get value(): Output;
-  public abstract set value(newVal: Output);
+export abstract class InputElement<V> extends HTMLElement {
+  private listenerCallback: ListenerCallback;
+
+  public abstract get value(): V | undefined;
+  public abstract set value(newVal: V);
 
   protected getNumberAttrib(name: string, intOnly: boolean = false): number | undefined {
     const attrib: string | null = this.getAttribute(name);
@@ -20,12 +22,12 @@ export abstract class InputElement<Output> extends HTMLElement {
     }
   }
 
-  public addInputListener(callback: (value: Output) => void): void {
+  public addInputListener(callback: ListenerCallback): void {
     this.listenerCallback = callback;
   }
 
-  protected fireInputListener(value: Output): void {
-    if (this.listenerCallback) this.listenerCallback(this.value);
+  protected fireInputListener(): void {
+    if (this.listenerCallback) this.listenerCallback();
   }
 }
 
@@ -146,7 +148,7 @@ export class TextInput<V extends number | string> extends InputElement<V> {
       this._value = newVal;
 
       this.updateTextDisplay();
-      this.fireInputListener(newVal);
+      this.fireInputListener();
     }
   }
 
@@ -280,7 +282,7 @@ export class QuantityInput extends InputElement<number> {
       this.actualVal = this.getExpVal(this._value);
     }
 
-    if (this.actualVal !== prevVal) this.fireInputListener(this.actualVal);
+    if (this.actualVal !== prevVal) this.fireInputListener();
   }
 
   public get value(): number {
@@ -335,8 +337,8 @@ export class QuantityInput extends InputElement<number> {
   }
 
   private initListeners(): void {
-    this.textInput.addInputListener((textVal: number) => {
-      this.setValue(textVal, true);
+    this.textInput.addInputListener(() => {
+      this.setValue(this.textInput.value, true);
       this.updateDisplay();
     });
 
@@ -433,7 +435,7 @@ export class AngleInput extends InputElement<number> {
     
     if (Math.abs(this.actualVal - newAngle) > 1e-8) {
       this.actualVal = newAngle;
-      this.fireInputListener(newAngle);
+      this.fireInputListener();
     }
   }
 
@@ -452,13 +454,13 @@ export class AngleInput extends InputElement<number> {
     this.angleDir = axisAngleOffset !== 0 ? Util.sign(axisAngleOffset) : 1;
 
     this.actualVal = newAngle;
-    this.fireInputListener(newAngle);
+    this.fireInputListener();
     this.updateDisplay();
   }
 
   private initListeners(): void {
-    this.angleInput.addInputListener((value: number) => {
-      let newAngle: number = value % 360;
+    this.angleInput.addInputListener(() => {
+      let newAngle: number = this.angleInput.value % 360;
 
       if (this.angleOffset !== newAngle) {
         if (newAngle < 0) {
@@ -473,8 +475,8 @@ export class AngleInput extends InputElement<number> {
       this.updateDisplay();
     });
 
-    this.axis1.addInputListener((value: string) => {
-      const axis: number = AngleInput.ANGLE_AXES.indexOf(value);
+    this.axis1.addInputListener(() => {
+      const axis: number = AngleInput.ANGLE_AXES.indexOf(this.axis1.value);
 
       if (axis !== -1 && this.axis !== axis) {
         this.axis = axis;
@@ -484,8 +486,8 @@ export class AngleInput extends InputElement<number> {
       this.updateDisplay();
     });
 
-    this.axis2.addInputListener((value: string) => {
-      const axis: number = AngleInput.ANGLE_AXES.indexOf(value);
+    this.axis2.addInputListener(() => {
+      const axis: number = AngleInput.ANGLE_AXES.indexOf(this.axis2.value);
 
       if (axis !== -1) {
         let difference: number = axis - this.axis;
@@ -550,7 +552,8 @@ export class VectorInput extends InputElement<Vector2> {
     this.formatToggle = document.createElement("button");
     this.formatToggle.className = "vi-format-button";
 
-    this.magnitudeInput.addInputListener((magVal: number) => {
+    this.magnitudeInput.addInputListener(() => {
+      let magVal: number = this.magnitudeInput.value;
       if (magVal === this._value.magnitude) return;
 
       let angle: number = this._value.angle;
@@ -566,19 +569,22 @@ export class VectorInput extends InputElement<Vector2> {
       this.setValue(Vector2.fromPolarForm(magVal, angle));
     });
 
-    this.angleInput.addInputListener((angleVal: number) => {
+    this.angleInput.addInputListener(() => {
+      let angleVal: number = this.angleInput.value;
       if (angleVal === this._value.angle) return;
 
       this.setValue(Vector2.fromPolarForm(this._value.magnitude, angleVal));
     });
 
-    this.xInput.addInputListener((xVal: number) => {
+    this.xInput.addInputListener(() => {
+      let xVal: number = this.xInput.value;
       if (xVal === this._value.x) return;
 
       this.setValue(new Vector2(xVal, this._value.y));
     });
 
-    this.yInput.addInputListener((yVal: number) => {
+    this.yInput.addInputListener(() => {
+      let yVal: number = this.yInput.value;
       if (yVal === this._value.y) return;
 
       this.setValue(new Vector2(this._value.x, yVal));
@@ -619,7 +625,7 @@ export class VectorInput extends InputElement<Vector2> {
 
   private setValue(newVal: Vector2): void {
     this._value = newVal;
-    this.fireInputListener(this._value);
+    this.fireInputListener();
     this.updateDisplay();
   }
 
@@ -629,5 +635,120 @@ export class VectorInput extends InputElement<Vector2> {
 
   public set value(newVal: Vector2) {
     this.setValue(newVal);
+  }
+}
+
+type NamedObj = {
+  name: string
+};
+
+export class OptionItem<OptionObj extends NamedObj> extends HTMLElement {
+  constructor(public readonly name: string = "", public readonly object?: OptionObj) {
+    super();
+
+    this.className = "option-item";
+    this.innerText = name;
+  }
+
+  public select(): void {
+    this.classList.add("selected");
+  }
+
+  public deselect(): void {
+    this.classList.remove("selected");
+  }
+}
+
+export class OptionSelect<OptionObj extends NamedObj> extends InputElement<OptionObj> {
+  private selector: HTMLButtonElement;
+  private optionContainer: HTMLDivElement;
+
+  private _optionObjects: Set<OptionObj>;
+  private optionElements: Map<OptionObj, OptionItem<OptionObj>> = new Map();
+  private selected: OptionItem<OptionObj> | undefined;
+
+  constructor(defaultOption?: string) {
+    super();
+
+    this.className = "option-select";
+    
+    this.selector = document.createElement("button");
+    this.selector.className = "option-selector";
+
+    this.optionContainer = document.createElement("div");
+    this.optionContainer.className = "option-container";
+
+    defaultOption = this.getAttribute("default-option") ?? defaultOption;
+    if (defaultOption) this.createOption(defaultOption);
+
+    this.selector.addEventListener("click", () => {
+      this.updateOptionElements();
+      
+      this.classList.toggle("showing");
+    });
+
+    this.append(this.selector, this.optionContainer);
+  }
+
+  public get value(): OptionObj | undefined {
+    if (this.selected) return this.selected.object;
+  }
+
+  public set value(newObject: OptionObj) {
+    const existingElement: OptionItem<OptionObj> | undefined = this.optionElements.get(newObject);
+
+    if (existingElement) {
+      if (this.selected) this.selected.deselect();
+
+      this.selected = existingElement;
+      existingElement.select();
+    }
+  }
+
+  public set optionObjects(objectList: Set<OptionObj>) {
+    this._optionObjects = objectList;
+
+    this.updateOptionElements();
+  }
+
+  private updateSelectDisplay(): void {
+    if (this.selected) this.selector.innerText = this.selected.name;
+    else this.selector.innerText = "N/A";
+  }
+
+  private updateOptionElements(): void {
+    if (this._optionObjects) {
+      this.optionElements.forEach((element: OptionItem<OptionObj>) => {
+        if (element.object && !this._optionObjects.has(element.object)) {
+          element.remove();
+  
+          if (this.selected === element) this.selected = undefined;
+        }
+      });
+  
+      for (const option of this._optionObjects) {
+        if (!this.optionElements.has(option)) {
+          this.createOption(option.name, option);
+        }
+      }
+    }
+
+    this.updateSelectDisplay();
+  }
+
+  private createOption(name: string, object?: NamedObj): void {
+    const optionElement: OptionItem<OptionObj> = new OptionItem(name);
+
+    optionElement.addEventListener("click", () => {
+      if (this.selected) this.selected.deselect();
+
+      this.selected = optionElement;
+      optionElement.select();
+
+      this.classList.remove("showing");
+      this.updateSelectDisplay();
+    });
+
+    this.optionContainer.append(optionElement);
   }
 }

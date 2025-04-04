@@ -112,12 +112,12 @@ export class FieldItem extends ListedItem {
       updateType();
     });
 
-    strengthInput.addInputListener((value: number) => {
-      this.field.strength = value
+    strengthInput.addInputListener(() => {
+      this.field.strength = strengthInput.value;
     });
 
-    directionInput.addInputListener((angle: number) => {
-      this.field.vector = Vector2.fromPolarForm(1, angle);
+    directionInput.addInputListener(() => {
+      this.field.vector = Vector2.fromPolarForm(1, directionInput.value);
     });
 
     this.append(fieldName, typeLabel, strengthLabel, directionLabel);
@@ -160,12 +160,12 @@ export class MaterialItem extends ListedItem {
     const colorInput: TextInput<string> = new TextInput(false, undefined, this.material.color);
     const colorDisplay: DisplayLabel = new DisplayLabel("Color", colorInput);
 
-    nameInput.addInputListener((value: string) => {
-      this.material.name = value;
+    nameInput.addInputListener(() => {
+      this.material.name = nameInput.value;
     });
 
-    elasticityInput.addInputListener((value: number) => {
-      this.material.elasticity = value;
+    elasticityInput.addInputListener(() => {
+      this.material.elasticity = elasticityInput.value;
     });
 
     const limitKineticFriction: () => void = () => {
@@ -174,97 +174,26 @@ export class MaterialItem extends ListedItem {
       }
     };
 
-    staticInput.addInputListener((value: number) => {
-      this.material.staticFriction = value;
+    staticInput.addInputListener(() => {
+      this.material.staticFriction = staticInput.value;
 
       limitKineticFriction();
     });
 
-    kineticInput.addInputListener((value: number) => {
-      this.material.kineticFriction = value;
+    kineticInput.addInputListener(() => {
+      this.material.kineticFriction = kineticInput.value;
 
       limitKineticFriction();
     });
 
-    dragInput.addInputListener((value: number) => {
-      this.material.drag = value;
+    dragInput.addInputListener(() => {
+      this.material.drag = dragInput.value;
     });
 
-    colorInput.addInputListener((value: string) => {
-      this.material.color = value;
+    colorInput.addInputListener(() => {
+      this.material.color = colorInput.value;
     });
 
     this.append(nameInput, elasticityDisplay, staticDisplay, kineticDisplay, dragDisplay, colorDisplay);
-  }
-}
-
-type NamedObject = {
-  name: string
-};
-
-export class OptionList extends HTMLSelectElement {
-  private optionContainer: HTMLDivElement;
-
-  private _optionObjects: Set<NamedObject>;
-  private _selected: NamedObject | undefined;
-
-  constructor() {
-    super();
-    
-    const selector: HTMLDivElement = document.createElement("div");
-    selector.className = "option-selector";
-
-    this.optionContainer = document.createElement("div");
-    this.optionContainer.className = "option-container";
-
-    this.addEventListener("focus", () => {
-      this.updateOptionsDisplay();
-    });
-
-    this.addEventListener("change", () => {
-      const selectedElement: OptionItem = this.options[this.selectedIndex] as OptionItem;
-
-      this._selected = selectedElement.item;
-    });
-
-    this.append(selector, this.optionContainer);
-  }
-
-  public set optionObjects(objectList: Set<NamedObject>) {
-    this._optionObjects = objectList;
-  }
-
-  public get selected(): NamedObject | undefined {
-    return this._selected;
-  }
-
-  private updateOptionsDisplay(): void {
-    this.innerHTML = "";
-
-    if (this._optionObjects) {
-      for (const option of this._optionObjects) {
-        const element: OptionItem = document.createElement("option", { is: "option-item" }) as OptionItem;
-        element.item = option;
-        element.innerText = option.name;
-
-        this.append(element);
-      }
-    }
-  }
-}
-
-export class OptionItem extends HTMLOptionElement {
-  private _item: NamedObject;
-
-  constructor() {
-    super();
-  }
-
-  public get item(): NamedObject {
-    return this._item;
-  }
-
-  public set item(item: NamedObject) {
-    if (!this._item) this._item = item;
   }
 }

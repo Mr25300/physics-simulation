@@ -25,6 +25,7 @@ export class ProjectileProperties {
   public crossSectionArea: number;
 
   constructor(
+    public name: string,
     public radius: number,
     public mass: number,
     public charge: number,

@@ -48,13 +48,27 @@
             <vector-input id="proj-spawn-vel" unit="m * s^-1"></vector-input>
           </display-label>
 
-          <display-label label="Radius">
-            <quantity-input id="proj-radius" min="0.1" max="10"></quantity-input>
+          <display-label label="Properties">
+            <option-select id="proj-properties" default-option="Custom"></option-select>
           </display-label>
 
-          <display-label label="Material">
-            <select id="proj-material" is="option-list" name="Material"></select>
-          </display-label>
+          <div id="proj-properties-container">
+            <display-label label="Radius">
+              <quantity-input id="proj-radius" min="0.1" max="10" value="1"></quantity-input>
+            </display-label>
+  
+            <display-label label="Mass">
+              <quantity-input id="proj-mass" min="0.01" max="100" value="1"></quantity-input>
+            </display-label>
+  
+            <display-label label="Charge">
+              <quantity-input id="proj-charge" min="-10" max="10" fill-from="0"></quantity-input>
+            </display-label>
+  
+            <display-label label="Material">
+              <option-list id="proj-material"></option-list>
+            </display-label>
+          </div>
 
           <button id="proj-spawn" type="button">Spawn</button>
         </collapsible-dropdown>

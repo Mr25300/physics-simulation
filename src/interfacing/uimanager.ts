@@ -2,9 +2,10 @@ import { Simulation } from "../core/simulation.js";
 import { Util } from "../math/util.js";
 import { Collapsible } from "./displaycomponents.js";
 import { DisplayLabel } from "./displaycomponents.js";
-import { FieldItem, ItemList, MaterialItem, OptionItem, OptionList } from "./listcomponents.js";
+import { FieldItem, ItemList, MaterialItem } from "./listcomponents.js";
 import { QuantityInput, TextInput, AngleInput, VectorInput, UnitContainer } from "./inputcomponents.js";
-import { Projectile } from "../objects/projectile.js";
+import { Projectile, ProjectileProperties as Properties } from "../objects/projectile.js";
+import { OptionSelect, OptionItem } from "./inputcomponents.js";
 
 export class UIManager {
   private selectedProjectile: Projectile;
@@ -23,12 +24,12 @@ export class UIManager {
     customElements.define("angle-input", AngleInput);
     customElements.define("vector-input", VectorInput);
 
-    customElements.define("item-list", ItemList);
     customElements.define("material-item", MaterialItem);
     customElements.define("field-item", FieldItem);
+    customElements.define("item-list", ItemList);
 
-    customElements.define("option-list", OptionList, { extends: "select" });
-    customElements.define("option-item", OptionItem, { extends: "option" });
+    customElements.define("option-item", OptionItem);
+    customElements.define("option-select", OptionSelect);
 
     // Promise.all([
     //   customElements.whenDefined("collapsible-dropdown"),
@@ -37,15 +38,16 @@ export class UIManager {
     //   customElements.whenDefined("quantity-input"),
     //   customElements.whenDefined("vector-input"),
     //   customElements.whenDefined("item-lister"),
-    //   customElements.whenDefined("field-item")
+    //   customElements.whenDefined("field-item"),
+    //   customElements.whenDefined("option-select"),
+    //   customElements.whenDefined("option-item")
 
     // ]).then(() => {
       this.initSimulationControls();
+      this.initProjectileControls();
       this.initMaterialControls();
       this.initConstantsControls();
     // });
-
-    (document.getElementById("proj-material") as OptionList).optionObjects = Simulation.instance.materials;
   }
 
   private initSimulationControls(): void {
@@ -60,8 +62,8 @@ export class UIManager {
 
     timeSlider.value = Simulation.instance.timeScale;
 
-    timeSlider.addInputListener((value: number) => {
-      Simulation.instance.timeScale = value;
+    timeSlider.addInputListener(() => {
+      Simulation.instance.timeScale = timeSlider.value;
     });
     
     const displayPause = () => {
@@ -114,6 +116,12 @@ export class UIManager {
     displayReverse();
   }
 
+  private initProjectileControls(): void {
+    const optionSelect: OptionSelect<Properties> = document.getElementById("proj-properties") as OptionSelect<Properties>;
+
+    optionSelect.optionObjects = Simulation.instance.properties;
+  }
+  
   private initMaterialControls(): void {
     const materialList: ItemList = document.getElementById("material-list") as ItemList;
 
@@ -124,24 +132,24 @@ export class UIManager {
 
   private initConstantsControls(): void {
     const gInput: QuantityInput = document.getElementById("grav-constant-input") as QuantityInput;
-    const couloumbInput: QuantityInput = document.getElementById("coulomb-constant-input") as QuantityInput;
+    const coulombInput: QuantityInput = document.getElementById("coulomb-constant-input") as QuantityInput;
     const airInput: QuantityInput = document.getElementById("air-density-input") as QuantityInput;
     const fieldList: ItemList = document.getElementById("field-list") as ItemList;
 
     gInput.value = Simulation.instance.constants.gravitationalConstant;
-    couloumbInput.value = Simulation.instance.constants.coulombConstant;
+    coulombInput.value = Simulation.instance.constants.coulombConstant;
     airInput.value = Simulation.instance.constants.airDensity;
 
-    gInput.addInputListener((value: number) => {
-      Simulation.instance.constants.gravitationalConstant = value;
+    gInput.addInputListener(() => {
+      Simulation.instance.constants.gravitationalConstant = gInput.value;
     });
 
-    couloumbInput.addInputListener((value: number) => {
-      Simulation.instance.constants.coulombConstant = value;
+    coulombInput.addInputListener(() => {
+      Simulation.instance.constants.coulombConstant = coulombInput.value;
     });
 
-    airInput.addInputListener((value: number) => {
-      Simulation.instance.constants.airDensity = value;
+    airInput.addInputListener(() => {
+      Simulation.instance.constants.airDensity = airInput.value;
     });
 
     for (const field of Simulation.instance.fields) {

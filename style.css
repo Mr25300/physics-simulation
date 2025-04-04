@@ -607,6 +607,28 @@ option:hover {
 }
 /* #endregion */
 
+/* #region Option List */
+.option-select {
+  position: relative;
+  overflow: visible;
+}
+
+.option-selector {
+  text-align: center;
+}
+
+.option-container {
+  position: absolute;
+  top: 100%;
+  display: none;
+  flex-direction: row;
+}
+
+.option-select.showing .option-container {
+  display: flex;
+}
+/* #endregion */
+
 /* .sidebar-toggle {
   display: none;
   position: fixed;
