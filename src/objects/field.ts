@@ -27,7 +27,7 @@ export class Field {
 
   public getForce(projectile: Projectile): Vector2 {
     const forceVector: Vector2 = this.getVector(projectile.position);
-    const forceMultiplier: number = this.type === FieldType.gravitational ? projectile.properties.mass : projectile.properties.charge;
+    const forceMultiplier: number = this.type === FieldType.gravitational ? projectile.mass : projectile.charge;
 
     return forceVector.multiply(forceMultiplier);
   }

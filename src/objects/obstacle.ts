@@ -1,7 +1,7 @@
 import { Vector2 } from "../math/vector2.js";
 import { CollisionInfo } from "../collisions/collisions.js";
 import { Projectile } from "./projectile.js";
-import { PhysicsMaterial } from "./physicsMaterial.js";
+import { Material } from "./material.js";
 
 interface AxisInfo {
   normal: Vector2;
@@ -15,7 +15,7 @@ export class Obstacle {
     public readonly vertices: Vector2[],
     public readonly radius: number = 0,
     public readonly inverse: boolean = false,
-    public readonly material: PhysicsMaterial
+    public readonly material: Material
   ) {
     for (let i = 0; i < vertices.length; i++) {
       if (vertices.length === 2 && i > 1) break;
@@ -82,7 +82,7 @@ export class Obstacle {
 
     for (const info of [...this.axes, projVertAxis]) {
       const projProjection: number = info.normal.dot(projectile.position);
-      const [projMin, projMax]: [number, number] = [projProjection - projectile.properties.radius, projProjection + projectile.properties.radius];
+      const [projMin, projMax]: [number, number] = [projProjection - projectile.radius, projProjection + projectile.radius];
       const [obsMin, obsMax]: [number, number] = info.axisRange;
 
       // let overlap: number | undefined;

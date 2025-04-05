@@ -1,5 +1,5 @@
 import { Vector2 } from "../math/vector2.js";
-import { ForceType, Projectile, ProjectileProperties } from "../objects/projectile.js";
+import { ForceType, Projectile } from "../objects/projectile.js";
 import { Canvas } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { Obstacle } from "../objects/obstacle.js";
@@ -9,7 +9,7 @@ import { Camera } from "../rendering/camera.js";
 import { DisplayControl } from "../interfacing/controller.js";
 
 import { UIManager } from "../interfacing/uimanager.js";
-import { PhysicsMaterial } from "../objects/physicsMaterial.js";
+import { Material } from "../objects/material.js";
 import { Field, FieldType } from "../objects/field.js";
 
 export interface Constants {
@@ -19,14 +19,13 @@ export interface Constants {
 }
 
 export class Simulation extends Loop {
-  public readonly materials: Set<PhysicsMaterial> = new Set();
+  public readonly materials: Set<Material> = new Set();
   public readonly projectiles: Set<Projectile> = new Set();
-  public readonly properties: Set<ProjectileProperties> = new Set();
   public readonly ropes: Set<Rope> = new Set();
   public readonly obstacles: Set<Obstacle> = new Set();
 
   public readonly fields: Set<Field> = new Set([
-    new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.81),
+    new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.8),
     // new Field("Electric Field", new Vector2(1, 0), false, FieldType.electric, 5)
   ]);
 
@@ -59,15 +58,13 @@ export class Simulation extends Loop {
     this.uiManager.init();
     this.graphHandler = new GraphHandler();
 
-    const material: PhysicsMaterial = new PhysicsMaterial("TEST", 1, 0, 0, 0.1, "grey");
-    const ballMaterial: PhysicsMaterial = new PhysicsMaterial("TEST2", 1, 0, 0, 0.1, "red");
-    const projProperties: ProjectileProperties = new ProjectileProperties("Proton", 0.5, 3, -1, ballMaterial);
-    const properties2: ProjectileProperties = new ProjectileProperties("Electron", 0.5, 8, 1, ballMaterial);
+    const material: Material = new Material("TEST", 1, 0, 0, 0.1, "grey");
+    const ballMaterial: Material = new Material("TEST2", 1, 0, 0, 0.1, "red");
 
-    const proj = new Projectile(projProperties, new Vector2(-8, 10));
+    const proj = new Projectile(0.5, 3, -1, ballMaterial, new Vector2(-8, 10));
     this.projectiles.add(proj);
 
-    const proj2 = new Projectile(properties2, new Vector2(6, 8));
+    const proj2 = new Projectile(0.5, 8, 1, ballMaterial, new Vector2(6, 8));
     this.projectiles.add(proj2);
 
     this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(10, 0)], 1, false, material));
@@ -132,8 +129,8 @@ export class Simulation extends Loop {
         const otherProj: Projectile = projectiles[j];
 
         const difference: Vector2 = otherProj.position.subtract(projectile.position);
-        const gravMag: number = this.constants.gravitationalConstant * projectile.properties.mass * otherProj.properties.mass / difference.magnitude;
-        const electricMag: number = -this.constants.coulombConstant * projectile.properties.charge * otherProj.properties.charge / difference.magnitude;
+        const gravMag: number = this.constants.gravitationalConstant * projectile.mass * otherProj.mass / difference.magnitude;
+        const electricMag: number = -this.constants.coulombConstant * projectile.charge * otherProj.charge / difference.magnitude;
 
         projectile.applyForce(difference.unit.multiply(gravMag), false, ForceType.gravity);
         otherProj.applyForce(difference.unit.multiply(-gravMag), false, ForceType.gravity);

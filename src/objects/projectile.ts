@@ -2,7 +2,7 @@ import { Util } from "../math/util.js";
 import { Vector2 } from "../math/vector2.js";
 import { CollisionInfo, CollisionManager } from "../collisions/collisions.js";
 import { Obstacle } from "./obstacle.js";
-import { PhysicsMaterial } from "./physicsMaterial.js";
+import { Material } from "./material.js";
 import { Simulation } from "../core/simulation.js";
 
 export enum ForceType {
@@ -20,36 +20,23 @@ export type Force = {
   type: ForceType;
 };
 
-export class ProjectileProperties {
-  public density: number;
-  public crossSectionArea: number;
-
-  constructor(
-    public name: string,
-    public radius: number,
-    public mass: number,
-    public charge: number,
-    public material: PhysicsMaterial
-  ) {
-    this.crossSectionArea = Math.PI * radius ** 2;
-    this.density = mass / this.crossSectionArea;
-  }
-}
-
 export class Projectile {
   public readonly forces: Force[] = [];
 
   private _netForce: Vector2 = Vector2.zero;
   private _acceleration: Vector2 = Vector2.zero;
-  private _velocity: Vector2 = Vector2.zero;
 
   private lastCollision: CollisionInfo | undefined;
   // private lastCentripetalForce: Vector2 = Vector2.zero;
 
   constructor(
-    public readonly properties: ProjectileProperties,
-    private _position: Vector2
-  ) { }
+    public radius: number,
+    public mass: number,
+    public charge: number,
+    public material: Material,
+    private _position: Vector2,
+    private _velocity: Vector2 = Vector2.zero
+  ) {}
 
   public get position(): Vector2 {
     return this._position;
@@ -67,6 +54,14 @@ export class Projectile {
     return this._netForce;
   }
 
+  public get crossSectionArea() {
+    return Math.PI * this.radius ** 2;
+  }
+
+  public get density() {
+    return this.mass / this.crossSectionArea
+  }
+
   public clearForces(): void {
     this.forces.length = 0;
     this._netForce = Vector2.zero;
@@ -74,7 +69,7 @@ export class Projectile {
 
   public applyForce(force: Vector2, impulse: boolean = false, type: ForceType = ForceType.unspecified): void {
     if (impulse) {
-      this._velocity = this._velocity.add(force.divide(this.properties.mass));
+      this._velocity = this._velocity.add(force.divide(this.mass));
 
     } else {
       this.forces.push({ vector: force, type });
@@ -95,7 +90,7 @@ export class Projectile {
   }
 
   public updateForces(): void {
-    let dragMagnitude: number = this.properties.material.drag * Simulation.instance.constants.airDensity * this.properties.crossSectionArea * this._velocity.magnitude ** 2 / 2;
+    let dragMagnitude: number = this.material.drag * Simulation.instance.constants.airDensity * this.crossSectionArea * this._velocity.magnitude ** 2 / 2;
     if (dragMagnitude === Infinity || isNaN(dragMagnitude)) dragMagnitude = 0;
 
     this.applyForce(this._velocity.unit.multiply(-dragMagnitude), false, ForceType.drag);
@@ -106,7 +101,7 @@ export class Projectile {
       if (Math.abs(normalVel) < 0.2) {
         const normalForce: number = -this.lastCollision.normal.dot(this._netForce);
 
-        this.applyForce(this.lastCollision.normal.multiply(-normalVel * this.properties.mass), true);
+        this.applyForce(this.lastCollision.normal.multiply(-normalVel * this.mass), true);
 
         if (normalForce > 0) {
           this.applyForce(this.lastCollision.normal.multiply(normalForce), false, ForceType.normal);
@@ -115,10 +110,10 @@ export class Projectile {
           const tangentialVelocity: number = surfaceTangent.dot(this._velocity);
 
           const object: Projectile | Obstacle = this.lastCollision.object;
-          const otherMaterial: PhysicsMaterial = object instanceof Obstacle ? object.material : object.properties.material;
+          const otherMaterial: Material = object instanceof Obstacle ? object.material! : object.material;
 
           if (Math.abs(tangentialVelocity) < 0.05) {
-            const staticFriction: number = this.properties.material.combineStaticFrction(otherMaterial);
+            const staticFriction: number = this.material.combineStaticFrction(otherMaterial);
             const maxFriction: number = normalForce * staticFriction;
             const tangentialForce: number = surfaceTangent.dot(this._netForce);
             const tangentialMag: number = Math.abs(tangentialForce);
@@ -129,7 +124,7 @@ export class Projectile {
             this.applyForce(surfaceTangent.multiply(frictionForce), false, ForceType.friction);
 
           } else {
-            const kineticFriction: number = this.properties.material.combineKineticFriction(otherMaterial);
+            const kineticFriction: number = this.material.combineKineticFriction(otherMaterial);
             const frictionForce: number = -Util.sign(tangentialVelocity) * normalForce * kineticFriction;
 
             this.applyForce(surfaceTangent.multiply(frictionForce));
@@ -140,7 +135,7 @@ export class Projectile {
   }
 
   public updateKinematics(deltaTime: number): void {
-    this._acceleration = this._netForce.divide(this.properties.mass);
+    this._acceleration = this._netForce.divide(this.mass);
     this._position = this._position.add(this.getDisplacement(deltaTime));
     this._velocity = this.getVelocity(deltaTime);
 
@@ -161,18 +156,18 @@ export class Projectile {
           normalImpulse -= normalVel;
           
           if (Math.abs(normalVel) > Math.abs(normalAccel * (deltaTime + 0.02))) { // small error term added to delta time due to limited timestep
-            let restitution: number = this.properties.material.combineElasticity(info.object.material);
+            let restitution: number = this.material.combineElasticity(info.object.material);
             if (deltaTime < 0 && restitution !== 0) restitution = 1 / restitution;
 
             normalImpulse -= normalVel * restitution;
           }
         }
 
-        this.applyForce(info.normal.multiply(normalImpulse * this.properties.mass), true);
+        this.applyForce(info.normal.multiply(normalImpulse * this.mass), true);
 
       } else if (info.object instanceof Projectile) {
-        const mass1: number = this.properties.mass;
-        const mass2: number = info.object.properties.mass;
+        const mass1: number = this.mass;
+        const mass2: number = info.object.mass;
         const massSum: number = mass1 + mass2;
 
         this._position = this._position.add(info.normal.multiply(info.overlap * mass1 / massSum));;
@@ -183,7 +178,7 @@ export class Projectile {
         const normalVelDiff: number = normalVel1 - normalVel2;
 
         if (normalVelDiff * Util.sign(deltaTime) < 0) {
-          let restitution: number = this.properties.material.combineElasticity(info.object.properties.material);
+          let restitution: number = this.material.combineElasticity(info.object.material);
           if (deltaTime < 0 && restitution !== 0) restitution = 1 / restitution;
 
           const impulse: number = mass1 * mass2 * (1 + restitution) * normalVelDiff / massSum;
@@ -197,7 +192,7 @@ export class Projectile {
 
   public getCollision(projectile: Projectile): CollisionInfo | undefined {
     const difference: Vector2 = this._position.subtract(projectile._position);
-    const radiiSum: number = this.properties.radius + projectile.properties.radius;
+    const radiiSum: number = this.radius + projectile.radius;
 
     if (difference.magnitude <= radiiSum) return {
       object: projectile,
@@ -207,6 +202,6 @@ export class Projectile {
   }
 
   public isPointInside(point: Vector2): boolean {
-    return this._position.subtract(point).magnitude <= this.properties.radius;
+    return this._position.subtract(point).magnitude <= this.radius;
   }
 }

@@ -1,4 +1,4 @@
-export class PhysicsMaterial {
+export class Material {
   constructor(
     public name: string,
     public elasticity: number,
@@ -8,15 +8,15 @@ export class PhysicsMaterial {
     public color: string
   ) { }
 
-  public combineElasticity(other: PhysicsMaterial): number {
+  public combineElasticity(other: Material): number {
     return this.elasticity * other.elasticity;
   }
 
-  public combineStaticFrction(other: PhysicsMaterial): number {
+  public combineStaticFrction(other: Material): number {
     return this.staticFriction * other.staticFriction;
   }
 
-  public combineKineticFriction(other: PhysicsMaterial): number {
+  public combineKineticFriction(other: Material): number {
     return this.kineticFriction * other.kineticFriction;
   }
 }

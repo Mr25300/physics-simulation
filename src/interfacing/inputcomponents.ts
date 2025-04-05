@@ -183,7 +183,7 @@ export class TextInput<V extends number | string> extends InputElement<V> {
 
         let parts: string[] = input.split("e");
         if (parts.length === 1) parts = input.split("E");
-    
+
         let value: number = parseFloat(parts[0]);
         if (parts.length > 1) value *= Math.pow(10, parseInt(parts[1]));
 
@@ -276,7 +276,7 @@ export class QuantityInput extends InputElement<number> {
     if (actual) {
       this.actualVal = Util.clamp(newVal, this.actualMin, this.actualMax);
       this._value = this.getLogVal(this.actualVal);
-      
+
     } else {
       this._value = Util.clamp(newVal, this.min, this.max);
       this.actualVal = this.getExpVal(this._value);
@@ -432,7 +432,7 @@ export class AngleInput extends InputElement<number> {
 
   private updateActualAngle(): void {
     const newAngle: number = this.toRad(this.axis * 90 + this.angleDir * this.angleOffset);
-    
+
     if (Math.abs(this.actualVal - newAngle) > 1e-8) {
       this.actualVal = newAngle;
       this.fireInputListener();
@@ -448,7 +448,7 @@ export class AngleInput extends InputElement<number> {
     const angleSegment: number = (degAngle - degAngle % 45) / 45;
     const axis: number = Util.circleMod(Math.ceil(angleSegment / 2), 4);
     const axisAngleOffset: number = (degAngle - axis * 90) % 360;
-    
+
     this.angleOffset = Math.abs(axisAngleOffset);
     this.axis = axis;
     this.angleDir = axisAngleOffset !== 0 ? Util.sign(axisAngleOffset) : 1;
@@ -643,7 +643,7 @@ type NamedObj = {
 };
 
 export class OptionItem<OptionObj extends NamedObj> extends HTMLElement {
-  constructor(public readonly name: string = "", public readonly object?: OptionObj) {
+  constructor(public name: string = "", public readonly object?: OptionObj) {
     super();
 
     this.className = "option-item";
@@ -660,34 +660,52 @@ export class OptionItem<OptionObj extends NamedObj> extends HTMLElement {
 }
 
 export class OptionSelect<OptionObj extends NamedObj> extends InputElement<OptionObj> {
-  private selector: HTMLButtonElement;
+  private selector: HTMLDivElement;
+  private optionWrapper: HTMLDivElement;
   private optionContainer: HTMLDivElement;
 
-  private _optionObjects: Set<OptionObj>;
   private optionElements: Map<OptionObj, OptionItem<OptionObj>> = new Map();
   private selected: OptionItem<OptionObj> | undefined;
 
-  constructor(defaultOption?: string) {
+  private optionsShowing: boolean = false;
+
+  constructor(defaultOption?: string, private _optionObjects?: Set<OptionObj>) {
     super();
 
     this.className = "option-select";
-    
-    this.selector = document.createElement("button");
+
+    this.selector = document.createElement("div");
     this.selector.className = "option-selector";
+    this.selector.tabIndex = 0;
+
+    this.optionWrapper = document.createElement("div");
+    this.optionWrapper.className = "option-wrapper";
 
     this.optionContainer = document.createElement("div");
     this.optionContainer.className = "option-container";
+    this.optionContainer.append(this.optionWrapper);
+    this.optionContainer.style.fontSize = getComputedStyle(this).fontSize;
 
     defaultOption = this.getAttribute("default-option") ?? defaultOption;
-    if (defaultOption) this.createOption(defaultOption);
+    if (defaultOption) this.createOption(defaultOption, undefined, true);
 
     this.selector.addEventListener("click", () => {
       this.updateOptionElements();
-      
-      this.classList.toggle("showing");
+      this.toggleOptions();
     });
 
-    this.append(this.selector, this.optionContainer);
+    this.selector.addEventListener("blur", () => {
+      this.hideOptions();
+    });
+
+    new ResizeObserver(() => {
+      this.updateDisplay();
+    }).observe(this.optionWrapper);
+
+    this.updateOptionElements();
+
+    this.append(this.selector);
+    document.body.append(this.optionContainer);
   }
 
   public get value(): OptionObj | undefined {
@@ -711,6 +729,34 @@ export class OptionSelect<OptionObj extends NamedObj> extends InputElement<Optio
     this.updateOptionElements();
   }
 
+  private toggleOptions(): void {
+    this.optionsShowing = !this.optionsShowing;
+    this.updateDisplay();
+
+    if (this.optionsShowing) {
+      const bounds: DOMRect = this.getBoundingClientRect();
+
+      this.optionContainer.style.top = `${bounds.bottom + 4}px`;
+      this.optionContainer.style.left = `${bounds.left}px`;
+    }
+  }
+
+  private hideOptions(): void {
+    this.optionsShowing = false;
+    this.updateDisplay();
+  }
+
+  private updateDisplay(): void {
+    if (this.optionsShowing) {
+      this.classList.add("showing");
+      this.optionContainer.style.height = this.optionWrapper.offsetHeight + 1 + "px";
+
+    } else {
+      this.classList.remove("showing");
+      this.optionContainer.style.height = "0";
+    }
+  }
+
   private updateSelectDisplay(): void {
     if (this.selected) this.selector.innerText = this.selected.name;
     else this.selector.innerText = "N/A";
@@ -719,13 +765,16 @@ export class OptionSelect<OptionObj extends NamedObj> extends InputElement<Optio
   private updateOptionElements(): void {
     if (this._optionObjects) {
       this.optionElements.forEach((element: OptionItem<OptionObj>) => {
-        if (element.object && !this._optionObjects.has(element.object)) {
+        if (element.object && !this._optionObjects!.has(element.object)) {
           element.remove();
-  
+
           if (this.selected === element) this.selected = undefined;
+
+        } else if (element.object) {
+          element.innerText = element.name = element.object?.name;
         }
       });
-  
+
       for (const option of this._optionObjects) {
         if (!this.optionElements.has(option)) {
           this.createOption(option.name, option);
@@ -736,19 +785,27 @@ export class OptionSelect<OptionObj extends NamedObj> extends InputElement<Optio
     this.updateSelectDisplay();
   }
 
-  private createOption(name: string, object?: NamedObj): void {
-    const optionElement: OptionItem<OptionObj> = new OptionItem(name);
+  private createOption(name: string, object?: OptionObj, autoSelect?: boolean): void {
+    const optionElement: OptionItem<OptionObj> = new OptionItem(name, object);
+    if (object) this.optionElements.set(object, optionElement);
 
-    optionElement.addEventListener("click", () => {
-      if (this.selected) this.selected.deselect();
-
-      this.selected = optionElement;
-      optionElement.select();
-
-      this.classList.remove("showing");
-      this.updateSelectDisplay();
+    optionElement.addEventListener("mousedown", () => {
+      this.selectOption(optionElement);
     });
 
-    this.optionContainer.append(optionElement);
+    if (autoSelect) this.selectOption(optionElement);
+
+    this.optionWrapper.append(optionElement);
+  }
+
+  private selectOption(optionElement: OptionItem<OptionObj>) {
+    if (this.selected) this.selected.deselect();
+
+    this.selected = optionElement;
+    optionElement.select();
+
+    this.hideOptions();
+    this.updateSelectDisplay();
+    this.fireInputListener();
   }
 }

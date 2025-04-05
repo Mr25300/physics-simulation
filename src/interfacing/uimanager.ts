@@ -4,8 +4,9 @@ import { Collapsible } from "./displaycomponents.js";
 import { DisplayLabel } from "./displaycomponents.js";
 import { FieldItem, ItemList, MaterialItem } from "./listcomponents.js";
 import { QuantityInput, TextInput, AngleInput, VectorInput, UnitContainer } from "./inputcomponents.js";
-import { Projectile, ProjectileProperties as Properties } from "../objects/projectile.js";
+import { Projectile } from "../objects/projectile.js";
 import { OptionSelect, OptionItem } from "./inputcomponents.js";
+import { Material as Material } from "../objects/material.js";
 
 export class UIManager {
   private selectedProjectile: Projectile;
@@ -117,9 +118,22 @@ export class UIManager {
   }
 
   private initProjectileControls(): void {
-    const optionSelect: OptionSelect<Properties> = document.getElementById("proj-properties") as OptionSelect<Properties>;
+    const positionInput: VectorInput = document.getElementById("proj-spawn-pos") as VectorInput;
+    const velocityInput: VectorInput = document.getElementById("proj-spawn-vel") as VectorInput;
 
-    optionSelect.optionObjects = Simulation.instance.properties;
+    const radiusInput: QuantityInput = document.getElementById("proj-radius") as QuantityInput;
+    const massInput: QuantityInput = document.getElementById("proj-mass") as QuantityInput;
+    const chargeInput: QuantityInput = document.getElementById("proj-charge") as QuantityInput;
+    const materialInput: OptionSelect<Material> = document.getElementById("proj-material") as OptionSelect<Material>;
+    materialInput.optionObjects = Simulation.instance.materials;
+
+    const spawnButton: HTMLButtonElement = document.getElementById("proj-spawn") as HTMLButtonElement;
+
+    spawnButton.addEventListener("click", () => {
+      if (materialInput.value) {
+        Simulation.instance.projectiles.add(new Projectile(radiusInput.value, massInput.value, chargeInput.value, materialInput.value, positionInput.value, velocityInput.value));
+      }
+    });
   }
   
   private initMaterialControls(): void {

@@ -3,6 +3,8 @@ export class Collapsible extends HTMLElement {
   private content: HTMLDivElement;
   private contentWrapper: HTMLDivElement;
 
+  private expanded: boolean = false;
+
   constructor() {
     super();
 
@@ -19,46 +21,40 @@ export class Collapsible extends HTMLElement {
 
     this.content = document.createElement("div");
     this.content.className = "collapsible-content";
-    this.content.appendChild(this.contentWrapper);
+    this.content.append(this.contentWrapper);
 
     this.innerHTML = "";
 
     this.selector.addEventListener("click", () => {
-      this.toggleCollapse();
+      this.toggle();
     });
 
-    const resizeObserver: ResizeObserver = new ResizeObserver(() => {
-      this.updateHeight();
-    });
-
-    new MutationObserver((mutationList: MutationRecord[]) => {
-      for (const mutation of mutationList) {
-        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          mutation.addedNodes.forEach((node: Node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) resizeObserver.observe(node as Element);
-          });
-        }
-      }
-
-      this.updateHeight();
-
-    }).observe(this.content, { childList: true, subtree: true, characterData: true });
-
-    for (let i = 0; i < this.content.children.length; i++) {
-      resizeObserver.observe(this.content.children[i]);
-    }
+    new ResizeObserver(() => {
+      this.updateDisplay();
+    }).observe(this.contentWrapper);
 
     this.append(this.selector, this.content);
   }
 
-  private updateHeight(): void {
-    if (this.classList.contains("expanded")) this.content.style.height = this.contentWrapper.offsetHeight + 1 + "px";
-    else this.content.style.height = "0";
+  public dropdown(): void {
+    this.expanded = true;
+    this.updateDisplay();
   }
 
-  private toggleCollapse(): void {
-    this.classList.toggle("expanded");
-    this.updateHeight();
+  private toggle(): void {
+    this.expanded = !this.expanded;
+    this.updateDisplay();
+  }
+
+  private updateDisplay(): void {
+    if (this.expanded) {
+      this.classList.add("expanded");
+      this.content.style.height = this.contentWrapper.offsetHeight + 1 + "px";
+
+    } else {
+      this.classList.remove("expanded");
+      this.content.style.height = "0";
+    }
   }
 }
 

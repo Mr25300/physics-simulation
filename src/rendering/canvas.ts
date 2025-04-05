@@ -283,13 +283,13 @@ export class Canvas {
     }
 
     for (const projectile of Simulation.instance.projectiles) {
-      this.mainLayer.drawShape([projectile.position], projectile.properties.radius, {
+      this.mainLayer.drawShape([projectile.position], projectile.radius, {
         fill: true,
-        fillStyle: projectile.properties.material.color
+        fillStyle: projectile.material.color
       });
 
       if (projectile === Simulation.instance.controller.hovering) {
-        this.detailLayer.drawShape([projectile.position], projectile.properties.radius, {
+        this.detailLayer.drawShape([projectile.position], projectile.radius, {
           fill: true,
           stroke: true,
           fillStyle: "rgba(255, 255, 255, 0.5)",
@@ -303,7 +303,7 @@ export class Canvas {
         if (camera.frameOfReference) {
           for (const camForce of camera.frameOfReference.forces) {
             if (camForce.type === force.type) {
-              relativeForce = relativeForce.subtract(camForce.vector.multiply(projectile.properties.mass / camera.frameOfReference.properties.mass));
+              relativeForce = relativeForce.subtract(camForce.vector.multiply(projectile.mass / camera.frameOfReference.mass));
             }
           }
         }
@@ -327,7 +327,7 @@ export class Canvas {
           }
 
           if (!forceFound) {
-            const relativeForce = camForce.vector.multiply(-projectile.properties.mass / camera.frameOfReference.properties.mass);
+            const relativeForce = camForce.vector.multiply(-projectile.mass / camera.frameOfReference.mass);
 
             this.detailLayer.drawArrow(projectile.position, relativeForce, this.ARROW_WIDTH, this.ARROW_HEIGHT, this.ARROW_THICKNESS, {
               fill: true,

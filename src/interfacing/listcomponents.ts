@@ -1,9 +1,9 @@
 import { Simulation } from "../core/simulation.js";
 import { Vector2 } from "../math/vector2.js";
 import { Field, FieldType } from "../objects/field.js";
-import { PhysicsMaterial } from "../objects/physicsMaterial.js";
+import { Material } from "../objects/material.js";
 import { DisplayLabel } from "./displaycomponents.js";
-import { QuantityInput, TextInput, AngleInput, VectorInput } from "./inputcomponents.js";
+import { QuantityInput, TextInput, AngleInput, VectorInput, OptionSelect } from "./inputcomponents.js";
 
 export abstract class ListedItem extends HTMLElement {
   private callback: () => void | undefined;
@@ -62,76 +62,11 @@ export class ItemList extends HTMLElement {
   }
 }
 
-export class FieldItem extends ListedItem {
-  private field: Field;
-
-  constructor(field?: Field) {
-    super();
-
-    if (!field) field = new Field(`Field #${Simulation.instance.fields.size + 1}`, new Vector2(0, -1), false, FieldType.gravitational, 0);
-    this.field = field;
-
-    Simulation.instance.fields.add(field);
-
-    this.addRemoveListener(() => {
-      Simulation.instance.fields.delete(field);
-    });
-
-    this.initControls();
-  }
-
-  private initControls(): void {
-    const fieldName: TextInput<string> = new TextInput();
-    fieldName.value = this.field.name;
-
-    const typeButton: HTMLButtonElement = document.createElement("button");
-    typeButton.type = "button";
-    typeButton.innerText = this.field.type;
-
-    const typeLabel: DisplayLabel = new DisplayLabel("Field Type", typeButton);
-
-    const strengthInput: QuantityInput = new QuantityInput(-100, 100, 0, 0.01, 1, 11, 3, undefined, undefined, this.field.strength);
-    const strengthLabel: DisplayLabel = new DisplayLabel("Strength", strengthInput);
-
-    const directionInput: AngleInput = new AngleInput(this.field.vector.angle);
-    const directionLabel: DisplayLabel = new DisplayLabel("Direction", directionInput);
-
-    const updateType: () => void = () => {
-      if (this.field.type === FieldType.gravitational) strengthInput.unit = "gravitationalConstant";
-      else strengthInput.unit = "coulombConstant";
-
-      typeButton.innerText = this.field.type;
-    }
-
-    updateType();
-    
-    typeButton.addEventListener("click", () => {
-      if (this.field.type === FieldType.gravitational) this.field.type = FieldType.electric;
-      else this.field.type = FieldType.gravitational;
-
-      updateType();
-    });
-
-    strengthInput.addInputListener(() => {
-      this.field.strength = strengthInput.value;
-    });
-
-    directionInput.addInputListener(() => {
-      this.field.vector = Vector2.fromPolarForm(1, directionInput.value);
-    });
-
-    this.append(fieldName, typeLabel, strengthLabel, directionLabel);
-  }
-}
-
 export class MaterialItem extends ListedItem {
-  private material: PhysicsMaterial;
-
-  constructor(material?: PhysicsMaterial) {
+  constructor(material?: Material) {
     super();
 
-    if (!material) material = new PhysicsMaterial(`Material #${Simulation.instance.materials.size + 1}`, 0.5, 0.4, 0.3, 0.2, "grey");
-    this.material = material;
+    if (!material) material = new Material(`Material #${Simulation.instance.materials.size + 1}`, 0.5, 0.4, 0.3, 0.2, "grey");
 
     Simulation.instance.materials.add(material);
 
@@ -139,61 +74,112 @@ export class MaterialItem extends ListedItem {
       Simulation.instance.materials.delete(material);
     });
 
-    this.initControls();
-  }
+    const nameInput: TextInput<string> = new TextInput(false, undefined, material.name);
 
-  private initControls(): void {
-    const nameInput: TextInput<string> = new TextInput(false, undefined, this.material.name);
-
-    const elasticityInput: QuantityInput = new QuantityInput(0, 1, 0, 0.01, 0.025, 11, 2, undefined, undefined, this.material.elasticity);
+    const elasticityInput: QuantityInput = new QuantityInput(0, 1, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.elasticity);
     const elasticityDisplay: DisplayLabel = new DisplayLabel("Elasticity", elasticityInput);
 
-    const staticInput: QuantityInput = new QuantityInput(0, 5, 0, 0.01, 0.025, 11, 2, undefined, undefined, this.material.staticFriction);
+    const staticInput: QuantityInput = new QuantityInput(0, 5, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.staticFriction);
     const staticDisplay: DisplayLabel = new DisplayLabel("Static Friction", staticInput);
 
-    const kineticInput: QuantityInput = new QuantityInput(0, 5, 0, 0.01, 0.025, 11, 2, undefined, undefined, this.material.kineticFriction);
+    const kineticInput: QuantityInput = new QuantityInput(0, 5, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.kineticFriction);
     const kineticDisplay: DisplayLabel = new DisplayLabel("Kinetic Friction", kineticInput);
 
-    const dragInput: QuantityInput = new QuantityInput(0, 2, 0, 0.01, 0.025, 11, 2, undefined, undefined, this.material.elasticity);
+    const dragInput: QuantityInput = new QuantityInput(0, 2, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.elasticity);
     const dragDisplay: DisplayLabel = new DisplayLabel("Drag", dragInput);
 
-    const colorInput: TextInput<string> = new TextInput(false, undefined, this.material.color);
+    const colorInput: TextInput<string> = new TextInput(false, undefined, material.color);
     const colorDisplay: DisplayLabel = new DisplayLabel("Color", colorInput);
 
     nameInput.addInputListener(() => {
-      this.material.name = nameInput.value;
+      material.name = nameInput.value;
     });
 
     elasticityInput.addInputListener(() => {
-      this.material.elasticity = elasticityInput.value;
+      material.elasticity = elasticityInput.value;
     });
 
     const limitKineticFriction: () => void = () => {
-      if (this.material.kineticFriction > this.material.staticFriction) {
-        kineticInput.value = this.material.kineticFriction = this.material.staticFriction;
+      if (material.kineticFriction > material.staticFriction) {
+        kineticInput.value = material.kineticFriction = material.staticFriction;
       }
     };
 
     staticInput.addInputListener(() => {
-      this.material.staticFriction = staticInput.value;
+      material.staticFriction = staticInput.value;
 
       limitKineticFriction();
     });
 
     kineticInput.addInputListener(() => {
-      this.material.kineticFriction = kineticInput.value;
+      material.kineticFriction = kineticInput.value;
 
       limitKineticFriction();
     });
 
     dragInput.addInputListener(() => {
-      this.material.drag = dragInput.value;
+      material.drag = dragInput.value;
     });
 
     colorInput.addInputListener(() => {
-      this.material.color = colorInput.value;
+      material.color = colorInput.value;
     });
 
     this.append(nameInput, elasticityDisplay, staticDisplay, kineticDisplay, dragDisplay, colorDisplay);
+  }
+}
+
+export class FieldItem extends ListedItem {
+  constructor(field?: Field) {
+    super();
+
+    if (!field) field = new Field(`Field #${Simulation.instance.fields.size + 1}`, new Vector2(0, -1), false, FieldType.gravitational, 0);
+
+    Simulation.instance.fields.add(field);
+
+    this.addRemoveListener(() => {
+      Simulation.instance.fields.delete(field);
+    });
+
+    const fieldName: TextInput<string> = new TextInput();
+    fieldName.value = field.name;
+
+    const typeButton: HTMLButtonElement = document.createElement("button");
+    typeButton.type = "button";
+    typeButton.innerText = field.type;
+
+    const typeLabel: DisplayLabel = new DisplayLabel("Field Type", typeButton);
+
+    const strengthInput: QuantityInput = new QuantityInput(-100, 100, 0, 0.01, 1, 11, 3, undefined, undefined, field.strength);
+    const strengthLabel: DisplayLabel = new DisplayLabel("Strength", strengthInput);
+
+    const directionInput: AngleInput = new AngleInput(field.vector.angle);
+    const directionLabel: DisplayLabel = new DisplayLabel("Direction", directionInput);
+
+    const updateType: () => void = () => {
+      if (field.type === FieldType.gravitational) strengthInput.unit = "gravitationalConstant";
+      else strengthInput.unit = "coulombConstant";
+
+      typeButton.innerText = field.type;
+    }
+
+    updateType();
+    
+    typeButton.addEventListener("click", () => {
+      if (field.type === FieldType.gravitational) field.type = FieldType.electric;
+      else field.type = FieldType.gravitational;
+
+      updateType();
+    });
+
+    strengthInput.addInputListener(() => {
+      field.strength = strengthInput.value;
+    });
+
+    directionInput.addInputListener(() => {
+      field.vector = Vector2.fromPolarForm(1, directionInput.value);
+    });
+
+    this.append(fieldName, typeLabel, strengthLabel, directionLabel);
   }
 }
