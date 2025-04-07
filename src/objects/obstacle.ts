@@ -71,6 +71,7 @@ export class Obstacle {
     let intersection: boolean = false;
     let minOverlap: number = this.inverse ? -Infinity : Infinity;
     let minNormal: Vector2 = Vector2.zero;
+    let isCorner: boolean = false;
 
     const closestVert: Vector2 = this.getClosestVertex(projectile.position);
     const vertNormal = projectile.position.subtract(closestVert).unit;
@@ -113,13 +114,15 @@ export class Obstacle {
         intersection = true;
         minOverlap = overlap;
         minNormal = info.normal.multiply(normalDir);
+        isCorner = info === projVertAxis;
       }
     }
 
     if (intersection) return {
       object: this,
       overlap: minOverlap,
-      normal: minNormal
+      normal: minNormal,
+      radialCurvature: (this.inverse && isCorner) ? this.radius : 0
     };
   }
 

@@ -6,7 +6,8 @@ import { Projectile } from "../objects/projectile.js";
 export interface CollisionInfo {
   object: Projectile | Obstacle,
   overlap: number,
-  normal: Vector2
+  normal: Vector2,
+  radialCurvature: number
 }
 
 export class CollisionManager {

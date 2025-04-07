@@ -66,7 +66,7 @@ export class MaterialItem extends ListedItem {
   constructor(material?: Material) {
     super();
 
-    if (!material) material = new Material(`Material #${Simulation.instance.materials.size + 1}`, 0.5, 0.4, 0.3, 0.2, "grey");
+    if (!material) material = new Material(`Material #${Simulation.instance.materials.size + 1}`, "grey", 0.5, 0.4, 0.3, 0.2, 0, 0);
 
     Simulation.instance.materials.add(material);
 

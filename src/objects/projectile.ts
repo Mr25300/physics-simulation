@@ -8,11 +8,13 @@ import { Simulation } from "../core/simulation.js";
 export enum ForceType {
   unspecified = "Unspecified",
   gravity = "Gravity",
+  electrostatic = "Electrostatic",
   normal = "Normal",
-  friction = "Friction",
-  drag = "Drag",
+  sFriction = "Static Friction",
+  kFriction = "Kinetic Friction",
   tension = "Tension",
-  electrostatic = "Electrostatic"
+  restoring = "Restoring",
+  drag = "Drag"
 }
 
 export type Force = {
@@ -90,22 +92,26 @@ export class Projectile {
   }
 
   public updateForces(): void {
-    let dragMagnitude: number = this.material.drag * Simulation.instance.constants.airDensity * this.crossSectionArea * this._velocity.magnitude ** 2 / 2;
-    if (dragMagnitude === Infinity || isNaN(dragMagnitude)) dragMagnitude = 0;
+    const dragMagnitude: number = this.material.drag * Simulation.instance.constants.airDensity * this.crossSectionArea * this._velocity.magnitude ** 2 / 2;
 
     this.applyForce(this._velocity.unit.multiply(-dragMagnitude), false, ForceType.drag);
 
     if (this.lastCollision) {
-      const normalVel: number = this.lastCollision.normal.dot(this._velocity);
+      const parallelVelocity: number = this.lastCollision.normal.dot(this._velocity);
 
-      if (Math.abs(normalVel) < 0.2) {
-        const normalForce: number = -this.lastCollision.normal.dot(this._netForce);
+      if (Math.abs(parallelVelocity) < 0.2) {
+        const surfaceTangent: Vector2 = this.lastCollision.normal.orthogonal;
+        const tangentialVelocity: number = surfaceTangent.dot(this._velocity);
 
-        this.applyForce(this.lastCollision.normal.multiply(-normalVel * this.mass), true);
+        const surfaceForce: number = this.lastCollision.normal.dot(this._netForce);
+        const centripetalForce: number = this.lastCollision.radialCurvature > 0 ? this.mass * tangentialVelocity ** 2 / this.lastCollision.radialCurvature : 0;
+        const normalForce: number = Math.max(centripetalForce - surfaceForce);
+
+        this.applyForce(this.lastCollision.normal.multiply(-parallelVelocity * this.mass), true);
 
         if (normalForce > 0) {
           this.applyForce(this.lastCollision.normal.multiply(normalForce), false, ForceType.normal);
-
+          
           const surfaceTangent: Vector2 = this.lastCollision.normal.orthogonal;
           const tangentialVelocity: number = surfaceTangent.dot(this._velocity);
 
@@ -121,13 +127,13 @@ export class Projectile {
 
             if (maxFriction >= tangentialMag) this.applyForce(surfaceTangent.multiply(-tangentialVelocity), true);
 
-            this.applyForce(surfaceTangent.multiply(frictionForce), false, ForceType.friction);
+            this.applyForce(surfaceTangent.multiply(frictionForce), false, ForceType.sFriction);
 
           } else {
             const kineticFriction: number = this.material.combineKineticFriction(otherMaterial);
             const frictionForce: number = -Util.sign(tangentialVelocity) * normalForce * kineticFriction;
 
-            this.applyForce(surfaceTangent.multiply(frictionForce));
+            this.applyForce(surfaceTangent.multiply(frictionForce), false, ForceType.kFriction);
           }
         }
       }
@@ -197,7 +203,8 @@ export class Projectile {
     if (difference.magnitude <= radiiSum) return {
       object: projectile,
       overlap: radiiSum - difference.magnitude,
-      normal: difference.unit
+      normal: difference.unit,
+      radialCurvature: 0
     }
   }
 

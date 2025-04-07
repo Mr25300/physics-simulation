@@ -3,7 +3,7 @@ import { ForceType, Projectile } from "../objects/projectile.js";
 import { Canvas } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { Obstacle } from "../objects/obstacle.js";
-import { Rope } from "../objects/constraint.js";
+import { Rope as Constraint, Rope, Spring } from "../objects/contraints.js";
 import { GraphHandler } from "../graphing/graphHandler.js";
 import { Camera } from "../rendering/camera.js";
 import { DisplayControl } from "../interfacing/controller.js";
@@ -21,7 +21,7 @@ export interface Constants {
 export class Simulation extends Loop {
   public readonly materials: Set<Material> = new Set();
   public readonly projectiles: Set<Projectile> = new Set();
-  public readonly ropes: Set<Rope> = new Set();
+  public readonly constraints: Set<Constraint> = new Set();
   public readonly obstacles: Set<Obstacle> = new Set();
 
   public readonly fields: Set<Field> = new Set([
@@ -32,7 +32,7 @@ export class Simulation extends Loop {
   public readonly constants: Constants = {
     gravitationalConstant: 0,
     coulombConstant: 0,
-    airDensity: 1.225
+    airDensity: 0//1.225
   };
 
   public canvas: Canvas;
@@ -58,51 +58,29 @@ export class Simulation extends Loop {
     this.uiManager.init();
     this.graphHandler = new GraphHandler();
 
-    const material: Material = new Material("TEST", 1, 0, 0, 0.1, "grey");
-    const ballMaterial: Material = new Material("TEST2", 1, 0, 0, 0.1, "red");
+    const material: Material = new Material("TEST", "grey", 0, 0.5, 0.5, 0, 200, 0.1);
+    this.materials.add(material);
 
-    const proj = new Projectile(0.5, 3, -1, ballMaterial, new Vector2(-8, 10));
+    const proj = new Projectile(0.5, 5, -1, material, new Vector2(1, 0), new Vector2(0, 10));
     this.projectiles.add(proj);
 
-    const proj2 = new Projectile(0.5, 8, 1, ballMaterial, new Vector2(6, 8));
-    this.projectiles.add(proj2);
+    // const rope = new Spring(Vector2.zero, proj, 10, material);
+    // this.constraints.add(rope);
 
-    this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(10, 0)], 1, false, material));
-    this.obstacles.add(new Obstacle([new Vector2(-10, 10), new Vector2(-10, 0), new Vector2(0, 0)], 1, false, material));
-    this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(10, 10)], 1, false, material));
+    // const proj2 = new Projectile(0.5, 8, 1, material, new Vector2(0, 1), new Vector2(4, 3));
+    // this.projectiles.add(proj2);
 
-    this.obstacles.add(new Obstacle([new Vector2(-100, -100), new Vector2(100, -100), new Vector2(100, 100), new Vector2(-100, 100)], 0, true, material));
+    // this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(10, 0)], 1, false, material));
+    this.obstacles.add(new Obstacle([new Vector2(0, 0), new Vector2(0, -10), new Vector2(10, -10)], 0, false, material));
+    // this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(10, 10)], 1, false, material));
+
+    // this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(1000, 0)], 1, false, material));
 
     // this.camera.setFrameOfReference(proj);
 
     this.start();
     // this.graphHandler.activateProjectile(proj, 0);
     // this.graphHandler.activateProjectile(proj2, 0);
-
-    // // ################Where do I put this?????????################
-    // // Its for the hamburger icon on mobile
-    // document.addEventListener('DOMContentLoaded', () => {
-    //   const toggle = document.createElement('button');
-    //   toggle.className = 'sidebar-toggle';
-    //   document.body.appendChild(toggle);
-
-    //   const sidebar = document.querySelector('.content-container');
-
-    //   toggle.addEventListener('click', () => {
-    //     sidebar.classList.toggle('active');
-    //     toggle.classList.toggle('active');
-    //   });
-
-    //   // Close sidebar when clicking outside
-    //   document.addEventListener('click', (e) => {
-    //     if (sidebar.classList.contains('active') &&
-    //       !sidebar.contains(e.target) &&
-    //       e.target !== toggle) {
-    //       sidebar.classList.remove('active');
-    //       toggle.classList.remove('active');
-    //     }
-    //   });
-    // });
   }
 
   public update(deltaTime: number): void {
@@ -140,18 +118,20 @@ export class Simulation extends Loop {
       }
 
       projectile.updateForces();
+
+      // console.log(projectile.velocity.magnitude);
     }
 
-    for (const rope of this.ropes) {
-      rope.updateForces();
+    for (const constraint of this.constraints) {
+      constraint.updateForces();
     }
 
     for (const projectile of this.projectiles) {
       projectile.updateKinematics(deltaTime);
     }
 
-    for (const rope of this.ropes) {
-      rope.updateKinematics();
+    for (const constraint of this.constraints) {
+      constraint.updateKinematics();
     }
   }
 

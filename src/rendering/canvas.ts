@@ -152,11 +152,13 @@ export class Canvas {
   private readonly FORCE_COLORS: Record<ForceType, string> = {
     [ForceType.unspecified]: "green",
     [ForceType.gravity]: "blue",
-    [ForceType.normal]: "red",
-    [ForceType.tension]: "orange",
-    [ForceType.friction]: "yellow",
-    [ForceType.drag]: "white",
-    [ForceType.electrostatic]: "purple"
+    [ForceType.electrostatic]: "yellow",
+    [ForceType.normal]: "white",
+    [ForceType.tension]: "red",
+    [ForceType.restoring]: "lightgreen",
+    [ForceType.sFriction]: "purple",
+    [ForceType.kFriction]: "orange",
+    [ForceType.drag]: "white"
   }
 
   private context: CanvasRenderingContext2D;
@@ -349,19 +351,16 @@ export class Canvas {
       });
     }
 
-    for (const rope of Simulation.instance.ropes) {
+    for (const rope of Simulation.instance.constraints) {
       const start: Vector2 = rope.origin;
       const end: Vector2 = rope.attachment.position;
       const distance: number = start.subtract(end).magnitude;
       const ropeStretch: number = distance / rope.length;
-      const ropeWidth: number = this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch);
-
-      this.context.strokeStyle = "brown";
-      this.context.lineWidth = this.scaleToPixels(ropeWidth);
+      const ropeWidth: number = Math.max(this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch), 0);
 
       this.mainLayer.drawShape([start, end], ropeWidth, {
         fill: true,
-        fillStyle: rope.material.color
+        fillStyle: rope.material.color,
       });
     }
 
