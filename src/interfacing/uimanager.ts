@@ -177,7 +177,7 @@ export class UIManager {
     const selected = Simulation.instance.controller.selected;
 
     if (selected) {
-
+      
     }
   }
 }

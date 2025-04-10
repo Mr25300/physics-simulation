@@ -25,7 +25,7 @@ export class Simulation extends Loop {
   public readonly obstacles: Set<Obstacle> = new Set();
 
   public readonly fields: Set<Field> = new Set([
-    new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.8),
+    // new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.8),
     // new Field("Electric Field", new Vector2(1, 0), false, FieldType.electric, 5)
   ]);
 
@@ -61,22 +61,22 @@ export class Simulation extends Loop {
     const material: Material = new Material("TEST", "grey", 0, 0.5, 0.5, 0, 200, 0.1);
     this.materials.add(material);
 
-    const proj = new Projectile(0.5, 5, -1, material, new Vector2(1, 0), new Vector2(0, 10));
+    const proj = new Projectile(0.5, 5, -1, material, new Vector2(10, 0), new Vector2(0, 10));
     this.projectiles.add(proj);
 
-    // const rope = new Spring(Vector2.zero, proj, 10, material);
-    // this.constraints.add(rope);
+    const rope = new Rope(Vector2.zero, proj, 10, material);
+    this.constraints.add(rope);
 
-    // const proj2 = new Projectile(0.5, 8, 1, material, new Vector2(0, 1), new Vector2(4, 3));
-    // this.projectiles.add(proj2);
+    const proj2 = new Projectile(0.5, 8, 1, material, new Vector2(0, 1), new Vector2(4, 3));
+    this.projectiles.add(proj2);
 
-    // this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(10, 0)], 1, false, material));
+    this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(10, 0)], 1, false, material));
     this.obstacles.add(new Obstacle([new Vector2(0, 0), new Vector2(0, -10), new Vector2(10, -10)], 0, false, material));
-    // this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(10, 10)], 1, false, material));
+    this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(10, 10)], 1, false, material));
 
-    // this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(1000, 0)], 1, false, material));
+    this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(1000, 0)], 1, false, material));
 
-    // this.camera.setFrameOfReference(proj);
+    this.camera.setFrameOfReference(proj);
 
     this.start();
     // this.graphHandler.activateProjectile(proj, 0);
