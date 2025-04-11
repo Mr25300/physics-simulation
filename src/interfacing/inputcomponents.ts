@@ -31,7 +31,7 @@ export abstract class InputElement<V> extends HTMLElement {
   }
 }
 
-export class UnitContainer extends HTMLSpanElement {
+export class UnitContainer extends HTMLElement {
   private length: number = 0;
 
   constructor(unit?: string) {
@@ -122,7 +122,7 @@ export class TextInput<V extends number | string> extends InputElement<V> {
     this.textSpan.contentEditable = "true";
     this.textSpan.spellcheck = false;
 
-    this.unitContainer = document.createElement("span", { is: "unit-container" }) as UnitContainer;
+    this.unitContainer = new UnitContainer(unit);
 
     if (value !== undefined) this._value = value;
 
@@ -539,11 +539,13 @@ export class VectorInput extends InputElement<Vector2> {
     this.componentContainer = document.createElement("div");
     this.componentContainer.className = "vi-format-container";
 
+    unit = this.getAttribute("unit") ?? unit;
+
     this.magnitudeInput = new TextInput<number>(true, 3, undefined, unit);
     this.angleInput = new AngleInput();
     this.polarContainer.append(this.magnitudeInput, this.angleInput);
 
-    const componentUnit: UnitContainer = document.createElement("span", { is: "unit-container" }) as UnitContainer;;
+    const componentUnit: UnitContainer = new UnitContainer(unit);
 
     this.xInput = new TextInput(true, 3);
     this.yInput = new TextInput(true, 3);

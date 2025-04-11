@@ -6,9 +6,9 @@ import { Obstacle } from "../objects/obstacle.js";
 import { Rope as Constraint, Rope, Spring } from "../objects/contraints.js";
 import { GraphHandler } from "../graphing/graphHandler.js";
 import { Camera } from "../rendering/camera.js";
-import { DisplayControl } from "../interfacing/controller.js";
+import { InputHandler } from "../interfacing/inputhandler.js";
 
-import { UIManager } from "../interfacing/uimanager.js";
+import { Controller } from "../interfacing/controller.js";
 import { Material } from "../objects/material.js";
 import { Field, FieldType } from "../objects/field.js";
 
@@ -38,8 +38,8 @@ export class Simulation extends Loop {
   public canvas: Canvas;
   private graphHandler: GraphHandler;
   public camera: Camera = new Camera();
-  public controller: DisplayControl;
-  public uiManager: UIManager = new UIManager();
+  public inputHandler: InputHandler;
+  public controller: Controller = new Controller();
 
   private static _instance: Simulation;
 
@@ -54,11 +54,11 @@ export class Simulation extends Loop {
     if (!canvas) throw new Error("Failed to get canvas.");
 
     this.canvas = new Canvas(canvas);
-    this.controller = new DisplayControl(canvas);
-    this.uiManager.init();
+    this.inputHandler = new InputHandler(canvas);
+    this.controller.init();
     this.graphHandler = new GraphHandler();
 
-    const material: Material = new Material("TEST", "grey", 0, 0.5, 0.5, 0, 200, 0.1);
+    const material: Material = new Material("TEST", "grey", 0.5, 0.5, 0.5, 1, 200, 0.1);
     this.materials.add(material);
 
     const proj = new Projectile(0.5, 5, -1, material, new Vector2(10, 0), new Vector2(0, 10));
@@ -76,7 +76,7 @@ export class Simulation extends Loop {
 
     this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(1000, 0)], 1, false, material));
 
-    this.camera.setFrameOfReference(proj);
+    // this.camera.setFrameOfReference(proj);
 
     this.start();
     // this.graphHandler.activateProjectile(proj, 0);
@@ -107,8 +107,13 @@ export class Simulation extends Loop {
         const otherProj: Projectile = projectiles[j];
 
         const difference: Vector2 = otherProj.position.subtract(projectile.position);
-        const gravMag: number = this.constants.gravitationalConstant * projectile.mass * otherProj.mass / difference.magnitude;
-        const electricMag: number = -this.constants.coulombConstant * projectile.charge * otherProj.charge / difference.magnitude;
+        let gravMag: number = 0;
+        let electricMag: number = 0;
+
+        if (difference.magnitude > 0) {
+          gravMag = this.constants.gravitationalConstant * projectile.mass * otherProj.mass / difference.magnitude ** 2;
+          electricMag = -this.constants.coulombConstant * projectile.charge * otherProj.charge / difference.magnitude ** 2
+        }
 
         projectile.applyForce(difference.unit.multiply(gravMag), false, ForceType.gravity);
         otherProj.applyForce(difference.unit.multiply(-gravMag), false, ForceType.gravity);
@@ -118,16 +123,18 @@ export class Simulation extends Loop {
       }
 
       projectile.updateForces();
-
-      // console.log(projectile.velocity.magnitude);
     }
 
     for (const constraint of this.constraints) {
       constraint.updateForces();
     }
 
+    let i = 0;
+
     for (const projectile of this.projectiles) {
       projectile.updateKinematics(deltaTime);
+
+      // console.log(i++ + " | " + projectile.position.x.toFixed(2) + " " + projectile.position.y.toFixed(2));
     }
 
     for (const constraint of this.constraints) {
@@ -139,7 +146,7 @@ export class Simulation extends Loop {
     // this.graphHandler.updateGraph(Simulation.instance.elapsedTime);
     this.camera.update();
     this.canvas.render();
-    this.uiManager.update();
+    this.controller.update();
   }
 }
 

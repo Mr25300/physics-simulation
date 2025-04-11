@@ -9,6 +9,8 @@ export class Vector2 {
   ) { }
 
   public static readonly zero: Vector2 = new Vector2();
+  public static readonly x: Vector2 = new Vector2(1, 0);
+  public static readonly y: Vector2 = new Vector2(0, 1);
 
   public static fromPolarForm(magnitude: number, angle: number): Vector2 {
     const newVector: Vector2 = new Vector2(

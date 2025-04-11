@@ -40,6 +40,10 @@ body {
   cursor: pointer;
 }
 
+#simulation-screen.dragging {
+  cursor: grab !important;
+}
+
 .main-container {
   position: absolute;
   left: 0;

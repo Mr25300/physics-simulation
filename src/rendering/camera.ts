@@ -29,8 +29,8 @@ export class Camera {
   }
 
   public update(): void {
-    const moveAmount: Vector2 = Simulation.instance.canvas.pixelsToVec(Simulation.instance.controller.drag);
-    const zoomAmount: number = Simulation.instance.controller.scroll * this.ZOOM_SENSITIVITY;
+    const moveAmount: Vector2 = Simulation.instance.canvas.pixelsToVec(Simulation.instance.inputHandler.drag);
+    const zoomAmount: number = Simulation.instance.inputHandler.scroll * this.ZOOM_SENSITIVITY;
 
     this.zoom = Util.clamp(this.zoom + zoomAmount, this.MIN_ZOOM, this.MAX_ZOOM);
     this.translation = this.translation.subtract(moveAmount);

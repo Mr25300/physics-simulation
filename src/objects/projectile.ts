@@ -200,10 +200,10 @@ export class Projectile {
     const difference: Vector2 = this._position.subtract(projectile._position);
     const radiiSum: number = this.radius + projectile.radius;
 
-    if (difference.magnitude <= radiiSum) return {
+    if (difference.magnitude <= radiiSum + 1e-8) return {
       object: projectile,
       overlap: radiiSum - difference.magnitude,
-      normal: difference.unit,
+      normal: difference.magnitude > 0 ? difference.unit : Vector2.y,
       radialCurvature: 0
     }
   }

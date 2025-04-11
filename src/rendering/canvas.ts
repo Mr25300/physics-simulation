@@ -158,7 +158,7 @@ export class Canvas {
     [ForceType.restoring]: "lightgreen",
     [ForceType.sFriction]: "purple",
     [ForceType.kFriction]: "orange",
-    [ForceType.drag]: "white"
+    [ForceType.drag]: "lightblue"
   }
 
   private context: CanvasRenderingContext2D;
@@ -273,12 +273,12 @@ export class Canvas {
         fillStyle: obstacle.material.color
       });
 
-      if (obstacle === Simulation.instance.controller.hovering) {
+      if (obstacle === Simulation.instance.controller.selected || obstacle === Simulation.instance.controller.hovering) {
         this.detailLayer.drawShape(obstacle.vertices, obstacle.radius, {
           fill: true,
           stroke: true,
           fillInvert: obstacle.inverse,
-          fillStyle: "rgba(255, 255, 255, 0.5)", // FIX TRANSPARENCY HIGHLIGHT FOR INVERSE OBSTACLES
+          fillStyle: "rgba(255, 255, 255, 0.5)",
           strokeStyle: "rgb(255, 255, 255)"
         });
       }
@@ -290,7 +290,7 @@ export class Canvas {
         fillStyle: projectile.material.color
       });
 
-      if (projectile === Simulation.instance.controller.hovering) {
+      if (projectile === Simulation.instance.controller.selected || projectile === Simulation.instance.controller.hovering) {
         this.detailLayer.drawShape([projectile.position], projectile.radius, {
           fill: true,
           stroke: true,
