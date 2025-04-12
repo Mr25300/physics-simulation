@@ -351,7 +351,7 @@ export class Canvas {
       });
     }
 
-    for (const rope of Simulation.instance.constraints) {
+    for (const rope of [...Simulation.instance.ropes, ...Simulation.instance.springs]) {
       const start: Vector2 = rope.origin;
       const end: Vector2 = rope.attachment.position;
       const distance: number = start.subtract(end).magnitude;

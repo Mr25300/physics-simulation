@@ -671,7 +671,7 @@ export class OptionSelect<OptionObj extends NamedObj> extends InputElement<Optio
 
   private optionsShowing: boolean = false;
 
-  constructor(defaultOption?: string, private _optionObjects?: Set<OptionObj>) {
+  constructor(private defaultOption?: string, private _optionObjects?: Set<OptionObj>) {
     super();
 
     this.className = "option-select";
@@ -688,8 +688,8 @@ export class OptionSelect<OptionObj extends NamedObj> extends InputElement<Optio
     this.optionContainer.append(this.optionWrapper);
     this.optionContainer.style.fontSize = getComputedStyle(this).fontSize;
 
-    defaultOption = this.getAttribute("default-option") ?? defaultOption;
-    if (defaultOption) this.createOption(defaultOption, undefined, true);
+    this.defaultOption = this.getAttribute("default-option") ?? this.defaultOption;
+    if (this.defaultOption) this.createOption(this.defaultOption, undefined, true);
 
     this.selector.addEventListener("click", () => {
       this.updateOptionElements();
@@ -766,20 +766,34 @@ export class OptionSelect<OptionObj extends NamedObj> extends InputElement<Optio
 
   private updateOptionElements(): void {
     if (this._optionObjects) {
+      let newSelectNeeded: boolean = !this.selected && !this.defaultOption;
+
       this.optionElements.forEach((element: OptionItem<OptionObj>) => {
         if (element.object && !this._optionObjects!.has(element.object)) {
           element.remove();
 
-          if (this.selected === element) this.selected = undefined;
+          if (this.selected === element) {
+            this.selected = undefined;
+
+            newSelectNeeded = true;
+          }
 
         } else if (element.object) {
           element.innerText = element.name = element.object?.name;
+
+          if (newSelectNeeded) {
+            this.selectOption(element);
+
+            newSelectNeeded = false;
+          }
         }
       });
 
       for (const option of this._optionObjects) {
         if (!this.optionElements.has(option)) {
-          this.createOption(option.name, option);
+          this.createOption(option.name, option, newSelectNeeded);
+
+          if (newSelectNeeded) newSelectNeeded = false;
         }
       }
     }

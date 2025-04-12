@@ -79,14 +79,20 @@ export class MaterialItem extends ListedItem {
     const elasticityInput: QuantityInput = new QuantityInput(0, 1, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.elasticity);
     const elasticityDisplay: DisplayLabel = new DisplayLabel("Elasticity", elasticityInput);
 
-    const staticInput: QuantityInput = new QuantityInput(0, 5, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.staticFriction);
+    const staticInput: QuantityInput = new QuantityInput(0, 1.2, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.staticFriction);
     const staticDisplay: DisplayLabel = new DisplayLabel("Static Friction", staticInput);
 
-    const kineticInput: QuantityInput = new QuantityInput(0, 5, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.kineticFriction);
+    const kineticInput: QuantityInput = new QuantityInput(0, 1.2, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.kineticFriction);
     const kineticDisplay: DisplayLabel = new DisplayLabel("Kinetic Friction", kineticInput);
 
     const dragInput: QuantityInput = new QuantityInput(0, 2, 0, 0.01, 0.025, 11, 2, undefined, undefined, material.elasticity);
     const dragDisplay: DisplayLabel = new DisplayLabel("Drag", dragInput);
+
+    const stiffnessInput: QuantityInput = new QuantityInput(0, 500, 0, 0.01, 0.025, 11, 2, "N * m^-1", undefined, material.stiffness);
+    const stiffnessDisplay: DisplayLabel = new DisplayLabel("Stiffness", stiffnessInput);
+
+    const dampingInput: QuantityInput = new QuantityInput(0, 10, 0, 0.01, 0.025, 11, 2, "N * s * m^-1", undefined, material.damping);
+    const dampingDisplay: DisplayLabel = new DisplayLabel("Damping", dampingInput);
 
     const colorInput: TextInput<string> = new TextInput(false, undefined, material.color);
     const colorDisplay: DisplayLabel = new DisplayLabel("Color", colorInput);
@@ -121,11 +127,19 @@ export class MaterialItem extends ListedItem {
       material.drag = dragInput.value;
     });
 
+    stiffnessInput.addInputListener(() => {
+      material.stiffness = stiffnessInput.value;
+    });
+
+    dampingInput.addInputListener(() => {
+      material.damping = dampingInput.value;
+    });
+
     colorInput.addInputListener(() => {
       material.color = colorInput.value;
     });
 
-    this.append(nameInput, elasticityDisplay, staticDisplay, kineticDisplay, dragDisplay, colorDisplay);
+    this.append(nameInput, elasticityDisplay, staticDisplay, kineticDisplay, dragDisplay, stiffnessDisplay, dampingDisplay, colorDisplay);
   }
 }
 

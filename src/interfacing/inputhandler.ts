@@ -12,12 +12,8 @@ export class InputHandler {
 
   constructor(private display: HTMLCanvasElement) {
     display.addEventListener("mousedown", (event: MouseEvent) => {
-      if (event.button === 2) this.rightMouseDown = true;
-      this.mousePos = new Vector2(event.clientX, event.clientY);
-
-      if (event.button === 1) {
-        this._clicked = true;
-      }
+      if (event.button === 0) this._clicked = true;
+      else if (event.button === 2) this.rightMouseDown = true;
     });
 
     document.addEventListener("mouseup", (event: MouseEvent) => {

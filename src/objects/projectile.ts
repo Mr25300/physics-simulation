@@ -44,8 +44,16 @@ export class Projectile {
     return this._position;
   }
 
+  public set position(newPos: Vector2) {
+    this._position = newPos;
+  }
+
   public get velocity(): Vector2 {
     return this._velocity;
+  }
+
+  public set velocity(newVel: Vector2) {
+    this._velocity = newVel;
   }
 
   public get acceleration(): Vector2 {
@@ -70,6 +78,8 @@ export class Projectile {
   }
 
   public applyForce(force: Vector2, impulse: boolean = false, type: ForceType = ForceType.unspecified): void {
+    if (force.magnitude === 0) return;
+    
     if (impulse) {
       this._velocity = this._velocity.add(force.divide(this.mass));
 

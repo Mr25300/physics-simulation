@@ -21,22 +21,21 @@ export interface Constants {
 export class Simulation extends Loop {
   public readonly materials: Set<Material> = new Set();
   public readonly projectiles: Set<Projectile> = new Set();
-  public readonly constraints: Set<Constraint> = new Set();
+  public readonly springs: Set<Spring> = new Set();
+  public readonly ropes: Set<Constraint> = new Set();
   public readonly obstacles: Set<Obstacle> = new Set();
 
   public readonly fields: Set<Field> = new Set([
-    // new Field("Earth's Gravity", new Vector2(0, -1).unit, false, FieldType.gravitational, 9.8),
-    // new Field("Electric Field", new Vector2(1, 0), false, FieldType.electric, 5)
+    new Field("Earth's Gravity", new Vector2(0, -1), false, FieldType.gravitational, 9.8),
   ]);
 
   public readonly constants: Constants = {
     gravitationalConstant: 0,
     coulombConstant: 0,
-    airDensity: 0//1.225
+    airDensity: 0
   };
 
   public canvas: Canvas;
-  private graphHandler: GraphHandler;
   public camera: Camera = new Camera();
   public inputHandler: InputHandler;
   public controller: Controller = new Controller();
@@ -55,32 +54,18 @@ export class Simulation extends Loop {
 
     this.canvas = new Canvas(canvas);
     this.inputHandler = new InputHandler(canvas);
+
+    const rubber: Material = new Material("Rubber", "brown", 0.9, 0.9, 0.7, 0.53, 100, 0.1);
+    const steel: Material = new Material("Steel", "grey", 0.8, 0.6, 0.4, 0.47, 200, 0.01);
+    const border: Obstacle = new Obstacle([new Vector2(-100, -100), new Vector2(100, -100), new Vector2(100, 100), new Vector2(-100, 100)], 2, true, steel);
+
+    this.materials.add(rubber);
+    this.materials.add(steel);
+    this.obstacles.add(border);
+
     this.controller.init();
-    this.graphHandler = new GraphHandler();
-
-    const material: Material = new Material("TEST", "grey", 0.5, 0.5, 0.5, 1, 200, 0.1);
-    this.materials.add(material);
-
-    const proj = new Projectile(0.5, 5, -1, material, new Vector2(10, 0), new Vector2(0, 10));
-    this.projectiles.add(proj);
-
-    const rope = new Rope(Vector2.zero, proj, 10, material);
-    this.constraints.add(rope);
-
-    const proj2 = new Projectile(0.5, 8, 1, material, new Vector2(0, 1), new Vector2(4, 3));
-    this.projectiles.add(proj2);
-
-    this.obstacles.add(new Obstacle([new Vector2(-10, 0), new Vector2(10, 0)], 1, false, material));
-    this.obstacles.add(new Obstacle([new Vector2(0, 0), new Vector2(0, -10), new Vector2(10, -10)], 0, false, material));
-    this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(10, 10)], 1, false, material));
-
-    this.obstacles.add(new Obstacle([new Vector2(10, 0), new Vector2(1000, 0)], 1, false, material));
-
-    // this.camera.setFrameOfReference(proj);
 
     this.start();
-    // this.graphHandler.activateProjectile(proj, 0);
-    // this.graphHandler.activateProjectile(proj2, 0);
   }
 
   public update(deltaTime: number): void {
@@ -125,7 +110,7 @@ export class Simulation extends Loop {
       projectile.updateForces();
     }
 
-    for (const constraint of this.constraints) {
+    for (const constraint of [...this.springs, ...this.ropes]) {
       constraint.updateForces();
     }
 
@@ -133,17 +118,14 @@ export class Simulation extends Loop {
 
     for (const projectile of this.projectiles) {
       projectile.updateKinematics(deltaTime);
-
-      // console.log(i++ + " | " + projectile.position.x.toFixed(2) + " " + projectile.position.y.toFixed(2));
     }
 
-    for (const constraint of this.constraints) {
+    for (const constraint of [...this.springs, ...this.ropes]) {
       constraint.updateKinematics();
     }
   }
 
   public render(): void {
-    // this.graphHandler.updateGraph(Simulation.instance.elapsedTime);
     this.camera.update();
     this.canvas.render();
     this.controller.update();
@@ -152,5 +134,3 @@ export class Simulation extends Loop {
 
 const sim = Simulation.instance;
 sim.init();
-
-export const simulation = sim;

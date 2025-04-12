@@ -14,7 +14,7 @@
     <div class="horizontal-bar">
       <div class="horizontal-bar-inner window">
         <div class="horizontal-bar-segment">
-
+          <button id="reference-frame-button" type="button">Set Frame of Reference</button>
         </div>
 
         <div class="horizontal-bar-segment">
@@ -37,8 +37,8 @@
 
     <div class="content-container">
       <div class="side-bar window">
-        <collapsible-dropdown label="Projectiles">
-          <h1>Create</h1>
+        <collapsible-dropdown id="projectile-dropdown" label="Projectiles">
+          <h1 id="proj-title">Create Projectile</h1>
 
           <display-label label="Position">
             <vector-input id="proj-spawn-pos" unit="m"></vector-input>
@@ -68,15 +68,33 @@
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Obstacles">
+          WIP
+        </collapsible-dropdown>
 
+        <collapsible-dropdown label="Constraints">
+          <h1>Create Constraint</h1>
+
+          <display-label label="Constraint Type">
+            <button id="constraint-type" type="button">Rope</button>
+          </display-label>
+
+          <display-label label="Length">
+            <quantity-input id="constraint-length" min="0.1" max="10" value="5" unit="m"></quantity-input>
+          </display-label>
+
+          <display-label label="Material">
+            <option-select id="constraint-material"></option-select>
+          </display-label>
+
+          <display-label label="Attachment Point">
+            <vector-input id="constraint-position" unit="m"></vector-input>
+          </display-label>
+
+          <button id="constraint-attach" type="button">Attach</button>
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Materials">
           <item-list id="material-list" item-name="Material", item-type="material-item"></item-list>
-        </collapsible-dropdown>
-
-        <collapsible-dropdown label="Constraints">
-
         </collapsible-dropdown>
 
         <collapsible-dropdown label="Fields & Constants">
@@ -98,7 +116,7 @@
           <item-list id="field-list" item-name="Field" item-type="field-item"></item-list>
         </collapsible-dropdown>
 
-        <collapsible-dropdown label="Graphs">
+        <!-- <collapsible-dropdown label="Graphs">
           <label for="graphLabel">Select Y-Axis Label:</label>
 
           <select name="graphLabel" id="graphLabel">
@@ -116,7 +134,7 @@
           <div id="graphDiv" style="height: 30vh"></div>
 
           <button type="button" id="graphExport">Export Graph</button>
-        </collapsible-dropdown>
+        </collapsible-dropdown> -->
       </div>
     </div>
   </div>

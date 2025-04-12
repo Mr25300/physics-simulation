@@ -9,8 +9,32 @@ import { OptionSelect, OptionItem } from "./inputcomponents.js";
 import { Material as Material } from "../objects/material.js";
 import { Obstacle } from "../objects/obstacle.js";
 import { Vector2 } from "../math/vector2.js";
+import { Rope, Spring } from "../objects/contraints.js";
 
 export class Controller {
+  private REFERENCE_FRAME_BUTTON: HTMLButtonElement;
+
+  private PROJECTILE_DROPDOWN: Collapsible;
+
+  private PROJ_TITLE: HTMLHeadingElement;
+  private PROJ_POSITION_INPUT: VectorInput;
+  private PROJ_VELOCITY_INPUT: VectorInput;
+  private PROJ_RADIUS_INPUT: QuantityInput;
+  private PROJ_MASS_INPUT: QuantityInput;
+  private PROJ_CHARGE_INPUT: QuantityInput;
+  private PROJ_MATERIAL_INPUT: OptionSelect<Material>;
+  private PROJ_SPAWN_BUTTON: HTMLButtonElement;
+
+  private CONSTRAINT_LENGTH_INPUT: QuantityInput;
+  private CONSTRAINT_MATERIAL_INPUT: OptionSelect<Material>;
+  private CONSTRAINT_POSITION_INPUT: VectorInput;
+  private CONSTRAINT_ATTACH_BUTTON: HTMLButtonElement;
+
+  private constraintType: "Rope" | "Spring" = "Rope";
+  private constraintAttach: boolean = false;
+
+  private referenceFrameSetting: boolean = false;
+
   private _hovering: Projectile | Obstacle | undefined;
   private _selected: Projectile | Obstacle | undefined;
 
@@ -26,7 +50,7 @@ export class Controller {
     document.addEventListener("contextmenu", (event) => {
       event.preventDefault();
     });
-    
+
     customElements.define("collapsible-dropdown", Collapsible);
     customElements.define("display-label", DisplayLabel);
 
@@ -43,23 +67,14 @@ export class Controller {
     customElements.define("option-item", OptionItem);
     customElements.define("option-select", OptionSelect);
 
-    // Promise.all([
-    //   customElements.whenDefined("collapsible-dropdown"),
-    //   customElements.whenDefined("display-label"),
-    //   customElements.whenDefined("text-input"),
-    //   customElements.whenDefined("quantity-input"),
-    //   customElements.whenDefined("vector-input"),
-    //   customElements.whenDefined("item-lister"),
-    //   customElements.whenDefined("field-item"),
-    //   customElements.whenDefined("option-select"),
-    //   customElements.whenDefined("option-item")
+    this.PROJECTILE_DROPDOWN = document.getElementById("projectile-dropdown") as Collapsible;
 
-    // ]).then(() => {
-      this.initSimulationControls();
-      this.initProjectileControls();
-      this.initMaterialControls();
-      this.initConstantsControls();
-    // });
+    this.initSimulationControls();
+    this.initProjectileControls();
+    this.initConstraintControls();
+    this.initMaterialControls();
+    this.initConstantsControls();
+    this.update();
   }
 
   private initSimulationControls(): void {
@@ -71,20 +86,15 @@ export class Controller {
     const doubleBackButton: HTMLButtonElement = document.querySelector("button#sim-double-back")!;
 
     const timeSlider: QuantityInput = document.getElementById("sim-time-slider") as QuantityInput;
-
     timeSlider.value = Simulation.instance.timeScale;
 
     timeSlider.addInputListener(() => {
       Simulation.instance.timeScale = timeSlider.value;
     });
-    
+
     const displayPause = () => {
-      if (Simulation.instance.running) {
-        pauseButton.classList.remove("paused");
-  
-      } else {
-        pauseButton.classList.add("paused");
-      }
+      if (Simulation.instance.running) pauseButton.classList.remove("paused");
+      else pauseButton.classList.add("paused");
     };
 
     const displayReverse = () => {
@@ -114,7 +124,7 @@ export class Controller {
         button.classList.remove("skipped");
         void button.offsetWidth;
         button.classList.add("skipped");
-  
+
         Simulation.instance.advance(amount);
       });
     }
@@ -126,27 +136,96 @@ export class Controller {
 
     displayPause();
     displayReverse();
+
+    this.REFERENCE_FRAME_BUTTON = document.getElementById("reference-frame-button") as HTMLButtonElement;
+
+    this.REFERENCE_FRAME_BUTTON.addEventListener("click", () => {
+      if (Simulation.instance.camera.frameOfReference) Simulation.instance.camera.setFrameOfReference(undefined);
+      else this.referenceFrameSetting = !this.referenceFrameSetting;
+    });
   }
 
   private initProjectileControls(): void {
-    const positionInput: VectorInput = document.getElementById("proj-spawn-pos") as VectorInput;
-    const velocityInput: VectorInput = document.getElementById("proj-spawn-vel") as VectorInput;
+    this.PROJ_TITLE = document.getElementById("proj-title") as HTMLHeadingElement;
 
-    const radiusInput: QuantityInput = document.getElementById("proj-radius") as QuantityInput;
-    const massInput: QuantityInput = document.getElementById("proj-mass") as QuantityInput;
-    const chargeInput: QuantityInput = document.getElementById("proj-charge") as QuantityInput;
-    const materialInput: OptionSelect<Material> = document.getElementById("proj-material") as OptionSelect<Material>;
-    materialInput.optionObjects = Simulation.instance.materials;
+    this.PROJ_RADIUS_INPUT = document.getElementById("proj-radius") as QuantityInput;
+    this.PROJ_MASS_INPUT = document.getElementById("proj-mass") as QuantityInput;
+    this.PROJ_CHARGE_INPUT = document.getElementById("proj-charge") as QuantityInput;
+    this.PROJ_MATERIAL_INPUT = document.getElementById("proj-material") as OptionSelect<Material>;
+    this.PROJ_MATERIAL_INPUT.optionObjects = Simulation.instance.materials;
 
-    const spawnButton: HTMLButtonElement = document.getElementById("proj-spawn") as HTMLButtonElement;
+    this.PROJ_POSITION_INPUT = document.getElementById("proj-spawn-pos") as VectorInput;
+    this.PROJ_VELOCITY_INPUT = document.getElementById("proj-spawn-vel") as VectorInput;
 
-    spawnButton.addEventListener("click", () => {
-      if (materialInput.value) {
-        Simulation.instance.projectiles.add(new Projectile(radiusInput.value, massInput.value, chargeInput.value, materialInput.value, positionInput.value, velocityInput.value));
+    this.PROJ_SPAWN_BUTTON = document.getElementById("proj-spawn") as HTMLButtonElement;
+
+    this.PROJ_SPAWN_BUTTON.addEventListener("click", () => {
+      if (this._selected && this._selected instanceof Projectile) {
+        Simulation.instance.projectiles.delete(this._selected);
+
+        this._selected = undefined;
+
+      } else if (this.PROJ_MATERIAL_INPUT.value) {
+        Simulation.instance.projectiles.add(new Projectile(
+          this.PROJ_RADIUS_INPUT.value, this.PROJ_MASS_INPUT.value, this.PROJ_CHARGE_INPUT.value, this.PROJ_MATERIAL_INPUT.value,
+          this.PROJ_POSITION_INPUT.value, this.PROJ_VELOCITY_INPUT.value
+        ));
       }
     });
+
+    this.PROJ_RADIUS_INPUT.addInputListener(() => {
+      if (this._selected && this._selected instanceof Projectile) this._selected.radius = this.PROJ_RADIUS_INPUT.value;
+    });
+
+    this.PROJ_MASS_INPUT.addInputListener(() => {
+      if (this._selected && this._selected instanceof Projectile) this._selected.mass = this.PROJ_MASS_INPUT.value;
+    });
+
+    this.PROJ_CHARGE_INPUT.addInputListener(() => {
+      if (this._selected && this._selected instanceof Projectile) this._selected.charge = this.PROJ_CHARGE_INPUT.value;
+    });
+
+    this.PROJ_MATERIAL_INPUT.addInputListener(() => {
+      if (this._selected && this._selected instanceof Projectile && this.PROJ_MATERIAL_INPUT.value) this._selected.material = this.PROJ_MATERIAL_INPUT.value;
+    });
+
+    this.PROJ_POSITION_INPUT.addInputListener(() => {
+      if (this._selected && this._selected instanceof Projectile) this._selected.position = this.PROJ_POSITION_INPUT.value;
+    });
+
+    this.PROJ_VELOCITY_INPUT.addInputListener(() => {
+      if (this._selected && this._selected instanceof Projectile) this._selected.velocity = this.PROJ_VELOCITY_INPUT.value;
+    });
   }
-  
+
+  private initConstraintControls(): void {
+    const typeButton: HTMLButtonElement = document.getElementById("constraint-type") as HTMLButtonElement;
+
+    this.CONSTRAINT_LENGTH_INPUT = document.getElementById("constraint-length") as QuantityInput;
+    this.CONSTRAINT_POSITION_INPUT = document.getElementById("constraint-position") as VectorInput;
+    this.CONSTRAINT_MATERIAL_INPUT = document.getElementById("constraint-material") as OptionSelect<Material>;
+    this.CONSTRAINT_MATERIAL_INPUT.optionObjects = Simulation.instance.materials;
+
+    this.CONSTRAINT_ATTACH_BUTTON = document.getElementById("constraint-attach") as HTMLButtonElement;
+
+    const updateTypeDisplay = () => {
+      typeButton.innerText = this.constraintType;
+    };
+    
+    typeButton.addEventListener("click", () => {
+      if (this.constraintType === "Rope") this.constraintType = "Spring";
+      else this.constraintType = "Rope";
+
+      updateTypeDisplay();
+    });
+
+    updateTypeDisplay();
+
+    this.CONSTRAINT_ATTACH_BUTTON.addEventListener("click", () => {
+      this.constraintAttach = !this.constraintAttach;
+    });
+  }
+
   private initMaterialControls(): void {
     const materialList: ItemList = document.getElementById("material-list") as ItemList;
 
@@ -189,7 +268,56 @@ export class Controller {
     const currentHover: Projectile | Obstacle | undefined = Simulation.instance.inputHandler.getCursorObject();
 
     this._hovering = currentHover;
-    if (Simulation.instance.inputHandler.clicked) this._selected = currentHover;
+
+    if (Simulation.instance.inputHandler.clicked) {
+      this._selected = currentHover;
+
+      if (this._selected && this._selected instanceof Projectile) {
+        if (this.referenceFrameSetting) {
+          Simulation.instance.camera.setFrameOfReference(this._selected);
+
+          this.referenceFrameSetting = false;
+          
+        } else if (this.constraintAttach) {
+          const material: Material | undefined = this.CONSTRAINT_MATERIAL_INPUT.value;
+
+          if (material) {
+            const length: number = this.CONSTRAINT_LENGTH_INPUT.value;
+            const point: Vector2 = this.CONSTRAINT_POSITION_INPUT.value;
+
+            if (this.constraintType === "Rope") Simulation.instance.ropes.add(new Rope(point, this._selected, length, material));
+            else Simulation.instance.springs.add(new Spring(point, this._selected, length, material));
+          }
+
+          this.constraintAttach = false;
+
+        } else {
+          this.PROJECTILE_DROPDOWN.dropdown();
+        }
+
+      } else {
+        this.referenceFrameSetting = false;
+        this.constraintAttach = false;
+      }
+    }
+
+    const editingProj: boolean = this._selected !== undefined && this._selected instanceof Projectile;
+
+    this.PROJ_TITLE.innerText = editingProj ? "Edit Projectile" : "Create Projectile";
+    this.PROJ_SPAWN_BUTTON.innerText = editingProj ? "Destroy" : "Spawn";
+
+    if (this._selected && this._selected instanceof Projectile) {
+      this.PROJ_RADIUS_INPUT.value = this._selected.radius;
+      this.PROJ_MASS_INPUT.value = this._selected.mass;
+      this.PROJ_CHARGE_INPUT.value = this._selected.charge;
+      this.PROJ_MATERIAL_INPUT.value = this._selected.material;
+      this.PROJ_POSITION_INPUT.value = this._selected.position;
+      this.PROJ_VELOCITY_INPUT.value = this._selected.velocity;
+    }
+
+    this.CONSTRAINT_ATTACH_BUTTON.innerText = this.constraintAttach ? "Attaching" : "Attach";
+
+    this.REFERENCE_FRAME_BUTTON.innerText = Simulation.instance.camera.frameOfReference ? "Clear Frame of Reference" : (this.referenceFrameSetting ? "Setting Frame of Reference" : "Set Frame of Reference");
 
     Simulation.instance.inputHandler.setHoverMode(this._hovering !== undefined);
   }
