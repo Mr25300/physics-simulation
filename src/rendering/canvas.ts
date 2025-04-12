@@ -351,16 +351,16 @@ export class Canvas {
       });
     }
 
-    for (const rope of [...Simulation.instance.ropes, ...Simulation.instance.springs]) {
-      const start: Vector2 = rope.origin;
-      const end: Vector2 = rope.attachment.position;
+    for (const constraint of [...Simulation.instance.ropes, ...Simulation.instance.springs]) {
+      const start: Vector2 = constraint.origin;
+      const end: Vector2 = constraint.attachment.position;
       const distance: number = start.subtract(end).magnitude;
-      const ropeStretch: number = distance / rope.length;
-      const ropeWidth: number = Math.max(this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * (1 - ropeStretch), 0);
+      const ropeStretch: number = distance / constraint.length;
+      const ropeWidth: number = Math.max(this.ROPE_MIN_WIDTH * ropeStretch + this.ROPE_MAX_WIDTH * Math.abs(1 - ropeStretch), 0);
 
       this.mainLayer.drawShape([start, end], ropeWidth, {
         fill: true,
-        fillStyle: rope.material.color,
+        fillStyle: constraint.material.color,
       });
     }
 
