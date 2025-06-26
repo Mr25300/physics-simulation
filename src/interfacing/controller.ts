@@ -9,7 +9,7 @@ import { OptionSelect, OptionItem } from "./inputcomponents.js";
 import { Material as Material } from "../objects/material.js";
 import { Obstacle } from "../objects/obstacle.js";
 import { Vector2 } from "../math/vector2.js";
-import { Rope, Spring } from "../objects/contraints.js";
+import { Constraint, Rope, Spring } from "../objects/contraints.js";
 
 export class Controller {
   private REFERENCE_FRAME_BUTTON: HTMLButtonElement;
@@ -284,9 +284,9 @@ export class Controller {
           if (material) {
             const length: number = this.CONSTRAINT_LENGTH_INPUT.value;
             const point: Vector2 = this.CONSTRAINT_POSITION_INPUT.value;
+            const constraint: Constraint = this.constraintType === "Rope" ? new Rope(point, this._selected, length, material) : new Spring(point, this._selected, length, material);
 
-            if (this.constraintType === "Rope") Simulation.instance.ropes.add(new Rope(point, this._selected, length, material));
-            else Simulation.instance.springs.add(new Spring(point, this._selected, length, material));
+            Simulation.instance.constraints.add(constraint);
           }
 
           this.constraintAttach = false;

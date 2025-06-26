@@ -3,11 +3,9 @@ import { ForceType, Projectile } from "../objects/projectile.js";
 import { Canvas } from "../rendering/canvas.js";
 import { Loop } from "./loop.js";
 import { Obstacle } from "../objects/obstacle.js";
-import { Rope as Constraint, Rope, Spring } from "../objects/contraints.js";
-import { GraphHandler } from "../graphing/graphHandler.js";
+import { Constraint } from "../objects/contraints.js";
 import { Camera } from "../rendering/camera.js";
 import { InputHandler } from "../interfacing/inputhandler.js";
-
 import { Controller } from "../interfacing/controller.js";
 import { Material } from "../objects/material.js";
 import { Field, FieldType } from "../objects/field.js";
@@ -21,8 +19,7 @@ export interface Constants {
 export class Simulation extends Loop {
   public readonly materials: Set<Material> = new Set();
   public readonly projectiles: Set<Projectile> = new Set();
-  public readonly springs: Set<Spring> = new Set();
-  public readonly ropes: Set<Constraint> = new Set();
+  public readonly constraints: Set<Constraint> = new Set();
   public readonly obstacles: Set<Obstacle> = new Set();
 
   public readonly fields: Set<Field> = new Set([
@@ -110,7 +107,7 @@ export class Simulation extends Loop {
       projectile.updateForces();
     }
 
-    for (const constraint of [...this.springs, ...this.ropes]) {
+    for (const constraint of this.constraints) {
       constraint.updateForces();
     }
 
@@ -120,7 +117,7 @@ export class Simulation extends Loop {
       projectile.updateKinematics(deltaTime);
     }
 
-    for (const constraint of [...this.springs, ...this.ropes]) {
+    for (const constraint of this.constraints) {
       constraint.updateKinematics();
     }
   }
