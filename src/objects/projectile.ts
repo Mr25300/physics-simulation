@@ -29,7 +29,6 @@ export class Projectile {
   private _acceleration: Vector2 = Vector2.zero;
 
   private lastCollision: CollisionInfo | undefined;
-  // private lastCentripetalForce: Vector2 = Vector2.zero;
 
   constructor(
     public radius: number,
