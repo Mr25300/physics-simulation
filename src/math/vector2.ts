@@ -40,6 +40,10 @@ export class Vector2 {
     return new Vector2(this.x / divisor, this.y / divisor);
   }
 
+  public equals(other: Vector2): boolean {
+    return this.x == other.x && this.y == other.y;
+  }
+
   public get magnitude(): number {
     if (!this._magnitude) this._magnitude = Math.sqrt(this.x ** 2 + this.y ** 2);
 
@@ -54,14 +58,14 @@ export class Vector2 {
     return this._unit;
   }
 
+  public get orthogonal(): Vector2 {
+    return new Vector2(-this.y, this.x);
+  }
+
   public get angle(): number {
     if (!this._angle) this._angle = Math.atan2(this.y, this.x);
 
     return this._angle;
-  }
-
-  public get orthogonal(): Vector2 {
-    return new Vector2(-this.y, this.x);
   }
 
   public dot(vector: Vector2): number {
